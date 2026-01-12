@@ -151,15 +151,20 @@ See the generated rule doc options lists in our example rule doc [`no-foo.md`](.
 
 This tool is used by popular ESLint plugins like:
 
+- [@vitest/eslint-plugin](https://github.com/vitest-dev/eslint-plugin-vitest#rules)
 - [eslint-plugin-ava](https://github.com/avajs/eslint-plugin-ava#rules)
 - [eslint-plugin-ember](https://github.com/ember-cli/eslint-plugin-ember#-rules)
 - [eslint-plugin-eslint-plugin](https://github.com/eslint-community/eslint-plugin-eslint-plugin#rules)
 - [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import#rules)
 - [eslint-plugin-jest](https://github.com/jest-community/eslint-plugin-jest#rules)
+- [eslint-plugin-jest-dom](https://github.com/testing-library/eslint-plugin-jest-dom#rules)
 - [eslint-plugin-jsx-a11y](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y#supported-rules)
+- [eslint-plugin-n](https://github.com/eslint-community/eslint-plugin-n#-rules)
 - [eslint-plugin-promise](https://github.com/eslint-community/eslint-plugin-promise#rules)
 - [eslint-plugin-qunit](https://github.com/platinumazure/eslint-plugin-qunit#rules)
 - [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react#list-of-supported-rules)
+- [eslint-plugin-regexp](https://github.com/ota-meshi/eslint-plugin-regexp#white_check_mark-rules)
+- [eslint-plugin-security](https://github.com/eslint-community/eslint-plugin-security#rules)
 - [eslint-plugin-testing-library](https://github.com/testing-library/eslint-plugin-testing-library)
 - [eslint-plugin-unicorn](https://github.com/sindresorhus/eslint-plugin-unicorn#rules)
 
