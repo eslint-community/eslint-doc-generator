@@ -38,7 +38,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
     /**
      * Try require first which should work for CJS plugins.
      * From Node 22 requiring on ESM module returns the module object
-     * @see https://github.com/bmish/eslint-doc-generator/issues/615
+     * @see https://github.com/eslint-community/eslint-doc-generator/issues/615
      */
     type cjsOrEsmPlugin =
       | Plugin
@@ -56,7 +56,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
       '__esModule' in _plugin &&
       _plugin.__esModule &&
       // Ensure that we return only the default key when only a default export is present
-      // @see https://github.com/bmish/eslint-doc-generator/issues/656#issuecomment-2726745618
+      // @see https://github.com/eslint-community/eslint-doc-generator/issues/656#issuecomment-2726745618
       Object.keys(_plugin).length === 2 &&
       ['__esModule', 'default'].every((it) => Boolean(_plugin[it]))
     ) {
@@ -109,7 +109,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
     if (extname(pluginEntryPointAbs) === '.json') {
       // For JSON files, have to require() instead of import(..., { assert: { type: 'json' } }) because of this error:
       // Dynamic imports only support a second argument when the '--module' option is set to 'esnext', 'node16', or 'nodenext'. ts(1324)
-      // TODO: Switch to import() when we drop support for Node 14. https://github.com/bmish/eslint-doc-generator/issues/585
+      // TODO: Switch to import() when we drop support for Node 14. https://github.com/eslint-community/eslint-doc-generator/issues/585
       return require(pluginEntryPointAbs) as Plugin; // eslint-disable-line import/no-dynamic-require
     }
 

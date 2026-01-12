@@ -93,7 +93,7 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
       ignoreDeprecatedRules: { type: 'boolean' },
       initRuleDocs: { type: 'boolean' },
       pathRuleDoc:
-        /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/bmish/eslint-doc-generator/issues/366 */
+        /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         typeof explorerResults.config.pathRuleDoc === 'function'
           ? {
@@ -111,7 +111,7 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
       ruleDocTitleFormat: { type: 'string' },
       ruleListColumns: schemaStringArray,
       ruleListSplit:
-        /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/bmish/eslint-doc-generator/issues/366 */
+        /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         typeof explorerResults.config.ruleListSplit === 'function'
           ? {
@@ -120,7 +120,7 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
           : { anyOf: [{ type: 'string' }, schemaStringArray] },
       urlConfigs: { type: 'string' },
       urlRuleDoc:
-        /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/bmish/eslint-doc-generator/issues/366 */
+        /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         typeof explorerResults.config.urlRuleDoc === 'function'
           ? {
@@ -313,7 +313,7 @@ export async function run(
 
       // Options with both a CLI/config-file variant will lose the function value during the merge, so restore it here.
       // TODO: figure out a better way to handle this.
-      /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/bmish/eslint-doc-generator/issues/366 */
+      /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
       if (typeof configFileOptions.ruleListSplit === 'function') {
         // @ts-expect-error -- The array is supposed to be read-only at this point.
         generateOptions.ruleListSplit = configFileOptions.ruleListSplit;

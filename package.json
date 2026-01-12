@@ -10,13 +10,13 @@
     "generator",
     "plugin"
   ],
-  "homepage": "https://github.com/bmish/eslint-doc-generator#readme",
+  "homepage": "https://github.com/eslint-community/eslint-doc-generator#readme",
   "bugs": {
-    "url": "https://github.com/bmish/eslint-doc-generator/issues"
+    "url": "https://github.com/eslint-community/eslint-doc-generator/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bmish/eslint-doc-generator.git"
+    "url": "git+https://github.com/eslint-community/eslint-doc-generator.git"
   },
   "license": "ISC",
   "author": "Bryan Mishkin",
