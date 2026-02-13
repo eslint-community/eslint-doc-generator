@@ -115,26 +115,19 @@ function collectNamedOptionsFromSchemaProperties(
  */
 export function getAllNamedOptions(
   jsonSchema: JSONSchema4 | readonly JSONSchema4[] | undefined | null,
-  metaDefaultOptions?: readonly unknown[],
-): readonly RuleOption[] {
-  return getAllNamedOptionsForSchema(jsonSchema, metaDefaultOptions);
-}
-
-function getAllNamedOptionsForSchema(
-  jsonSchema: JSONSchema4 | readonly JSONSchema4[] | undefined | null,
-  metaDefaultOptionForSchema?: unknown,
+  metaDefaultOptions?: unknown,
 ): readonly RuleOption[] {
   if (!jsonSchema) {
     return [];
   }
 
   if (Array.isArray(jsonSchema)) {
-    const metaDefaultOptionsForItems = Array.isArray(metaDefaultOptionForSchema)
-      ? metaDefaultOptionForSchema
+    const metaDefaultOptionsForItems = Array.isArray(metaDefaultOptions)
+      ? metaDefaultOptions
       : undefined;
 
     return jsonSchema.flatMap((js: JSONSchema4, index: number) =>
-      getAllNamedOptionsForSchema(js, metaDefaultOptionsForItems?.[index]),
+      getAllNamedOptions(js, metaDefaultOptionsForItems?.[index]),
     );
   }
 
@@ -168,7 +161,7 @@ function getAllNamedOptionsForSchema(
         collectNamedOptionsFromSchemaProperties(
           js,
           currentPath,
-          metaDefaultOptionForSchema,
+          metaDefaultOptions,
           options,
         );
       }
