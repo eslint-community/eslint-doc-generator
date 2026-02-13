@@ -185,6 +185,61 @@ describe('generate (rule options list)', function () {
     });
   });
 
+  describe('prefers meta.defaultOptions over schema defaults', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: {
+                  schema: [{
+                    type: "object",
+                    properties: {
+                        foo: {
+                            type: "boolean",
+                            default: false,
+                        },
+                    },
+                 }],
+                  defaultOptions: [{
+                    foo: true,
+                  }],
+                },
+                create(context) {}
+              },
+            },
+          };`,
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': `## Options
+<!-- begin auto-generated rule options list -->
+<!-- end auto-generated rule options list -->`,
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('generates the documentation with defaults from meta.defaultOptions', async function () {
+      const consoleErrorStub = sinon.stub(console, 'error');
+      await generate(fixture.path);
+      expect(consoleErrorStub.callCount).toBe(0);
+      consoleErrorStub.restore();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toContain(
+        '`true`',
+      );
+      expect(await fixture.readFile('docs/rules/no-foo.md')).not.toContain(
+        '`false`',
+      );
+    });
+  });
+
   describe('with no marker comments', function () {
     let fixture: FixtureContext;
 

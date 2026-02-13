@@ -116,7 +116,10 @@ function generateRuleOptionsListMarkdown(
   context: Context,
   rule: RuleModule,
 ): string {
-  const ruleOptions = getAllNamedOptions(rule.meta?.schema);
+  const ruleOptions = getAllNamedOptions(
+    rule.meta?.schema,
+    rule.meta?.defaultOptions,
+  );
 
   if (ruleOptions.length === 0) {
     return '';

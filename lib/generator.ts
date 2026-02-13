@@ -79,6 +79,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
   let initializedRuleDoc = false;
   for (const [name, rule] of ruleNamesAndRules) {
     const schema = rule.meta?.schema;
+    const metaDefaultOptions = rule.meta?.defaultOptions;
     const description = rule.meta?.docs?.description;
     const pathCurrentPage = replaceRulePlaceholder(pathRuleDoc, name);
     const pathToDoc = join(path, pathCurrentPage);
@@ -187,7 +188,10 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
         ['Options', 'Config'],
         ruleHasOptions,
       );
-      for (const { name: namedOption } of getAllNamedOptions(schema)) {
+      for (const { name: namedOption } of getAllNamedOptions(
+        schema,
+        metaDefaultOptions,
+      )) {
         expectContentOrFail(
           `\`${name}\` rule doc`,
           'rule option',
