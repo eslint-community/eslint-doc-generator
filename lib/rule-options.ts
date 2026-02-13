@@ -37,16 +37,10 @@ function hasObjectPath(
 }
 
 function getCurrentOptionPath(
-  optionPathBySchema: WeakMap<JSONSchema4, readonly (string | number)[]>,
+  parentPath: readonly (string | number)[] | undefined,
   parentKeyword?: string,
-  parentSchema?: JSONSchema4,
   keyIndex?: string | number,
 ): readonly (string | number)[] {
-  const parentPath =
-    parentSchema && optionPathBySchema.has(parentSchema)
-      ? optionPathBySchema.get(parentSchema)
-      : [];
-
   if (parentKeyword === 'properties' && typeof keyIndex === 'string') {
     return [...(parentPath ?? []), keyIndex];
   }
@@ -149,10 +143,14 @@ export function getAllNamedOptions(
       parentSchema,
       keyIndex,
     ) => {
+      const parentPath =
+        parentSchema && optionPathBySchema.has(parentSchema)
+          ? optionPathBySchema.get(parentSchema)
+          : [];
+
       const currentPath = getCurrentOptionPath(
-        optionPathBySchema,
+        parentPath,
         parentKeyword,
-        parentSchema,
         keyIndex,
       );
 
