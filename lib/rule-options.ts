@@ -37,9 +37,9 @@ function hasObjectPath(
 }
 
 function getCurrentOptionPath(
-  optionPathBySchema: WeakMap<object, readonly (string | number)[]>,
+  optionPathBySchema: WeakMap<JSONSchema4, readonly (string | number)[]>,
   parentKeyword?: string,
-  parentSchema?: object,
+  parentSchema?: JSONSchema4,
   keyIndex?: string | number,
 ): readonly (string | number)[] {
   const parentPath =
@@ -132,9 +132,10 @@ export function getAllNamedOptions(
   }
 
   const options: RuleOption[] = [];
-  const optionPathBySchema = new WeakMap<object, readonly (string | number)[]>([
-    [jsonSchema, []],
-  ]);
+  const optionPathBySchema = new WeakMap<
+    JSONSchema4,
+    readonly (string | number)[]
+  >([[jsonSchema, []]]);
 
   traverse(
     // Cast needed because json-schema-traverse types don't account for exactOptionalPropertyTypes
