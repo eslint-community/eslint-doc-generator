@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.0.2...v3.1.0) (2026-02-14)
+
+
+### Features
+
+* Use rule option defaults from `meta.defaultOptions` with fallback to schema default  ([#885](https://github.com/eslint-community/eslint-doc-generator/issues/885)) ([aed5575](https://github.com/eslint-community/eslint-doc-generator/commit/aed5575ba6d586bd23dba3f06ffa21825efe26f8))
+
 ## [3.0.2](https://github.com/eslint-community/eslint-doc-generator/compare/v3.0.1...v3.0.2) (2026-01-02)
 
 
