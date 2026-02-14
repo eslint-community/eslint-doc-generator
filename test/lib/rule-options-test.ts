@@ -461,6 +461,85 @@ describe('rule options', function () {
         `);
       });
 
+      it('handles nested object properties in defaultOptions', function () {
+        expect(
+          getAllNamedOptions(
+            [
+              {
+                type: 'object',
+                properties: {
+                  reporting: {
+                    type: 'object',
+                    properties: {
+                      verbose: {
+                        type: 'boolean',
+                        default: false,
+                      },
+                      format: {
+                        type: 'string',
+                        default: 'text',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                },
+                additionalProperties: false,
+              },
+            ],
+            [{ reporting: { verbose: true, format: 'json' } }],
+          ),
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "default": {
+                "format": "json",
+                "verbose": true,
+              },
+              "name": "reporting",
+              "type": "Object",
+            },
+            {
+              "default": true,
+              "name": "verbose",
+              "type": "Boolean",
+            },
+            {
+              "default": "json",
+              "name": "format",
+              "type": "String",
+            },
+          ]
+        `);
+      });
+
+      it('gracefully ignores non-array defaultOptions when schema is an array', function () {
+        expect(
+          getAllNamedOptions(
+            [
+              {
+                type: 'object',
+                properties: {
+                  foo: {
+                    type: 'boolean',
+                    default: false,
+                  },
+                },
+                additionalProperties: false,
+              },
+            ],
+            { foo: true }, // Malformed: should be an array to match the schema array
+          ),
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "default": false,
+              "name": "foo",
+              "type": "Boolean",
+            },
+          ]
+        `);
+      });
+
       it('preserves other properties when using defaultOptions', function () {
         expect(
           getAllNamedOptions(
