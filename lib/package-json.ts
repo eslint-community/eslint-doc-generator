@@ -103,6 +103,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
     if (!existsSync(pluginEntryPointAbs)) {
       throw new Error(
         `ESLint plugin entry point does not exist. Tried: ${pluginEntryPoint}`,
+        { cause: error },
       );
     }
 

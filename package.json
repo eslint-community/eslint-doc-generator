@@ -44,7 +44,7 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^8.51.0",
+    "@typescript-eslint/utils": "^8.55.1-alpha.4",
     "ajv": "^8.11.2",
     "change-case": "^5.0.0",
     "commander": "^14.0.0",
@@ -59,13 +59,13 @@
     "type-fest": "^5.3.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^10.0.0",
     "@types/node": "^25.0.3",
     "@types/sinon": "^21.0.0",
     "@typescript/native-preview": "^7.0.0-dev.20260102.1",
     "@vitest/coverage-istanbul": "^4.0.16",
-    "@vitest/eslint-plugin": "^1.6.6",
-    "eslint": "^9.29.0",
+    "@vitest/eslint-plugin": "^1.6.9",
+    "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-n": "^17.20.0",
@@ -79,7 +79,7 @@
     "sinon": "^21.0.0",
     "sort-package-json": "^3.0.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.51.0",
+    "typescript-eslint": "^8.55.1-alpha.4",
     "vitest": "^4.0.16"
   },
   "peerDependencies": {
