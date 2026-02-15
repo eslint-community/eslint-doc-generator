@@ -49,7 +49,6 @@
     "change-case": "^5.0.0",
     "commander": "^14.0.0",
     "cosmiconfig": "^9.0.0",
-    "deepmerge": "^4.2.2",
     "dot-prop": "^10.1.0",
     "editorconfig": "^3.0.1",
     "jest-diff": "^30.2.0",

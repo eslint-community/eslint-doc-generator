@@ -3,7 +3,6 @@ import { RULE_DOC_TITLE_FORMATS } from './rule-doc-title-format.js';
 import { OPTION_DEFAULTS } from './options.js';
 import { cosmiconfig } from 'cosmiconfig';
 import Ajv from 'ajv';
-import merge from 'deepmerge';
 import { COLUMN_TYPE, NOTICE_TYPE, OPTION_TYPE } from './types.js';
 import type { GenerateOptions } from './types.js';
 import { getCurrentPackageVersion } from './package-json.js';
@@ -45,6 +44,32 @@ function collectCSVNested(
 
 function parseBoolean(value: string | undefined): boolean {
   return value === undefined || (isBooleanable(value) && boolean(value));
+}
+
+/**
+ * Shallow merge two objects.
+ * - Arrays: concatenated (first arg first, then second)
+ * - Other values: second arg wins if present
+ */
+function shallowMerge<T extends Record<string, unknown>>(
+  base: T,
+  override: T,
+): T {
+  const baseRecord = base as Record<string, unknown>;
+  const overrideRecord = override as Record<string, unknown>;
+  const result: Record<string, unknown> = {};
+  for (const key of new Set([...Object.keys(base), ...Object.keys(override)])) {
+    const a = baseRecord[key];
+    const b = overrideRecord[key];
+    if (Array.isArray(a) && Array.isArray(b)) {
+      result[key] = [...(a as unknown[]), ...(b as unknown[])];
+    } else if (b === undefined) {
+      result[key] = a;
+    } else {
+      result[key] = b;
+    }
+  }
+  return result as T;
 }
 
 /**
@@ -309,15 +334,7 @@ export async function run(
       // Default values should be handled in the callback function.
       const configFileOptions = await loadConfigFileOptions();
 
-      const generateOptions = merge(configFileOptions, options); // Recursive merge.
-
-      // Options with both a CLI/config-file variant will lose the function value during the merge, so restore it here.
-      // TODO: figure out a better way to handle this.
-      /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
-      if (typeof configFileOptions.ruleListSplit === 'function') {
-        // @ts-expect-error -- The array is supposed to be read-only at this point.
-        generateOptions.ruleListSplit = configFileOptions.ruleListSplit;
-      }
+      const generateOptions = shallowMerge(configFileOptions, options);
 
       // Invoke callback.
       await cb(path, generateOptions);
