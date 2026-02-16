@@ -187,6 +187,7 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--config-format` | The format to use for config names. See choices in below [table](#--config-format). | `name` |
 | `--ignore-config` | Config to ignore from being displayed. Often used for an `all` config. Option can be repeated. | |
 | `--ignore-deprecated-rules` | Whether to ignore deprecated rules from being checked, displayed, or updated. | `false` |
+| `--init-emojis` | Whether to suggest emojis for configs and print copy-pasteable `configEmoji` tuples. | `false` |
 | `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. | `false` |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
@@ -199,6 +200,18 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--rule-list-split` | Rule property(s) to split the rules list by. A separate list and header will be created for each value. Example: `meta.type`. A function can also be provided for this option via a [config file](#configuration-file). | |
 | `--url-configs` | Link to documentation about the ESLint configurations exported by the plugin. | |
 | `--url-rule-doc` | Link to documentation for each rule. Useful when it differs from the rule doc path on disk (e.g. custom documentation site in use). Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | |
+
+### `--init-emojis`
+
+When `--init-emojis` is enabled, the tool prints a copy-pasteable `configEmoji` snippet for all exported configs and exits without modifying files.
+
+Suggestions are generated locally first. If `LLM_API_KEY` is set, the tool optionally enhances generated suggestions using an OpenAI-compatible `/chat/completions` API.
+
+Supported environment variables:
+
+- `LLM_API_KEY` - API key used for optional LLM enhancement
+- `LLM_BASE_URL` - Optional API base URL (default: `https://api.openai.com/v1`)
+- `LLM_MODEL` - Optional model name (default: `gpt-4o-mini`)
 
 ### Column and notice types
 
