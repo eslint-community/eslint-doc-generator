@@ -91,6 +91,7 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
       configFormat: { type: 'string' },
       ignoreConfig: schemaStringArray,
       ignoreDeprecatedRules: { type: 'boolean' },
+      initEmojis: { type: 'boolean' },
       initRuleDocs: { type: 'boolean' },
       pathRuleDoc:
         /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
@@ -217,6 +218,13 @@ export async function run(
       '--ignore-deprecated-rules [boolean]',
       `(optional) Whether to ignore deprecated rules from being checked, displayed, or updated. (default: ${String(
         OPTION_DEFAULTS[OPTION_TYPE.IGNORE_DEPRECATED_RULES],
+      )})`,
+      parseBoolean,
+    )
+    .option(
+      '--init-emojis [boolean]',
+      `(optional) Whether to suggest emojis for configs and print copy-pasteable \`configEmoji\` tuples. (default: ${String(
+        OPTION_DEFAULTS[OPTION_TYPE.INIT_EMOJIS],
       )})`,
       parseBoolean,
     )

@@ -105,6 +105,7 @@ export const OPTION_TYPE = {
   CONFIG_FORMAT: 'configFormat',
   IGNORE_CONFIG: 'ignoreConfig',
   IGNORE_DEPRECATED_RULES: 'ignoreDeprecatedRules',
+  INIT_EMOJIS: 'initEmojis',
   INIT_RULE_DOCS: 'initRuleDocs',
   PATH_RULE_DOC: 'pathRuleDoc',
   PATH_RULE_LIST: 'pathRuleList',
@@ -182,6 +183,9 @@ export type GenerateOptions = {
 
   /** Whether to ignore deprecated rules from being checked, displayed, or updated. Default: `false`. */
   readonly ignoreDeprecatedRules?: boolean;
+
+  /** Whether to suggest emojis for configs and print copy-pasteable `configEmoji` tuples. Default: `false`. */
+  readonly initEmojis?: boolean;
 
   /** Whether to create rule doc files if they don't yet exist. Default: `false`. */
   readonly initRuleDocs?: boolean;

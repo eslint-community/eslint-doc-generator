@@ -54,6 +54,7 @@ export const OPTION_DEFAULTS = {
   [OPTION_TYPE.CONFIG_FORMAT]: DEFAULT_CONFIG_FORMAT,
   [OPTION_TYPE.IGNORE_CONFIG]: [],
   [OPTION_TYPE.IGNORE_DEPRECATED_RULES]: false,
+  [OPTION_TYPE.INIT_EMOJIS]: false,
   [OPTION_TYPE.INIT_RULE_DOCS]: false,
   [OPTION_TYPE.PATH_RULE_DOC]: join('docs', 'rules', '{name}.md'),
   [OPTION_TYPE.PATH_RULE_LIST]: ['README.md'],
@@ -98,6 +99,8 @@ export function getResolvedOptions(
   const ignoreDeprecatedRules =
     userOptions.ignoreDeprecatedRules ??
     OPTION_DEFAULTS[OPTION_TYPE.IGNORE_DEPRECATED_RULES];
+  const initEmojis =
+    userOptions.initEmojis ?? OPTION_DEFAULTS[OPTION_TYPE.INIT_EMOJIS];
   const initRuleDocs =
     userOptions.initRuleDocs ?? OPTION_DEFAULTS[OPTION_TYPE.INIT_RULE_DOCS];
   const pathRuleDoc =
@@ -144,6 +147,7 @@ export function getResolvedOptions(
     configFormat,
     ignoreConfig,
     ignoreDeprecatedRules,
+    initEmojis,
     initRuleDocs,
     pathRuleDoc,
     pathRuleList,
