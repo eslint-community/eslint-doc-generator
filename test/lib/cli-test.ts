@@ -12,6 +12,7 @@ const configFileOptionsAll: { [key in OPTION_TYPE]: unknown } = {
     'ignoredConfigFromConfigFile2',
   ],
   ignoreDeprecatedRules: true,
+  initEmojis: true,
   initRuleDocs: true,
   pathRuleDoc: 'www.example.com/rule-doc-from-config-file',
   pathRuleList: 'www.example.com/rule-list-from-config-file',
@@ -48,6 +49,8 @@ const cliOptionsAll: { [key in OPTION_TYPE]: readonly string[] } = {
   ],
 
   [OPTION_TYPE.IGNORE_DEPRECATED_RULES]: ['--ignore-deprecated-rules', 'true'],
+
+  [OPTION_TYPE.INIT_EMOJIS]: ['--init-emojis', 'false'],
 
   [OPTION_TYPE.INIT_RULE_DOCS]: ['--init-rule-docs', 'false'],
 

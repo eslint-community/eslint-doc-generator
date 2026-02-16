@@ -23,6 +23,7 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
       "ignoredConfigFromCli2",
     ],
     "ignoreDeprecatedRules": true,
+    "initEmojis": false,
     "initRuleDocs": false,
     "pathRuleDoc": "www.example.com/rule-doc-from-cli",
     "pathRuleList": [
@@ -79,6 +80,7 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
       "ignoredConfigFromCli2",
     ],
     "ignoreDeprecatedRules": true,
+    "initEmojis": false,
     "initRuleDocs": false,
     "pathRuleDoc": "www.example.com/rule-doc-from-cli",
     "pathRuleList": [
@@ -126,6 +128,7 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
       "ignoredConfigFromConfigFile2",
     ],
     "ignoreDeprecatedRules": true,
+    "initEmojis": true,
     "initRuleDocs": true,
     "pathRuleDoc": "www.example.com/rule-doc-from-config-file",
     "pathRuleList": [
