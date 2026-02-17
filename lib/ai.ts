@@ -327,39 +327,6 @@ function formatProviderErrorDetails(
   return segments.length > 0 ? segments.join('; ') : undefined;
 }
 
-function getInvalidModelHint(
-  status: number,
-  details: ProviderErrorDetails | undefined,
-): string | undefined {
-  if (!details) {
-    return undefined;
-  }
-
-  const searchable = [details.code, details.message, details.type]
-    .filter((value): value is string => typeof value === 'string')
-    .join(' ')
-    .toLowerCase();
-  if (!searchable.includes('model')) {
-    return undefined;
-  }
-
-  const likelyInvalidModel = [
-    /not[\s_-]*found/iu,
-    /invalid/iu,
-    /unknown/iu,
-    /does not exist/iu,
-    /doesn't exist/iu,
-    /not available/iu,
-    /unrecognized/iu,
-    /unsupported/iu,
-  ].some((pattern) => pattern.test(searchable));
-  if (!likelyInvalidModel && status !== 404) {
-    return undefined;
-  }
-
-  return 'This may indicate an invalid model name. Check --ai-model for the selected provider or omit it to use the default model.';
-}
-
 async function getHttpErrorDetails(
   response: FetchResponseLike,
   protocol: REQUEST_PROTOCOL,
@@ -382,9 +349,7 @@ async function throwProviderHttpError(
 ): Promise<never> {
   const providerLabel = getProviderLabel(providerConfig.provider);
   const details = await getHttpErrorDetails(response, providerConfig.protocol);
-  const detailText = formatProviderErrorDetails(details);
-  const modelHint = getInvalidModelHint(response.status, details);
-  const extraText = [detailText, modelHint].filter(Boolean).join(' ');
+  const extraText = formatProviderErrorDetails(details);
 
   throw new Error(
     extraText

@@ -520,7 +520,7 @@ describe('generate (--suggest-emojis)', function () {
     ).rejects.toThrow('OpenAI request failed (502 Bad Gateway).');
   });
 
-  it('includes parsed AI Gateway error details and model hint on invalid model', async function () {
+  it('includes parsed AI Gateway error details on invalid model', async function () {
     process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
@@ -555,10 +555,10 @@ describe('generate (--suggest-emojis)', function () {
     expect(error?.message).toContain('Model `foo` not found.');
     expect(error?.message).toContain('code: model_not_found');
     expect(error?.message).toContain('type: invalid_request_error');
-    expect(error?.message).toContain('invalid model name');
+    expect(error?.message).not.toContain('invalid model name');
   });
 
-  it('does not add invalid-model hint for non-invalid model-related AI Gateway errors', async function () {
+  it('includes parsed AI Gateway error details for non-model errors', async function () {
     process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
@@ -593,7 +593,6 @@ describe('generate (--suggest-emojis)', function () {
     expect(error?.message).toContain('Model throughput limit reached.');
     expect(error?.message).toContain('code: rate_limit_exceeded');
     expect(error?.message).toContain('type: rate_limit_error');
-    expect(error?.message).not.toContain('invalid model name');
   });
 
   it('throws when OpenAI payload shape has no assistant content', async function () {
@@ -774,7 +773,7 @@ describe('generate (--suggest-emojis)', function () {
     );
     expect(error?.message).toContain('Model "foo" is not available.');
     expect(error?.message).toContain('type: invalid_request_error');
-    expect(error?.message).toContain('invalid model name');
+    expect(error?.message).not.toContain('invalid model name');
   });
 
   it('rejects reserved emojis and keeps uniqueness when ai suggestions duplicate', async function () {
