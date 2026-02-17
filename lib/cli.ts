@@ -92,22 +92,17 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
     };
 
     const properties: { [key in OPTION_TYPE]: unknown } = {
+      aiModel: { type: 'string' },
+      aiProvider: {
+        type: 'string',
+        enum: Object.values(AI_PROVIDER),
+      },
       check: { type: 'boolean' },
       configEmoji: schemaConfigEmoji,
       configFormat: { type: 'string' },
       ignoreConfig: schemaStringArray,
       ignoreDeprecatedRules: { type: 'boolean' },
       initRuleDocs: { type: 'boolean' },
-      suggestEmojis: { type: 'boolean' },
-      suggestEmojisEngine: {
-        type: 'string',
-        enum: Object.values(SUGGEST_EMOJIS_ENGINE),
-      },
-      aiModel: { type: 'string' },
-      aiProvider: {
-        type: 'string',
-        enum: Object.values(AI_PROVIDER),
-      },
       pathRuleDoc:
         /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -134,6 +129,11 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
               /* Functions are allowed but JSON Schema can't validate them so no-op in this case. */
             }
           : { anyOf: [{ type: 'string' }, schemaStringArray] },
+      suggestEmojis: { type: 'boolean' },
+      suggestEmojisEngine: {
+        type: 'string',
+        enum: Object.values(SUGGEST_EMOJIS_ENGINE),
+      },
       urlConfigs: { type: 'string' },
       urlRuleDoc:
         /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */

@@ -117,16 +117,14 @@ export type COLUMN_TYPE = (typeof COLUMN_TYPE)[keyof typeof COLUMN_TYPE];
  * CLI/config file options.
  */
 export const OPTION_TYPE = {
+  AI_MODEL: 'aiModel',
+  AI_PROVIDER: 'aiProvider',
   CHECK: 'check',
   CONFIG_EMOJI: 'configEmoji',
   CONFIG_FORMAT: 'configFormat',
   IGNORE_CONFIG: 'ignoreConfig',
   IGNORE_DEPRECATED_RULES: 'ignoreDeprecatedRules',
   INIT_RULE_DOCS: 'initRuleDocs',
-  SUGGEST_EMOJIS: 'suggestEmojis',
-  SUGGEST_EMOJIS_ENGINE: 'suggestEmojisEngine',
-  AI_MODEL: 'aiModel',
-  AI_PROVIDER: 'aiProvider',
   PATH_RULE_DOC: 'pathRuleDoc',
   PATH_RULE_LIST: 'pathRuleList',
   POSTPROCESS: 'postprocess',
@@ -137,6 +135,8 @@ export const OPTION_TYPE = {
   RULE_DOC_TITLE_FORMAT: 'ruleDocTitleFormat',
   RULE_LIST_COLUMNS: 'ruleListColumns',
   RULE_LIST_SPLIT: 'ruleListSplit',
+  SUGGEST_EMOJIS: 'suggestEmojis',
+  SUGGEST_EMOJIS_ENGINE: 'suggestEmojisEngine',
   URL_CONFIGS: 'urlConfigs',
   URL_RULE_DOC: 'urlRuleDoc',
 } as const;
