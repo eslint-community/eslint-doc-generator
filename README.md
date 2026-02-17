@@ -187,8 +187,11 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--config-format` | The format to use for config names. See choices in below [table](#--config-format). | `name` |
 | `--ignore-config` | Config to ignore from being displayed. Often used for an `all` config. Option can be repeated. | |
 | `--ignore-deprecated-rules` | Whether to ignore deprecated rules from being checked, displayed, or updated. | `false` |
-| `--init-emojis` | Whether to suggest emojis for configs and print copy-pasteable `configEmoji` tuples. | `false` |
 | `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. | `false` |
+| `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. | `false` |
+| `--suggest-emojis-engine` | Engine to use when `--suggest-emojis` is enabled (`builtin` or `ai`). | `builtin` |
+| `--ai-provider` | AI provider to use for AI-enabled features (`openai` or `anthropic`). Required if multiple provider API keys are present. | |
+| `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
 | `--rule-doc-notices` | Ordered, comma-separated list of notices to display in rule doc. Non-applicable notices will be hidden. See choices in below [table](#column-and-notice-types). | `configs`, `deprecated`, `fixableAndHasSuggestions`, `requiresTypeChecking`, `description` |
@@ -201,17 +204,26 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--url-configs` | Link to documentation about the ESLint configurations exported by the plugin. | |
 | `--url-rule-doc` | Link to documentation for each rule. Useful when it differs from the rule doc path on disk (e.g. custom documentation site in use). Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | |
 
-### `--init-emojis`
+### `--suggest-emojis`
 
-When `--init-emojis` is enabled, the tool prints a copy-pasteable `configEmoji` snippet for all exported configs and exits without modifying files.
+When `--suggest-emojis` is enabled, the tool prints a table of suggested emojis for all exported configs and exits without modifying files.
 
-Suggestions are generated locally first. If `LLM_API_KEY` is set, the tool optionally enhances generated suggestions using an OpenAI-compatible `/chat/completions` API.
+Engine behavior:
 
-Supported environment variables:
+- `builtin` (`--suggest-emojis-engine builtin`) uses deterministic local suggestions only.
+- `ai` (`--suggest-emojis-engine ai`) uses an external provider.
 
-- `LLM_API_KEY` - API key used for optional LLM enhancement
-- `LLM_BASE_URL` - Optional API base URL (default: `https://api.openai.com/v1`)
-- `LLM_MODEL` - Optional model name (default: `gpt-4o-mini`)
+When engine is `ai`:
+
+- If `--ai-provider` is set, that provider is used.
+- If `--ai-provider` is omitted and exactly one supported provider API key is present in the environment, that provider is used automatically.
+- If multiple supported provider API keys are present and `--ai-provider` is omitted, the command errors and asks for `--ai-provider`.
+- If no supported provider API keys are present, the command errors and lists the supported environment variables.
+
+Supported provider environment variables:
+
+- `OPENAI_API_KEY`
+- `ANTHROPIC_API_KEY`
 
 ### Column and notice types
 
