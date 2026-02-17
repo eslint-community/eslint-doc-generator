@@ -49,16 +49,14 @@ const DEFAULT_RULE_DOC_TITLE_FORMAT: RuleDocTitleFormat = 'prefix-name';
 const DEFAULT_CONFIG_FORMAT: ConfigFormat = 'name';
 
 export const OPTION_DEFAULTS = {
+  [OPTION_TYPE.AI_MODEL]: undefined,
+  [OPTION_TYPE.AI_PROVIDER]: undefined,
   [OPTION_TYPE.CHECK]: false,
   [OPTION_TYPE.CONFIG_EMOJI]: [],
   [OPTION_TYPE.CONFIG_FORMAT]: DEFAULT_CONFIG_FORMAT,
   [OPTION_TYPE.IGNORE_CONFIG]: [],
   [OPTION_TYPE.IGNORE_DEPRECATED_RULES]: false,
   [OPTION_TYPE.INIT_RULE_DOCS]: false,
-  [OPTION_TYPE.SUGGEST_EMOJIS]: false,
-  [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: 'builtin',
-  [OPTION_TYPE.AI_MODEL]: undefined,
-  [OPTION_TYPE.AI_PROVIDER]: undefined,
   [OPTION_TYPE.PATH_RULE_DOC]: join('docs', 'rules', '{name}.md'),
   [OPTION_TYPE.PATH_RULE_LIST]: ['README.md'],
   [OPTION_TYPE.POSTPROCESS]: (content: string) => content,
@@ -77,6 +75,8 @@ export const OPTION_DEFAULTS = {
     .filter(([_col, enabled]) => enabled)
     .map(([col]) => col),
   [OPTION_TYPE.RULE_LIST_SPLIT]: [],
+  [OPTION_TYPE.SUGGEST_EMOJIS]: false,
+  [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: 'builtin',
   [OPTION_TYPE.URL_CONFIGS]: undefined,
   [OPTION_TYPE.URL_RULE_DOC]: undefined,
 } satisfies Record<OPTION_TYPE, unknown>; // Satisfies is used to ensure all options are included without losing type information.
