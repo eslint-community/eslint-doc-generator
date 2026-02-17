@@ -71,6 +71,10 @@ export type SUGGEST_EMOJIS_ENGINE =
 export const AI_PROVIDER = {
   OPENAI: 'openai',
   ANTHROPIC: 'anthropic',
+  GROQ: 'groq',
+  OPENROUTER: 'openrouter',
+  TOGETHER: 'together',
+  XAI: 'xai',
 } as const;
 export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];
 

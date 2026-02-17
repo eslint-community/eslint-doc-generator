@@ -190,7 +190,7 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. | `false` |
 | `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. | `false` |
 | `--suggest-emojis-engine` | Engine to use when `--suggest-emojis` is enabled (`builtin` or `ai`). | `builtin` |
-| `--ai-provider` | AI provider to use for AI-enabled features (`openai` or `anthropic`). Required if multiple provider API keys are present. | |
+| `--ai-provider` | AI provider to use for AI-enabled features (`openai`, `anthropic`, `groq`, `openrouter`, `together`, or `xai`). Required if multiple provider API keys are present. | |
 | `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
@@ -224,6 +224,10 @@ Supported provider environment variables:
 
 - `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
+- `GROQ_API_KEY`
+- `OPENROUTER_API_KEY`
+- `TOGETHER_API_KEY`
+- `XAI_API_KEY`
 
 ### Column and notice types
 

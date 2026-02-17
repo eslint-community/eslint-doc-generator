@@ -2,7 +2,15 @@ import * as sinon from 'sinon';
 import { generate } from '../../../lib/generator.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 
-type ProviderApiKeyEnvVar = 'OPENAI_API_KEY' | 'ANTHROPIC_API_KEY';
+const PROVIDER_API_KEY_ENV_VARS = [
+  'OPENAI_API_KEY',
+  'ANTHROPIC_API_KEY',
+  'GROQ_API_KEY',
+  'OPENROUTER_API_KEY',
+  'TOGETHER_API_KEY',
+  'XAI_API_KEY',
+] as const;
+type ProviderApiKeyEnvVar = (typeof PROVIDER_API_KEY_ENV_VARS)[number];
 
 function parseSuggestionTable(output: string): Map<string, string> {
   const suggestions = new Map<string, string>();
@@ -72,8 +80,21 @@ async function withTempFixture(
 describe('generate (--suggest-emojis)', function () {
   let fixture: FixtureContext;
 
-  const originalOpenAiApiKey = process.env['OPENAI_API_KEY'];
-  const originalAnthropicApiKey = process.env['ANTHROPIC_API_KEY'];
+  const originalProviderApiKeys = Object.fromEntries(
+    PROVIDER_API_KEY_ENV_VARS.map((name) => [name, process.env[name]]),
+  ) as Record<ProviderApiKeyEnvVar, string | undefined>;
+
+  function clearProviderApiKeys(): void {
+    for (const name of PROVIDER_API_KEY_ENV_VARS) {
+      restoreEnvVar(name, undefined);
+    }
+  }
+
+  function restoreProviderApiKeys(): void {
+    for (const name of PROVIDER_API_KEY_ENV_VARS) {
+      restoreEnvVar(name, originalProviderApiKeys[name]);
+    }
+  }
 
   beforeAll(async function () {
     fixture = await setupFixture({
@@ -100,10 +121,13 @@ describe('generate (--suggest-emojis)', function () {
     });
   });
 
+  beforeEach(function () {
+    clearProviderApiKeys();
+  });
+
   afterEach(function () {
     sinon.restore();
-    restoreEnvVar('OPENAI_API_KEY', originalOpenAiApiKey);
-    restoreEnvVar('ANTHROPIC_API_KEY', originalAnthropicApiKey);
+    restoreProviderApiKeys();
   });
 
   afterAll(async function () {
@@ -185,6 +209,56 @@ describe('generate (--suggest-emojis)', function () {
     expect(suggestions.get('xyzabc')).toBe('🧠');
   });
 
+  it('uses Groq in ai mode with provider defaults and applies suggestions', async function () {
+    const consoleLogStub = sinon.stub(console, 'log');
+    const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+      createJsonFetchResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                xyzabc: '🛰️',
+              }),
+            },
+          },
+        ],
+      }) as never,
+    );
+
+    process.env['GROQ_API_KEY'] = 'test-groq-key';
+
+    await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiProvider: 'groq',
+    });
+
+    expect(fetchStub.callCount).toBe(1);
+    expect(fetchStub.firstCall.args[0]).toBe(
+      'https://api.groq.com/openai/v1/chat/completions',
+    );
+    const requestInit = fetchStub.firstCall.args[1];
+    expect(requestInit).toBeTruthy();
+    expect(requestInit).toBeTypeOf('object');
+    if (
+      !requestInit ||
+      typeof requestInit !== 'object' ||
+      !('body' in requestInit)
+    ) {
+      throw new TypeError('Missing request init body in fetch call.');
+    }
+    expect(requestInit.body).toBeTypeOf('string');
+    if (typeof requestInit.body !== 'string') {
+      throw new TypeError('Expected fetch request body to be a string.');
+    }
+    const requestBody = JSON.parse(requestInit.body) as { model?: string };
+    expect(requestBody.model).toBe('llama-3.1-8b-instant');
+
+    const output = String(consoleLogStub.firstCall.args[0]);
+    const suggestions = parseSuggestionTable(output);
+    expect(suggestions.get('xyzabc')).toBe('🛰️');
+  });
+
   it('uses Anthropic automatically when exactly one provider API key is set', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
     const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
@@ -250,15 +324,14 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('throws when no provider API key is set for ai mode', async function () {
-    restoreEnvVar('OPENAI_API_KEY', undefined);
-    restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
         suggestEmojisEngine: 'ai',
       }),
-    ).rejects.toThrow('Set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY');
+    ).rejects.toThrow(
+      'Set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, TOGETHER_API_KEY, XAI_API_KEY',
+    );
   });
 
   it('throws when aiProvider is set but that provider key is missing', async function () {

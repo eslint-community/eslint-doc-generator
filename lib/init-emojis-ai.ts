@@ -3,15 +3,68 @@ import { RESERVED_EMOJIS } from './emojis.js';
 import { AI_PROVIDER } from './types.js';
 import type { AI_PROVIDER as AiProviderType } from './types.js';
 
-const PROVIDER_API_KEY_ENV: Record<AiProviderType, string> = {
-  [AI_PROVIDER.OPENAI]: 'OPENAI_API_KEY',
-  [AI_PROVIDER.ANTHROPIC]: 'ANTHROPIC_API_KEY',
+type REQUEST_PROTOCOL = 'openaiCompatible' | 'anthropic';
+
+interface ProviderMetadata {
+  apiKeyEnvVar: string;
+  defaultModel: string;
+  endpoint: string;
+  protocol: REQUEST_PROTOCOL;
+}
+
+const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
+  [AI_PROVIDER.OPENAI]: {
+    apiKeyEnvVar: 'OPENAI_API_KEY',
+    defaultModel: 'gpt-4o-mini',
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
+  [AI_PROVIDER.ANTHROPIC]: {
+    apiKeyEnvVar: 'ANTHROPIC_API_KEY',
+    defaultModel: 'claude-3-5-haiku-latest',
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    protocol: 'anthropic',
+  },
+  [AI_PROVIDER.GROQ]: {
+    apiKeyEnvVar: 'GROQ_API_KEY',
+    defaultModel: 'llama-3.1-8b-instant',
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
+  [AI_PROVIDER.OPENROUTER]: {
+    apiKeyEnvVar: 'OPENROUTER_API_KEY',
+    defaultModel: 'openai/gpt-4o-mini',
+    endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
+  [AI_PROVIDER.TOGETHER]: {
+    apiKeyEnvVar: 'TOGETHER_API_KEY',
+    defaultModel: 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
+    endpoint: 'https://api.together.xyz/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
+  [AI_PROVIDER.XAI]: {
+    apiKeyEnvVar: 'XAI_API_KEY',
+    defaultModel: 'grok-2-latest',
+    endpoint: 'https://api.x.ai/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
 };
 
-const PROVIDER_DEFAULT_MODEL: Record<AiProviderType, string> = {
-  [AI_PROVIDER.OPENAI]: 'gpt-4o-mini',
-  [AI_PROVIDER.ANTHROPIC]: 'claude-3-5-haiku-latest',
-};
+const AI_PROVIDERS: readonly AiProviderType[] = [
+  AI_PROVIDER.OPENAI,
+  AI_PROVIDER.ANTHROPIC,
+  AI_PROVIDER.GROQ,
+  AI_PROVIDER.OPENROUTER,
+  AI_PROVIDER.TOGETHER,
+  AI_PROVIDER.XAI,
+];
+
+const SUPPORTED_API_KEY_ENV_VARS = [
+  ...new Set(
+    AI_PROVIDERS.map((provider) => PROVIDER_METADATA[provider].apiKeyEnvVar),
+  ),
+];
 
 const RESERVED_EMOJI_SET = new Set(RESERVED_EMOJIS);
 
@@ -19,6 +72,8 @@ interface ProviderConfig {
   provider: AiProviderType;
   apiKey: string;
   model: string;
+  endpoint: string;
+  protocol: REQUEST_PROTOCOL;
 }
 
 interface FetchResponseLike {
@@ -36,6 +91,19 @@ interface AiRequestOptions {
 interface ProviderWithApiKey {
   provider: AiProviderType;
   apiKey: string;
+}
+
+function getProviderLabel(provider: AiProviderType): string {
+  return (
+    {
+      [AI_PROVIDER.OPENAI]: 'OpenAI',
+      [AI_PROVIDER.ANTHROPIC]: 'Anthropic',
+      [AI_PROVIDER.GROQ]: 'Groq',
+      [AI_PROVIDER.OPENROUTER]: 'OpenRouter',
+      [AI_PROVIDER.TOGETHER]: 'Together',
+      [AI_PROVIDER.XAI]: 'xAI',
+    } as const
+  )[provider];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -65,50 +133,52 @@ function resolveProviderConfig({
   aiModel,
 }: AiRequestOptions): ProviderConfig {
   if (aiProvider) {
-    const envVar = PROVIDER_API_KEY_ENV[aiProvider];
-    const apiKey = getOptionalEnvVar(envVar);
+    const metadata = PROVIDER_METADATA[aiProvider];
+    const apiKey = getOptionalEnvVar(metadata.apiKeyEnvVar);
     if (!apiKey) {
-      throw new Error(`Provider "${aiProvider}" requires ${envVar} to be set.`);
+      throw new Error(
+        `Provider "${aiProvider}" requires ${metadata.apiKeyEnvVar} to be set.`,
+      );
     }
     return {
       provider: aiProvider,
       apiKey,
-      model: aiModel ?? PROVIDER_DEFAULT_MODEL[aiProvider],
+      model: aiModel ?? metadata.defaultModel,
+      endpoint: metadata.endpoint,
+      protocol: metadata.protocol,
     };
   }
 
-  const providers: readonly AiProviderType[] = [
-    AI_PROVIDER.OPENAI,
-    AI_PROVIDER.ANTHROPIC,
-  ];
-  const providersWithApiKey: ProviderWithApiKey[] = providers.flatMap(
+  const providersWithApiKey: ProviderWithApiKey[] = AI_PROVIDERS.flatMap(
     (provider) => {
-      const envVar = PROVIDER_API_KEY_ENV[provider];
-      const apiKey = getOptionalEnvVar(envVar);
+      const apiKey = getOptionalEnvVar(
+        PROVIDER_METADATA[provider].apiKeyEnvVar,
+      );
       return apiKey ? [{ provider, apiKey }] : [];
     },
   );
 
   if (providersWithApiKey.length === 0) {
     throw new Error(
-      `No AI provider API key found. Set one of: ${Object.values(
-        PROVIDER_API_KEY_ENV,
-      ).join(', ')}.`,
+      `No AI provider API key found. Set one of: ${SUPPORTED_API_KEY_ENV_VARS.join(', ')}.`,
     );
   }
   if (providersWithApiKey.length > 1) {
     throw new Error(
       `Multiple AI provider API keys found (${providersWithApiKey
-        .map(({ provider }) => PROVIDER_API_KEY_ENV[provider])
+        .map(({ provider }) => PROVIDER_METADATA[provider].apiKeyEnvVar)
         .join(', ')}). Use --ai-provider to specify one.`,
     );
   }
 
   const { provider, apiKey } = providersWithApiKey[0] as ProviderWithApiKey;
+  const metadata = PROVIDER_METADATA[provider];
   return {
     provider,
     apiKey,
-    model: aiModel ?? PROVIDER_DEFAULT_MODEL[provider],
+    model: aiModel ?? metadata.defaultModel,
+    endpoint: metadata.endpoint,
+    protocol: metadata.protocol,
   };
 }
 
@@ -189,60 +259,64 @@ function parseLlmResponseObject(content: string): Record<string, unknown> {
   return parsed;
 }
 
-async function requestOpenAiSuggestions(
+async function requestOpenAiCompatibleSuggestions(
   providerConfig: ProviderConfig,
   configNames: readonly string[],
 ): Promise<Record<string, unknown>> {
   let responseUnknown: unknown;
+  const providerLabel = getProviderLabel(providerConfig.provider);
+
   try {
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    responseUnknown = await fetch(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${providerConfig.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: providerConfig.model,
-          temperature: 0,
-          response_format: { type: 'json_object' },
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Return a JSON object mapping each config name to exactly one emoji character. No markdown.',
-            },
-            {
-              role: 'user',
-              content: JSON.stringify({
-                configs: configNames,
-                forbiddenEmojis: RESERVED_EMOJIS,
-              }),
-            },
-          ],
-        }),
+    responseUnknown = await fetch(providerConfig.endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${providerConfig.apiKey}`,
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({
+        model: providerConfig.model,
+        temperature: 0,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Return a JSON object mapping each config name to exactly one emoji character. No markdown.',
+          },
+          {
+            role: 'user',
+            content: JSON.stringify({
+              configs: configNames,
+              forbiddenEmojis: RESERVED_EMOJIS,
+            }),
+          },
+        ],
+      }),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`OpenAI request failed: ${message}`, { cause: error });
+    throw new Error(`${providerLabel} request failed: ${message}`, {
+      cause: error,
+    });
   }
 
   if (!isFetchResponseLike(responseUnknown)) {
-    throw new Error('OpenAI request failed: unexpected HTTP response type.');
+    throw new Error(
+      `${providerLabel} request failed: unexpected HTTP response type.`,
+    );
   }
   if (!responseUnknown.ok) {
     throw new Error(
-      `OpenAI request failed (${String(responseUnknown.status)} ${responseUnknown.statusText}).`,
+      `${providerLabel} request failed (${String(responseUnknown.status)} ${responseUnknown.statusText}).`,
     );
   }
 
   const payload = await responseUnknown.json();
   const content = getOpenAiContent(payload);
   if (content === undefined) {
-    throw new Error('OpenAI response did not include assistant text content.');
+    throw new Error(
+      `${providerLabel} response did not include assistant text content.`,
+    );
   }
   return parseLlmResponseObject(content);
 }
@@ -252,9 +326,11 @@ async function requestAnthropicSuggestions(
   configNames: readonly string[],
 ): Promise<Record<string, unknown>> {
   let responseUnknown: unknown;
+  const providerLabel = getProviderLabel(providerConfig.provider);
+
   try {
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    responseUnknown = await fetch('https://api.anthropic.com/v1/messages', {
+    responseUnknown = await fetch(providerConfig.endpoint, {
       method: 'POST',
       headers: {
         'x-api-key': providerConfig.apiKey,
@@ -280,15 +356,19 @@ async function requestAnthropicSuggestions(
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Anthropic request failed: ${message}`, { cause: error });
+    throw new Error(`${providerLabel} request failed: ${message}`, {
+      cause: error,
+    });
   }
 
   if (!isFetchResponseLike(responseUnknown)) {
-    throw new Error('Anthropic request failed: unexpected HTTP response type.');
+    throw new Error(
+      `${providerLabel} request failed: unexpected HTTP response type.`,
+    );
   }
   if (!responseUnknown.ok) {
     throw new Error(
-      `Anthropic request failed (${String(responseUnknown.status)} ${responseUnknown.statusText}).`,
+      `${providerLabel} request failed (${String(responseUnknown.status)} ${responseUnknown.statusText}).`,
     );
   }
 
@@ -296,7 +376,7 @@ async function requestAnthropicSuggestions(
   const content = getAnthropicContent(payload);
   if (content === undefined) {
     throw new Error(
-      'Anthropic response did not include assistant text content.',
+      `${providerLabel} response did not include assistant text content.`,
     );
   }
   return parseLlmResponseObject(content);
@@ -390,8 +470,11 @@ export async function applyAiEmojiSuggestions(
 
   const providerConfig = resolveProviderConfig(aiRequestOptions);
   const suggestions =
-    providerConfig.provider === AI_PROVIDER.OPENAI
-      ? await requestOpenAiSuggestions(providerConfig, configNamesToEnhance)
+    providerConfig.protocol === 'openaiCompatible'
+      ? await requestOpenAiCompatibleSuggestions(
+          providerConfig,
+          configNamesToEnhance,
+        )
       : await requestAnthropicSuggestions(providerConfig, configNamesToEnhance);
   applyAiSuggestions(configNamesToEnhance, suggestions, emojiByConfig);
 }
