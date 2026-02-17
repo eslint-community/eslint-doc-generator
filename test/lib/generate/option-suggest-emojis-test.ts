@@ -281,7 +281,7 @@ describe('generate (--suggest-emojis)', function () {
     await generate(fixture.path, {
       suggestEmojis: true,
       suggestEmojisEngine: 'ai',
-      aiProvider: 'vercel',
+      aiProvider: 'aigateway',
     });
 
     expect(fetchStub.callCount).toBe(1);

@@ -23,6 +23,12 @@ const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
     endpoint: 'https://api.anthropic.com/v1/messages',
     protocol: 'anthropic',
   },
+  [AI_PROVIDER.AI_GATEWAY]: {
+    apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
+    defaultModel: 'openai/gpt-4o-mini',
+    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
   [AI_PROVIDER.GROQ]: {
     apiKeyEnvVar: 'GROQ_API_KEY',
     defaultModel: 'llama-3.1-8b-instant',
@@ -41,12 +47,6 @@ const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
     endpoint: 'https://api.together.xyz/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
-  [AI_PROVIDER.VERCEL]: {
-    apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
-    defaultModel: 'openai/gpt-4o-mini',
-    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
-    protocol: 'openaiCompatible',
-  },
   [AI_PROVIDER.XAI]: {
     apiKeyEnvVar: 'XAI_API_KEY',
     defaultModel: 'grok-2-latest',
@@ -56,12 +56,12 @@ const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
 };
 
 const AI_PROVIDERS: readonly AiProviderType[] = [
+  AI_PROVIDER.AI_GATEWAY,
   AI_PROVIDER.ANTHROPIC,
   AI_PROVIDER.GROQ,
   AI_PROVIDER.OPENAI,
   AI_PROVIDER.OPENROUTER,
   AI_PROVIDER.TOGETHER,
-  AI_PROVIDER.VERCEL,
   AI_PROVIDER.XAI,
 ];
 
@@ -99,12 +99,12 @@ export interface AiProviderConfig {
 function getProviderLabel(provider: AiProviderType): string {
   return (
     {
+      [AI_PROVIDER.AI_GATEWAY]: 'Vercel AI Gateway',
       [AI_PROVIDER.ANTHROPIC]: 'Anthropic',
       [AI_PROVIDER.GROQ]: 'Groq',
       [AI_PROVIDER.OPENAI]: 'OpenAI',
       [AI_PROVIDER.OPENROUTER]: 'OpenRouter',
       [AI_PROVIDER.TOGETHER]: 'Together',
-      [AI_PROVIDER.VERCEL]: 'Vercel AI Gateway',
       [AI_PROVIDER.XAI]: 'xAI',
     } as const
   )[provider];

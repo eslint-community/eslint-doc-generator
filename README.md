@@ -191,7 +191,7 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. | `false` |
 | `--suggest-emojis-engine` | Engine to use when `--suggest-emojis` is enabled (`builtin` or `ai`). | `builtin` |
 | `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
-| `--ai-provider` | AI provider to use for AI-enabled features (`openai`, `anthropic`, `groq`, `openrouter`, `together`, `vercel`, or `xai`). Required if multiple provider API keys are present. | |
+| `--ai-provider` | AI provider to use for AI-enabled features (`openai`, `anthropic`, `aigateway`, `groq`, `openrouter`, `together`, or `xai`). Required if multiple provider API keys are present. | |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
 | `--rule-doc-notices` | Ordered, comma-separated list of notices to display in rule doc. Non-applicable notices will be hidden. See choices in below [table](#column-and-notice-types). | `configs`, `deprecated`, `fixableAndHasSuggestions`, `requiresTypeChecking`, `description` |
