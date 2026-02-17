@@ -21,11 +21,10 @@ function formatSuggestionTable(
 }
 
 export async function generateSuggestedEmojis(context: Context): Promise<void> {
-  const { configNames, emojiByConfig, generatedConfigNames } =
-    getBuiltinEmojiSuggestions(context);
+  const { configNames, emojiByConfig } = getBuiltinEmojiSuggestions(context);
 
   if (context.options.suggestEmojisEngine === SUGGEST_EMOJIS_ENGINE.AI) {
-    await applyAiEmojiSuggestions(generatedConfigNames, emojiByConfig, {
+    await applyAiEmojiSuggestions(configNames, emojiByConfig, {
       aiProvider: context.options.aiProvider,
       aiModel: context.options.aiModel,
     });

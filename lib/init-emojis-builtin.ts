@@ -28,7 +28,6 @@ const FALLBACK_EMOJIS = [
 export interface BuiltinEmojiSuggestions {
   configNames: readonly string[];
   emojiByConfig: Map<string, string>;
-  generatedConfigNames: readonly string[];
 }
 
 function tokenizeConfigName(configName: string): readonly string[] {
@@ -126,26 +125,12 @@ export function getBuiltinEmojiSuggestions(
   }
 
   const emojiByConfig = new Map<string, string>();
+  const usedEmojis = new Set<string>();
   for (const configName of configNames) {
-    const existingEmoji = context.options.configEmojis.find(
-      (configEmoji) => configEmoji.config === configName,
-    )?.emoji;
-    if (existingEmoji) {
-      emojiByConfig.set(configName, existingEmoji);
-    }
-  }
-
-  const generatedConfigNames: string[] = [];
-  const usedEmojis = new Set(emojiByConfig.values());
-  for (const configName of configNames) {
-    if (emojiByConfig.has(configName)) {
-      continue;
-    }
     const localSuggestion = suggestEmojiLocally(configName, usedEmojis);
     emojiByConfig.set(configName, localSuggestion);
     usedEmojis.add(localSuggestion);
-    generatedConfigNames.push(configName);
   }
 
-  return { configNames, emojiByConfig, generatedConfigNames };
+  return { configNames, emojiByConfig };
 }

@@ -78,6 +78,12 @@ interface FetchResponseLike {
   json: () => Promise<unknown>;
 }
 
+interface ProviderErrorDetails {
+  readonly code?: string;
+  readonly type?: string;
+  readonly message?: string;
+}
+
 interface ProviderWithApiKey {
   provider: AiProviderType;
   apiKey: string;
@@ -245,6 +251,148 @@ function getAnthropicContent(payload: unknown): string | undefined {
   return textParts.length > 0 ? textParts.join('') : undefined;
 }
 
+function getProviderErrorDetails(
+  detailsUnknown: unknown,
+): ProviderErrorDetails | undefined {
+  if (!isRecord(detailsUnknown)) {
+    return undefined;
+  }
+
+  const codeUnknown = detailsUnknown['code'];
+  const typeUnknown = detailsUnknown['type'];
+  const messageUnknown = detailsUnknown['message'];
+
+  const code =
+    typeof codeUnknown === 'string'
+      ? codeUnknown
+      : typeof codeUnknown === 'number'
+        ? String(codeUnknown)
+        : undefined;
+  const type = typeof typeUnknown === 'string' ? typeUnknown : undefined;
+  const message =
+    typeof messageUnknown === 'string' ? messageUnknown : undefined;
+
+  if (!code && !type && !message) {
+    return undefined;
+  }
+
+  return {
+    ...(code ? { code } : {}),
+    ...(type ? { type } : {}),
+    ...(message ? { message } : {}),
+  };
+}
+
+function getOpenAiCompatibleErrorDetails(
+  payload: unknown,
+): ProviderErrorDetails | undefined {
+  if (!isRecord(payload)) {
+    return undefined;
+  }
+  return (
+    getProviderErrorDetails(payload['error']) ??
+    getProviderErrorDetails(payload)
+  );
+}
+
+function getAnthropicErrorDetails(
+  payload: unknown,
+): ProviderErrorDetails | undefined {
+  if (!isRecord(payload)) {
+    return undefined;
+  }
+  return (
+    getProviderErrorDetails(payload['error']) ??
+    getProviderErrorDetails(payload)
+  );
+}
+
+function formatProviderErrorDetails(
+  details: ProviderErrorDetails | undefined,
+): string | undefined {
+  if (!details) {
+    return undefined;
+  }
+
+  const segments: string[] = [];
+  if (details.message) {
+    segments.push(details.message);
+  }
+  if (details.code) {
+    segments.push(`code: ${details.code}`);
+  }
+  if (details.type) {
+    segments.push(`type: ${details.type}`);
+  }
+  return segments.length > 0 ? segments.join('; ') : undefined;
+}
+
+function getInvalidModelHint(
+  status: number,
+  details: ProviderErrorDetails | undefined,
+): string | undefined {
+  if (!details) {
+    return undefined;
+  }
+
+  const searchable = [details.code, details.message, details.type]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase();
+  if (!searchable.includes('model')) {
+    return undefined;
+  }
+
+  const likelyInvalidModel = [
+    /not[\s_-]*found/iu,
+    /invalid/iu,
+    /unknown/iu,
+    /does not exist/iu,
+    /doesn't exist/iu,
+    /not available/iu,
+    /unrecognized/iu,
+    /unsupported/iu,
+  ].some((pattern) => pattern.test(searchable));
+  if (!likelyInvalidModel && status !== 404) {
+    return undefined;
+  }
+
+  return 'This may indicate an invalid model name. Check --ai-model for the selected provider or omit it to use the default model.';
+}
+
+async function getHttpErrorDetails(
+  response: FetchResponseLike,
+  protocol: REQUEST_PROTOCOL,
+): Promise<ProviderErrorDetails | undefined> {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    return undefined;
+  }
+
+  return protocol === 'anthropic'
+    ? getAnthropicErrorDetails(payload)
+    : getOpenAiCompatibleErrorDetails(payload);
+}
+
+async function throwProviderHttpError(
+  providerConfig: AiProviderConfig,
+  response: FetchResponseLike,
+): Promise<never> {
+  const providerLabel = getProviderLabel(providerConfig.provider);
+  const details = await getHttpErrorDetails(response, providerConfig.protocol);
+  const detailText = formatProviderErrorDetails(details);
+  const modelHint = getInvalidModelHint(response.status, details);
+  const extraText = [detailText, modelHint].filter(Boolean).join(' ');
+
+  throw new Error(
+    extraText
+      ? `${providerLabel} request failed (${String(response.status)} ${response.statusText}). ${extraText}`
+      : `${providerLabel} request failed (${String(response.status)} ${response.statusText}).`,
+  );
+}
+
 function parseLlmResponseObject(content: string): Record<string, unknown> {
   const trimmed = content.trim();
   if (!trimmed) {
@@ -320,9 +468,7 @@ async function requestOpenAiCompatibleObject(
     );
   }
   if (!responseUnknown.ok) {
-    throw new Error(
-      `${providerLabel} request failed (${String(responseUnknown.status)} ${responseUnknown.statusText}).`,
-    );
+    await throwProviderHttpError(providerConfig, responseUnknown);
   }
 
   const payload = await responseUnknown.json();
@@ -387,9 +533,7 @@ async function requestAnthropicObject(
     );
   }
   if (!responseUnknown.ok) {
-    throw new Error(
-      `${providerLabel} request failed (${String(responseUnknown.status)} ${responseUnknown.statusText}).`,
-    );
+    await throwProviderHttpError(providerConfig, responseUnknown);
   }
 
   const payload = await responseUnknown.json();

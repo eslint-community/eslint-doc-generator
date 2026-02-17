@@ -159,6 +159,20 @@ describe('generate (--suggest-emojis)', function () {
     expect(suggestions.has('zzzz-one')).toBe(true);
   });
 
+  it('regenerates suggestions even when configEmoji already includes a config', async function () {
+    const consoleLogStub = sinon.stub(console, 'log');
+
+    await generate(fixture.path, {
+      suggestEmojis: true,
+      configEmoji: [['recommended', '🧪']],
+    });
+
+    const output = String(consoleLogStub.firstCall.args[0]);
+    const suggestions = parseSuggestionTable(output);
+    expect(suggestions.get('recommended')).toBe('✅');
+    expect(suggestions.get('recommended')).not.toBe('🧪');
+  });
+
   it('uses OpenAI in ai mode with provider defaults and applies suggestions', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
     const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
@@ -487,6 +501,101 @@ describe('generate (--suggest-emojis)', function () {
     ).rejects.toThrow('OpenAI request failed (503 Service Unavailable).');
   });
 
+  it('throws generic HTTP status when non-OK OpenAI error payload is not JSON', async function () {
+    process.env['OPENAI_API_KEY'] = 'test-openai-key';
+    restoreEnvVar('ANTHROPIC_API_KEY', undefined);
+    sinon.stub(globalThis, 'fetch').resolves({
+      ok: false,
+      status: 502,
+      statusText: 'Bad Gateway',
+      json: () => Promise.reject(new Error('invalid json body')),
+    } as never);
+
+    await expect(
+      generate(fixture.path, {
+        suggestEmojis: true,
+        suggestEmojisEngine: 'ai',
+        aiProvider: 'openai',
+      }),
+    ).rejects.toThrow('OpenAI request failed (502 Bad Gateway).');
+  });
+
+  it('includes parsed AI Gateway error details and model hint on invalid model', async function () {
+    process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
+    restoreEnvVar('OPENAI_API_KEY', undefined);
+    restoreEnvVar('ANTHROPIC_API_KEY', undefined);
+    sinon.stub(globalThis, 'fetch').resolves({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      json: () =>
+        Promise.resolve({
+          error: {
+            code: 'model_not_found',
+            type: 'invalid_request_error',
+            message: 'Model `foo` not found.',
+          },
+        }),
+    } as never);
+
+    const error = await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiModel: 'foo',
+      aiProvider: 'aigateway',
+    }).then(
+      () => undefined,
+      (error_: unknown) => error_ as Error,
+    );
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error?.message).toContain(
+      'Vercel AI Gateway request failed (404 Not Found).',
+    );
+    expect(error?.message).toContain('Model `foo` not found.');
+    expect(error?.message).toContain('code: model_not_found');
+    expect(error?.message).toContain('type: invalid_request_error');
+    expect(error?.message).toContain('invalid model name');
+  });
+
+  it('does not add invalid-model hint for non-invalid model-related AI Gateway errors', async function () {
+    process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
+    restoreEnvVar('OPENAI_API_KEY', undefined);
+    restoreEnvVar('ANTHROPIC_API_KEY', undefined);
+    sinon.stub(globalThis, 'fetch').resolves({
+      ok: false,
+      status: 429,
+      statusText: 'Too Many Requests',
+      json: () =>
+        Promise.resolve({
+          error: {
+            code: 'rate_limit_exceeded',
+            type: 'rate_limit_error',
+            message: 'Model throughput limit reached.',
+          },
+        }),
+    } as never);
+
+    const error = await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiModel: 'foo',
+      aiProvider: 'aigateway',
+    }).then(
+      () => undefined,
+      (error_: unknown) => error_ as Error,
+    );
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error?.message).toContain(
+      'Vercel AI Gateway request failed (429 Too Many Requests).',
+    );
+    expect(error?.message).toContain('Model throughput limit reached.');
+    expect(error?.message).toContain('code: rate_limit_exceeded');
+    expect(error?.message).toContain('type: rate_limit_error');
+    expect(error?.message).not.toContain('invalid model name');
+  });
+
   it('throws when OpenAI payload shape has no assistant content', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
@@ -633,6 +742,41 @@ describe('generate (--suggest-emojis)', function () {
     }
   });
 
+  it('includes parsed Anthropic non-OK payload details', async function () {
+    restoreEnvVar('OPENAI_API_KEY', undefined);
+    process.env['ANTHROPIC_API_KEY'] = 'test-anthropic-key';
+    sinon.stub(globalThis, 'fetch').resolves({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      json: () =>
+        Promise.resolve({
+          error: {
+            type: 'invalid_request_error',
+            message: 'Model "foo" is not available.',
+          },
+        }),
+    } as never);
+
+    const error = await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiModel: 'foo',
+      aiProvider: 'anthropic',
+    }).then(
+      () => undefined,
+      (error_: unknown) => error_ as Error,
+    );
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error?.message).toContain(
+      'Anthropic request failed (400 Bad Request).',
+    );
+    expect(error?.message).toContain('Model "foo" is not available.');
+    expect(error?.message).toContain('type: invalid_request_error');
+    expect(error?.message).toContain('invalid model name');
+  });
+
   it('rejects reserved emojis and keeps uniqueness when ai suggestions duplicate', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
@@ -702,7 +846,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(suggestions.has('unknown')).toBe(false);
   });
 
-  it('does not call ai provider when no config requires generation', async function () {
+  it('calls ai provider for all configs, even when defaults already exist', async function () {
     await withTempFixture(
       `
       export default {
@@ -716,7 +860,19 @@ describe('generate (--suggest-emojis)', function () {
       `,
       async (tempFixture) => {
         const consoleLogStub = sinon.stub(console, 'log');
-        const fetchStub = sinon.stub(globalThis, 'fetch');
+        const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+          createJsonFetchResponse({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    recommended: '🧠',
+                  }),
+                },
+              },
+            ],
+          }) as never,
+        );
         process.env['OPENAI_API_KEY'] = 'test-openai-key';
         restoreEnvVar('ANTHROPIC_API_KEY', undefined);
 
@@ -726,8 +882,11 @@ describe('generate (--suggest-emojis)', function () {
           aiProvider: 'openai',
         });
 
-        expect(fetchStub.callCount).toBe(0);
+        expect(fetchStub.callCount).toBe(1);
         expect(consoleLogStub.callCount).toBe(1);
+        const output = String(consoleLogStub.firstCall.args[0]);
+        const suggestions = parseSuggestionTable(output);
+        expect(suggestions.get('recommended')).toBe('🧠');
       },
     );
   });
