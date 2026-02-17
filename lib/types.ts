@@ -74,6 +74,7 @@ export const AI_PROVIDER = {
   GROQ: 'groq',
   OPENROUTER: 'openrouter',
   TOGETHER: 'together',
+  VERCEL: 'vercel',
   XAI: 'xai',
 } as const;
 export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];

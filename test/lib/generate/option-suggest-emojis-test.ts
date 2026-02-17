@@ -8,6 +8,7 @@ const PROVIDER_API_KEY_ENV_VARS = [
   'GROQ_API_KEY',
   'OPENROUTER_API_KEY',
   'TOGETHER_API_KEY',
+  'AI_GATEWAY_API_KEY',
   'XAI_API_KEY',
 ] as const;
 type ProviderApiKeyEnvVar = (typeof PROVIDER_API_KEY_ENV_VARS)[number];
@@ -257,6 +258,56 @@ describe('generate (--suggest-emojis)', function () {
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🛰️');
+  });
+
+  it('uses Vercel AI Gateway in ai mode with provider defaults and applies suggestions', async function () {
+    const consoleLogStub = sinon.stub(console, 'log');
+    const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+      createJsonFetchResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                xyzabc: '🌐',
+              }),
+            },
+          },
+        ],
+      }) as never,
+    );
+
+    process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
+
+    await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiProvider: 'vercel',
+    });
+
+    expect(fetchStub.callCount).toBe(1);
+    expect(fetchStub.firstCall.args[0]).toBe(
+      'https://ai-gateway.vercel.sh/v1/chat/completions',
+    );
+    const requestInit = fetchStub.firstCall.args[1];
+    expect(requestInit).toBeTruthy();
+    expect(requestInit).toBeTypeOf('object');
+    if (
+      !requestInit ||
+      typeof requestInit !== 'object' ||
+      !('body' in requestInit)
+    ) {
+      throw new TypeError('Missing request init body in fetch call.');
+    }
+    expect(requestInit.body).toBeTypeOf('string');
+    if (typeof requestInit.body !== 'string') {
+      throw new TypeError('Expected fetch request body to be a string.');
+    }
+    const requestBody = JSON.parse(requestInit.body) as { model?: string };
+    expect(requestBody.model).toBe('openai/gpt-4o-mini');
+
+    const output = String(consoleLogStub.firstCall.args[0]);
+    const suggestions = parseSuggestionTable(output);
+    expect(suggestions.get('xyzabc')).toBe('🌐');
   });
 
   it('uses Anthropic automatically when exactly one provider API key is set', async function () {

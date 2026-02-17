@@ -41,6 +41,12 @@ const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
     endpoint: 'https://api.together.xyz/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
+  [AI_PROVIDER.VERCEL]: {
+    apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
+    defaultModel: 'openai/gpt-4o-mini',
+    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
   [AI_PROVIDER.XAI]: {
     apiKeyEnvVar: 'XAI_API_KEY',
     defaultModel: 'grok-2-latest',
@@ -55,6 +61,7 @@ const AI_PROVIDERS: readonly AiProviderType[] = [
   AI_PROVIDER.OPENAI,
   AI_PROVIDER.OPENROUTER,
   AI_PROVIDER.TOGETHER,
+  AI_PROVIDER.VERCEL,
   AI_PROVIDER.XAI,
 ];
 
@@ -97,6 +104,7 @@ function getProviderLabel(provider: AiProviderType): string {
       [AI_PROVIDER.OPENAI]: 'OpenAI',
       [AI_PROVIDER.OPENROUTER]: 'OpenRouter',
       [AI_PROVIDER.TOGETHER]: 'Together',
+      [AI_PROVIDER.VERCEL]: 'Vercel AI Gateway',
       [AI_PROVIDER.XAI]: 'xAI',
     } as const
   )[provider];
