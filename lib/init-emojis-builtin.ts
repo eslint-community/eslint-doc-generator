@@ -25,26 +25,6 @@ const FALLBACK_EMOJIS = [
   '⬜',
 ] as const;
 
-const KEYWORD_EMOJIS: Readonly<Record<string, string>> = {
-  base: '🧱',
-  browser: '🌐',
-  documentation: '📚',
-  docs: '📚',
-  electron: '⚛️',
-  error: '❗',
-  errors: '❗',
-  node: '🟢',
-  performance: '⚡',
-  react: '⚛️',
-  strict: '🔒',
-  style: '🎨',
-  test: '🧪',
-  testing: '🧪',
-  typescript: '⌨️',
-  warning: '🚸',
-  warnings: '🚸',
-};
-
 export interface BuiltinEmojiSuggestions {
   configNames: readonly string[];
   emojiByConfig: Map<string, string>;
@@ -102,7 +82,10 @@ function suggestEmojiLocally(
   }
 
   for (const token of tokens) {
-    const tokenKeywordEmoji = tryUseEmoji(KEYWORD_EMOJIS[token], usedEmojis);
+    const tokenKeywordEmoji = tryUseEmoji(
+      getDefaultEmojiForConfig(token),
+      usedEmojis,
+    );
     if (tokenKeywordEmoji) {
       return tokenKeywordEmoji;
     }

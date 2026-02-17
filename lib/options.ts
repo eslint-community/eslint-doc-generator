@@ -57,8 +57,8 @@ export const OPTION_DEFAULTS = {
   [OPTION_TYPE.INIT_RULE_DOCS]: false,
   [OPTION_TYPE.SUGGEST_EMOJIS]: false,
   [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: 'builtin',
-  [OPTION_TYPE.AI_PROVIDER]: undefined,
   [OPTION_TYPE.AI_MODEL]: undefined,
+  [OPTION_TYPE.AI_PROVIDER]: undefined,
   [OPTION_TYPE.PATH_RULE_DOC]: join('docs', 'rules', '{name}.md'),
   [OPTION_TYPE.PATH_RULE_LIST]: ['README.md'],
   [OPTION_TYPE.POSTPROCESS]: (content: string) => content,
@@ -109,9 +109,9 @@ export function getResolvedOptions(
   const suggestEmojisEngine =
     userOptions.suggestEmojisEngine ??
     OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE];
+  const aiModel = userOptions.aiModel ?? OPTION_DEFAULTS[OPTION_TYPE.AI_MODEL];
   const aiProvider =
     userOptions.aiProvider ?? OPTION_DEFAULTS[OPTION_TYPE.AI_PROVIDER];
-  const aiModel = userOptions.aiModel ?? OPTION_DEFAULTS[OPTION_TYPE.AI_MODEL];
   const pathRuleDoc =
     userOptions.pathRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.PATH_RULE_DOC];
   const pathRuleList = stringOrArrayToArrayWithFallback(
@@ -159,8 +159,8 @@ export function getResolvedOptions(
     initRuleDocs,
     suggestEmojis,
     suggestEmojisEngine,
-    aiProvider,
     aiModel,
+    aiProvider,
     pathRuleDoc,
     pathRuleList,
     postprocess,

@@ -103,11 +103,11 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
         type: 'string',
         enum: Object.values(SUGGEST_EMOJIS_ENGINE),
       },
+      aiModel: { type: 'string' },
       aiProvider: {
         type: 'string',
         enum: Object.values(AI_PROVIDER),
       },
-      aiModel: { type: 'string' },
       pathRuleDoc:
         /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -253,13 +253,15 @@ export async function run(
     )
     .addOption(
       new Option(
+        '--ai-model <model>',
+        '(optional) AI model to use for AI-enabled features. Defaults to the selected provider default model.',
+      ),
+    )
+    .addOption(
+      new Option(
         '--ai-provider <provider>',
         '(optional) AI provider to use for AI-enabled features. Required if multiple provider API keys are present in the environment.',
       ).choices(Object.values(AI_PROVIDER)),
-    )
-    .option(
-      '--ai-model <model>',
-      '(optional) AI model to use for AI-enabled features. Defaults to the selected provider default model.',
     )
     .option(
       '--init-rule-docs [boolean]',

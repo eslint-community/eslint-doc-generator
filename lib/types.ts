@@ -125,8 +125,8 @@ export const OPTION_TYPE = {
   INIT_RULE_DOCS: 'initRuleDocs',
   SUGGEST_EMOJIS: 'suggestEmojis',
   SUGGEST_EMOJIS_ENGINE: 'suggestEmojisEngine',
-  AI_PROVIDER: 'aiProvider',
   AI_MODEL: 'aiModel',
+  AI_PROVIDER: 'aiProvider',
   PATH_RULE_DOC: 'pathRuleDoc',
   PATH_RULE_LIST: 'pathRuleList',
   POSTPROCESS: 'postprocess',
@@ -213,11 +213,11 @@ export type GenerateOptions = {
   /** Engine used by `suggestEmojis`. `builtin` uses deterministic local suggestions and `ai` uses an external provider. Default: `builtin`. */
   readonly suggestEmojisEngine?: SUGGEST_EMOJIS_ENGINE;
 
-  /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
-  readonly aiProvider?: AI_PROVIDER;
-
   /** Optional model override used by any AI-enabled feature. If omitted, the provider default model is used. */
   readonly aiModel?: string;
+
+  /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
+  readonly aiProvider?: AI_PROVIDER;
 
   /**
    * Path (or function to generate a path) to to markdown file for each rule doc.

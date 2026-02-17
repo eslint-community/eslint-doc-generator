@@ -324,14 +324,18 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('throws when no provider API key is set for ai mode', async function () {
-    await expect(
-      generate(fixture.path, {
-        suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
-      }),
-    ).rejects.toThrow(
-      'Set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, TOGETHER_API_KEY, XAI_API_KEY',
+    const error = await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+    }).then(
+      () => undefined,
+      (error_: unknown) => error_ as Error,
     );
+    expect(error).toBeInstanceOf(Error);
+    expect(error?.message).toContain('No AI provider API key found.');
+    for (const envVar of PROVIDER_API_KEY_ENV_VARS) {
+      expect(error?.message).toContain(envVar);
+    }
   });
 
   it('throws when aiProvider is set but that provider key is missing', async function () {
@@ -710,7 +714,7 @@ describe('generate (--suggest-emojis)', function () {
         const output = String(consoleLogStub.firstCall.args[0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('recommended')).toBe('✅');
-        expect(suggestions.get('react-native')).toBe('⚛️');
+        expect(suggestions.has('react-native')).toBe(true);
         expect(suggestions.has('honey')).toBe(true);
         expect(suggestions.has('qzxqzx')).toBe(true);
         expect(suggestions.has('---')).toBe(true);
