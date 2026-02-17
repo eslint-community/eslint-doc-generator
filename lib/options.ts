@@ -89,6 +89,9 @@ export function getResolvedOptions(
   plugin: Plugin,
   userOptions: GenerateOptions = {},
 ) {
+  const aiModel = userOptions.aiModel ?? OPTION_DEFAULTS[OPTION_TYPE.AI_MODEL];
+  const aiProvider =
+    userOptions.aiProvider ?? OPTION_DEFAULTS[OPTION_TYPE.AI_PROVIDER];
   const check = userOptions.check ?? OPTION_DEFAULTS[OPTION_TYPE.CHECK];
   const configEmoji =
     userOptions.configEmoji ?? OPTION_DEFAULTS[OPTION_TYPE.CONFIG_EMOJI];
@@ -104,14 +107,6 @@ export function getResolvedOptions(
     OPTION_DEFAULTS[OPTION_TYPE.IGNORE_DEPRECATED_RULES];
   const initRuleDocs =
     userOptions.initRuleDocs ?? OPTION_DEFAULTS[OPTION_TYPE.INIT_RULE_DOCS];
-  const suggestEmojis =
-    userOptions.suggestEmojis ?? OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS];
-  const suggestEmojisEngine =
-    userOptions.suggestEmojisEngine ??
-    OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE];
-  const aiModel = userOptions.aiModel ?? OPTION_DEFAULTS[OPTION_TYPE.AI_MODEL];
-  const aiProvider =
-    userOptions.aiProvider ?? OPTION_DEFAULTS[OPTION_TYPE.AI_PROVIDER];
   const pathRuleDoc =
     userOptions.pathRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.PATH_RULE_DOC];
   const pathRuleList = stringOrArrayToArrayWithFallback(
@@ -145,22 +140,25 @@ export function getResolvedOptions(
           userOptions.ruleListSplit,
           OPTION_DEFAULTS[OPTION_TYPE.RULE_LIST_SPLIT],
         );
+  const suggestEmojis =
+    userOptions.suggestEmojis ?? OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS];
+  const suggestEmojisEngine =
+    userOptions.suggestEmojisEngine ??
+    OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE];
   const urlConfigs =
     userOptions.urlConfigs ?? OPTION_DEFAULTS[OPTION_TYPE.URL_CONFIGS];
   const urlRuleDoc =
     userOptions.urlRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.URL_RULE_DOC];
 
   return {
+    aiModel,
+    aiProvider,
     check,
     configEmojis,
     configFormat,
     ignoreConfig,
     ignoreDeprecatedRules,
     initRuleDocs,
-    suggestEmojis,
-    suggestEmojisEngine,
-    aiModel,
-    aiProvider,
     pathRuleDoc,
     pathRuleList,
     postprocess,
@@ -171,6 +169,8 @@ export function getResolvedOptions(
     ruleDocTitleFormat,
     ruleListColumns,
     ruleListSplit,
+    suggestEmojis,
+    suggestEmojisEngine,
     urlConfigs,
     urlRuleDoc,
   };
