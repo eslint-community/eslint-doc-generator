@@ -95,14 +95,13 @@ export async function applyAiEmojiSuggestions(
   }
 
   const providerConfig = resolveAiProviderConfig(aiRequestOptions);
-  const suggestions = await requestAiJsonObject(
-    providerConfig,
-    JSON.stringify({
-      instruction:
-        'Return a JSON object mapping each config name to exactly one emoji character. No markdown.',
+  const suggestions = await requestAiJsonObject(providerConfig, {
+    systemPrompt:
+      'Return a JSON object mapping each config name to exactly one emoji character. No markdown.',
+    userPrompt: JSON.stringify({
       configs: configNamesToEnhance,
       forbiddenEmojis: RESERVED_EMOJIS,
     }),
-  );
+  });
   applyAiSuggestions(configNamesToEnhance, suggestions, emojiByConfig);
 }

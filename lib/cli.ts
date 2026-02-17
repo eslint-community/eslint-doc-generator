@@ -236,6 +236,18 @@ export async function run(
       )})`,
       parseBoolean,
     )
+    .addOption(
+      new Option(
+        '--ai-model <model>',
+        '(optional) AI model to use for AI-enabled features. Defaults to the selected provider default model.',
+      ),
+    )
+    .addOption(
+      new Option(
+        '--ai-provider <provider>',
+        '(optional) AI provider to use for AI-enabled features. Required if multiple provider API keys are present in the environment.',
+      ).choices(Object.values(AI_PROVIDER)),
+    )
     .option(
       '--suggest-emojis [boolean]',
       `(optional) Whether to suggest emojis for configs and print them in a table. (default: ${String(
@@ -250,18 +262,6 @@ export async function run(
           OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]
         })`,
       ).choices(Object.values(SUGGEST_EMOJIS_ENGINE)),
-    )
-    .addOption(
-      new Option(
-        '--ai-model <model>',
-        '(optional) AI model to use for AI-enabled features. Defaults to the selected provider default model.',
-      ),
-    )
-    .addOption(
-      new Option(
-        '--ai-provider <provider>',
-        '(optional) AI provider to use for AI-enabled features. Required if multiple provider API keys are present in the environment.',
-      ).choices(Object.values(AI_PROVIDER)),
     )
     .option(
       '--init-rule-docs [boolean]',

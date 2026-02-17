@@ -11,10 +11,10 @@ interface ProviderMetadata {
 }
 
 const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
-  [AI_PROVIDER.OPENAI]: {
-    apiKeyEnvVar: 'OPENAI_API_KEY',
-    defaultModel: 'gpt-4o-mini',
-    endpoint: 'https://api.openai.com/v1/chat/completions',
+  [AI_PROVIDER.AI_GATEWAY]: {
+    apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
+    defaultModel: 'openai/gpt-4o-mini',
+    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
   [AI_PROVIDER.ANTHROPIC]: {
@@ -23,16 +23,16 @@ const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
     endpoint: 'https://api.anthropic.com/v1/messages',
     protocol: 'anthropic',
   },
-  [AI_PROVIDER.AI_GATEWAY]: {
-    apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
-    defaultModel: 'openai/gpt-4o-mini',
-    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
-    protocol: 'openaiCompatible',
-  },
   [AI_PROVIDER.GROQ]: {
     apiKeyEnvVar: 'GROQ_API_KEY',
     defaultModel: 'llama-3.1-8b-instant',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
+  [AI_PROVIDER.OPENAI]: {
+    apiKeyEnvVar: 'OPENAI_API_KEY',
+    defaultModel: 'gpt-4o-mini',
+    endpoint: 'https://api.openai.com/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
   [AI_PROVIDER.OPENROUTER]: {
@@ -94,6 +94,11 @@ export interface AiProviderConfig {
   model: string;
   endpoint: string;
   protocol: REQUEST_PROTOCOL;
+}
+
+export interface AiJsonRequestPrompt {
+  readonly systemPrompt?: string;
+  readonly userPrompt: string;
 }
 
 function getProviderLabel(provider: AiProviderType): string {
@@ -265,12 +270,34 @@ function parseLlmResponseObject(content: string): Record<string, unknown> {
 
 async function requestOpenAiCompatibleObject(
   providerConfig: AiProviderConfig,
-  userPrompt: string,
+  prompt: AiJsonRequestPrompt,
 ): Promise<Record<string, unknown>> {
   let responseUnknown: unknown;
   const providerLabel = getProviderLabel(providerConfig.provider);
 
   try {
+    const requestBody: {
+      model: string;
+      temperature: number;
+      messages: readonly { role: 'system' | 'user'; content: string }[];
+      response_format?: { type: 'json_object' };
+    } = {
+      model: providerConfig.model,
+      temperature: 0,
+      messages: [
+        ...(prompt.systemPrompt
+          ? [{ role: 'system' as const, content: prompt.systemPrompt }]
+          : []),
+        {
+          role: 'user',
+          content: prompt.userPrompt,
+        },
+      ],
+    };
+    if (providerConfig.provider === AI_PROVIDER.OPENAI) {
+      requestBody.response_format = { type: 'json_object' };
+    }
+
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
     responseUnknown = await fetch(providerConfig.endpoint, {
       method: 'POST',
@@ -278,21 +305,7 @@ async function requestOpenAiCompatibleObject(
         Authorization: `Bearer ${providerConfig.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: providerConfig.model,
-        temperature: 0,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Return a JSON object mapping each config name to exactly one emoji character. No markdown.',
-          },
-          {
-            role: 'user',
-            content: userPrompt,
-          },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -324,12 +337,33 @@ async function requestOpenAiCompatibleObject(
 
 async function requestAnthropicObject(
   providerConfig: AiProviderConfig,
-  userPrompt: string,
+  prompt: AiJsonRequestPrompt,
 ): Promise<Record<string, unknown>> {
   let responseUnknown: unknown;
   const providerLabel = getProviderLabel(providerConfig.provider);
 
   try {
+    const requestBody: {
+      model: string;
+      max_tokens: number;
+      temperature: number;
+      messages: readonly { role: 'user'; content: string }[];
+      system?: string;
+    } = {
+      model: providerConfig.model,
+      max_tokens: 512,
+      temperature: 0,
+      messages: [
+        {
+          role: 'user',
+          content: prompt.userPrompt,
+        },
+      ],
+    };
+    if (prompt.systemPrompt) {
+      requestBody.system = prompt.systemPrompt;
+    }
+
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
     responseUnknown = await fetch(providerConfig.endpoint, {
       method: 'POST',
@@ -338,17 +372,7 @@ async function requestAnthropicObject(
         'anthropic-version': '2023-06-01',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        model: providerConfig.model,
-        max_tokens: 512,
-        temperature: 0,
-        messages: [
-          {
-            role: 'user',
-            content: userPrompt,
-          },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -380,9 +404,9 @@ async function requestAnthropicObject(
 
 export function requestAiJsonObject(
   providerConfig: AiProviderConfig,
-  userPrompt: string,
+  prompt: AiJsonRequestPrompt,
 ): Promise<Record<string, unknown>> {
   return providerConfig.protocol === 'openaiCompatible'
-    ? requestOpenAiCompatibleObject(providerConfig, userPrompt)
-    : requestAnthropicObject(providerConfig, userPrompt);
+    ? requestOpenAiCompatibleObject(providerConfig, prompt)
+    : requestAnthropicObject(providerConfig, prompt);
 }

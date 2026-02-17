@@ -202,8 +202,12 @@ describe('generate (--suggest-emojis)', function () {
     if (typeof requestInit.body !== 'string') {
       throw new TypeError('Expected fetch request body to be a string.');
     }
-    const requestBody = JSON.parse(requestInit.body) as { model?: string };
+    const requestBody = JSON.parse(requestInit.body) as {
+      model?: string;
+      response_format?: { type?: string };
+    };
     expect(requestBody.model).toBe('gpt-4o-mini');
+    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
@@ -252,8 +256,12 @@ describe('generate (--suggest-emojis)', function () {
     if (typeof requestInit.body !== 'string') {
       throw new TypeError('Expected fetch request body to be a string.');
     }
-    const requestBody = JSON.parse(requestInit.body) as { model?: string };
+    const requestBody = JSON.parse(requestInit.body) as {
+      model?: string;
+      response_format?: unknown;
+    };
     expect(requestBody.model).toBe('llama-3.1-8b-instant');
+    expect(requestBody.response_format).toBeUndefined();
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
@@ -302,8 +310,12 @@ describe('generate (--suggest-emojis)', function () {
     if (typeof requestInit.body !== 'string') {
       throw new TypeError('Expected fetch request body to be a string.');
     }
-    const requestBody = JSON.parse(requestInit.body) as { model?: string };
+    const requestBody = JSON.parse(requestInit.body) as {
+      model?: string;
+      response_format?: unknown;
+    };
     expect(requestBody.model).toBe('openai/gpt-4o-mini');
+    expect(requestBody.response_format).toBeUndefined();
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);

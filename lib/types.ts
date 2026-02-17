@@ -61,23 +61,23 @@ export type RuleNamesAndRules = readonly (readonly [
  */
 export type ConfigEmojis = readonly { config: string; emoji: string }[];
 
+export const AI_PROVIDER = {
+  AI_GATEWAY: 'aigateway',
+  ANTHROPIC: 'anthropic',
+  GROQ: 'groq',
+  OPENAI: 'openai',
+  OPENROUTER: 'openrouter',
+  TOGETHER: 'together',
+  XAI: 'xai',
+} as const;
+export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];
+
 export const SUGGEST_EMOJIS_ENGINE = {
   BUILTIN: 'builtin',
   AI: 'ai',
 } as const;
 export type SUGGEST_EMOJIS_ENGINE =
   (typeof SUGGEST_EMOJIS_ENGINE)[keyof typeof SUGGEST_EMOJIS_ENGINE];
-
-export const AI_PROVIDER = {
-  OPENAI: 'openai',
-  ANTHROPIC: 'anthropic',
-  AI_GATEWAY: 'aigateway',
-  GROQ: 'groq',
-  OPENROUTER: 'openrouter',
-  TOGETHER: 'together',
-  XAI: 'xai',
-} as const;
-export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];
 
 /**
  * Rule doc notices.
@@ -208,17 +208,17 @@ export type GenerateOptions = {
   /** Whether to create rule doc files if they don't yet exist. Default: `false`. */
   readonly initRuleDocs?: boolean;
 
-  /** Whether to suggest emojis for configs and print a table of suggestions. Default: `false`. */
-  readonly suggestEmojis?: boolean;
-
-  /** Engine used by `suggestEmojis`. `builtin` uses deterministic local suggestions and `ai` uses an external provider. Default: `builtin`. */
-  readonly suggestEmojisEngine?: SUGGEST_EMOJIS_ENGINE;
-
   /** Optional model override used by any AI-enabled feature. If omitted, the provider default model is used. */
   readonly aiModel?: string;
 
   /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
   readonly aiProvider?: AI_PROVIDER;
+
+  /** Whether to suggest emojis for configs and print a table of suggestions. Default: `false`. */
+  readonly suggestEmojis?: boolean;
+
+  /** Engine used by `suggestEmojis`. `builtin` uses deterministic local suggestions and `ai` uses an external provider. Default: `builtin`. */
+  readonly suggestEmojisEngine?: SUGGEST_EMOJIS_ENGINE;
 
   /**
    * Path (or function to generate a path) to to markdown file for each rule doc.
