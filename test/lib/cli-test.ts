@@ -12,8 +12,11 @@ const configFileOptionsAll: { [key in OPTION_TYPE]: unknown } = {
     'ignoredConfigFromConfigFile2',
   ],
   ignoreDeprecatedRules: true,
-  initEmojis: true,
   initRuleDocs: true,
+  suggestEmojis: true,
+  suggestEmojisEngine: 'ai',
+  aiProvider: 'openai',
+  aiModel: 'gpt-4o-mini',
   pathRuleDoc: 'www.example.com/rule-doc-from-config-file',
   pathRuleList: 'www.example.com/rule-list-from-config-file',
   postprocess: (content: string) => content,
@@ -50,9 +53,15 @@ const cliOptionsAll: { [key in OPTION_TYPE]: readonly string[] } = {
 
   [OPTION_TYPE.IGNORE_DEPRECATED_RULES]: ['--ignore-deprecated-rules', 'true'],
 
-  [OPTION_TYPE.INIT_EMOJIS]: ['--init-emojis', 'false'],
-
   [OPTION_TYPE.INIT_RULE_DOCS]: ['--init-rule-docs', 'false'],
+
+  [OPTION_TYPE.SUGGEST_EMOJIS]: ['--suggest-emojis', 'false'],
+
+  [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: ['--suggest-emojis-engine', 'builtin'],
+
+  [OPTION_TYPE.AI_PROVIDER]: ['--ai-provider', 'anthropic'],
+
+  [OPTION_TYPE.AI_MODEL]: ['--ai-model', 'claude-3-5-haiku-latest'],
 
   [OPTION_TYPE.PATH_RULE_DOC]: [
     '--path-rule-doc',

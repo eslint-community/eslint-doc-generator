@@ -4,6 +4,8 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
 [
   ".",
   {
+    "aiModel": "claude-3-5-haiku-latest",
+    "aiProvider": "anthropic",
     "check": true,
     "configEmoji": [
       [
@@ -23,7 +25,6 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
       "ignoredConfigFromCli2",
     ],
     "ignoreDeprecatedRules": true,
-    "initEmojis": false,
     "initRuleDocs": false,
     "pathRuleDoc": "www.example.com/rule-doc-from-cli",
     "pathRuleList": [
@@ -57,6 +58,8 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
       "meta.docs.foo-from-config-file",
       "meta.docs.foo-from-cli",
     ],
+    "suggestEmojis": false,
+    "suggestEmojisEngine": "builtin",
     "urlConfigs": "https://example.com/configs-url-from-cli",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-cli",
   },
@@ -67,6 +70,8 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
 [
   ".",
   {
+    "aiModel": "claude-3-5-haiku-latest",
+    "aiProvider": "anthropic",
     "check": true,
     "configEmoji": [
       [
@@ -80,7 +85,6 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
       "ignoredConfigFromCli2",
     ],
     "ignoreDeprecatedRules": true,
-    "initEmojis": false,
     "initRuleDocs": false,
     "pathRuleDoc": "www.example.com/rule-doc-from-cli",
     "pathRuleList": [
@@ -105,6 +109,8 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
     "ruleListSplit": [
       "meta.docs.foo-from-cli",
     ],
+    "suggestEmojis": false,
+    "suggestEmojisEngine": "builtin",
     "urlConfigs": "https://example.com/configs-url-from-cli",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-cli",
   },
@@ -115,6 +121,8 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
 [
   ".",
   {
+    "aiModel": "gpt-4o-mini",
+    "aiProvider": "openai",
     "check": true,
     "configEmoji": [
       [
@@ -128,7 +136,6 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
       "ignoredConfigFromConfigFile2",
     ],
     "ignoreDeprecatedRules": true,
-    "initEmojis": true,
     "initRuleDocs": true,
     "pathRuleDoc": "www.example.com/rule-doc-from-config-file",
     "pathRuleList": [
@@ -154,6 +161,8 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
     "ruleListSplit": [
       "meta.docs.foo-from-config-file",
     ],
+    "suggestEmojis": true,
+    "suggestEmojisEngine": "ai",
     "urlConfigs": "https://example.com/configs-url-from-config-file",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-config-file",
   },
