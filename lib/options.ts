@@ -54,8 +54,11 @@ export const OPTION_DEFAULTS = {
   [OPTION_TYPE.CONFIG_FORMAT]: DEFAULT_CONFIG_FORMAT,
   [OPTION_TYPE.IGNORE_CONFIG]: [],
   [OPTION_TYPE.IGNORE_DEPRECATED_RULES]: false,
-  [OPTION_TYPE.INIT_EMOJIS]: false,
   [OPTION_TYPE.INIT_RULE_DOCS]: false,
+  [OPTION_TYPE.SUGGEST_EMOJIS]: false,
+  [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: 'builtin',
+  [OPTION_TYPE.AI_PROVIDER]: undefined,
+  [OPTION_TYPE.AI_MODEL]: undefined,
   [OPTION_TYPE.PATH_RULE_DOC]: join('docs', 'rules', '{name}.md'),
   [OPTION_TYPE.PATH_RULE_LIST]: ['README.md'],
   [OPTION_TYPE.POSTPROCESS]: (content: string) => content,
@@ -99,10 +102,16 @@ export function getResolvedOptions(
   const ignoreDeprecatedRules =
     userOptions.ignoreDeprecatedRules ??
     OPTION_DEFAULTS[OPTION_TYPE.IGNORE_DEPRECATED_RULES];
-  const initEmojis =
-    userOptions.initEmojis ?? OPTION_DEFAULTS[OPTION_TYPE.INIT_EMOJIS];
   const initRuleDocs =
     userOptions.initRuleDocs ?? OPTION_DEFAULTS[OPTION_TYPE.INIT_RULE_DOCS];
+  const suggestEmojis =
+    userOptions.suggestEmojis ?? OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS];
+  const suggestEmojisEngine =
+    userOptions.suggestEmojisEngine ??
+    OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE];
+  const aiProvider =
+    userOptions.aiProvider ?? OPTION_DEFAULTS[OPTION_TYPE.AI_PROVIDER];
+  const aiModel = userOptions.aiModel ?? OPTION_DEFAULTS[OPTION_TYPE.AI_MODEL];
   const pathRuleDoc =
     userOptions.pathRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.PATH_RULE_DOC];
   const pathRuleList = stringOrArrayToArrayWithFallback(
@@ -147,8 +156,11 @@ export function getResolvedOptions(
     configFormat,
     ignoreConfig,
     ignoreDeprecatedRules,
-    initEmojis,
     initRuleDocs,
+    suggestEmojis,
+    suggestEmojisEngine,
+    aiProvider,
+    aiModel,
     pathRuleDoc,
     pathRuleList,
     postprocess,

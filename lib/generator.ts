@@ -24,7 +24,7 @@ import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
-import { generateInitEmojis } from './init-emojis.js';
+import { generateSuggestedEmojis } from './init-emojis.js';
 
 // eslint-disable-next-line complexity
 export async function generate(path: string, userOptions?: GenerateOptions) {
@@ -36,8 +36,8 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
   const {
     check,
     ignoreDeprecatedRules,
-    initEmojis,
     initRuleDocs,
+    suggestEmojis,
     pathRuleDoc,
     pathRuleList,
     postprocess,
@@ -46,8 +46,8 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     ruleDocSectionOptions,
   } = options;
 
-  if (initEmojis) {
-    await generateInitEmojis(context);
+  if (suggestEmojis) {
+    await generateSuggestedEmojis(context);
     return;
   }
 

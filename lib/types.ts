@@ -61,6 +61,19 @@ export type RuleNamesAndRules = readonly (readonly [
  */
 export type ConfigEmojis = readonly { config: string; emoji: string }[];
 
+export const SUGGEST_EMOJIS_ENGINE = {
+  BUILTIN: 'builtin',
+  AI: 'ai',
+} as const;
+export type SUGGEST_EMOJIS_ENGINE =
+  (typeof SUGGEST_EMOJIS_ENGINE)[keyof typeof SUGGEST_EMOJIS_ENGINE];
+
+export const AI_PROVIDER = {
+  OPENAI: 'openai',
+  ANTHROPIC: 'anthropic',
+} as const;
+export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];
+
 /**
  * Rule doc notices.
  */
@@ -105,8 +118,11 @@ export const OPTION_TYPE = {
   CONFIG_FORMAT: 'configFormat',
   IGNORE_CONFIG: 'ignoreConfig',
   IGNORE_DEPRECATED_RULES: 'ignoreDeprecatedRules',
-  INIT_EMOJIS: 'initEmojis',
   INIT_RULE_DOCS: 'initRuleDocs',
+  SUGGEST_EMOJIS: 'suggestEmojis',
+  SUGGEST_EMOJIS_ENGINE: 'suggestEmojisEngine',
+  AI_PROVIDER: 'aiProvider',
+  AI_MODEL: 'aiModel',
   PATH_RULE_DOC: 'pathRuleDoc',
   PATH_RULE_LIST: 'pathRuleList',
   POSTPROCESS: 'postprocess',
@@ -184,11 +200,20 @@ export type GenerateOptions = {
   /** Whether to ignore deprecated rules from being checked, displayed, or updated. Default: `false`. */
   readonly ignoreDeprecatedRules?: boolean;
 
-  /** Whether to suggest emojis for configs and print copy-pasteable `configEmoji` tuples. Default: `false`. */
-  readonly initEmojis?: boolean;
-
   /** Whether to create rule doc files if they don't yet exist. Default: `false`. */
   readonly initRuleDocs?: boolean;
+
+  /** Whether to suggest emojis for configs and print a table of suggestions. Default: `false`. */
+  readonly suggestEmojis?: boolean;
+
+  /** Engine used by `suggestEmojis`. `builtin` uses deterministic local suggestions and `ai` uses an external provider. Default: `builtin`. */
+  readonly suggestEmojisEngine?: SUGGEST_EMOJIS_ENGINE;
+
+  /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
+  readonly aiProvider?: AI_PROVIDER;
+
+  /** Optional model override used by any AI-enabled feature. If omitted, the provider default model is used. */
+  readonly aiModel?: string;
 
   /**
    * Path (or function to generate a path) to to markdown file for each rule doc.
