@@ -51,13 +51,41 @@ interface MockFetchResponse {
   json: () => Promise<unknown>;
 }
 
-function createJsonFetchResponse(payload: unknown): MockFetchResponse {
+interface MockFetchResponseInit {
+  readonly status?: number;
+  readonly statusText?: string;
+}
+
+function createJsonFetchResponse(
+  payload: unknown,
+  init?: MockFetchResponseInit,
+): MockFetchResponse {
   return {
-    ok: true,
-    status: 200,
-    statusText: 'OK',
+    ok: (init?.status ?? 200) < 400,
+    status: init?.status ?? 200,
+    statusText: init?.statusText ?? 'OK',
     json: () => Promise.resolve(payload),
   };
+}
+
+function createTextFetchResponse(
+  body: string,
+  init?: MockFetchResponseInit,
+): MockFetchResponse {
+  return {
+    ok: (init?.status ?? 200) < 400,
+    status: init?.status ?? 200,
+    statusText: init?.statusText ?? 'OK',
+    json: () => Promise.reject(new SyntaxError(body)),
+  };
+}
+
+interface FetchStubTarget {
+  fetch: (...args: unknown[]) => Promise<MockFetchResponse>;
+}
+
+function stubFetch() {
+  return sinon.stub(globalThis as unknown as FetchStubTarget, 'fetch');
 }
 
 async function withTempFixture(
@@ -138,7 +166,7 @@ describe('generate (--suggest-emojis)', function () {
   it('prints a table of suggestions and does not write files in builtin mode', async function () {
     const readmeBefore = await fixture.readFile('README.md');
     const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = sinon.stub(globalThis, 'fetch');
+    const fetchStub = stubFetch();
 
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
@@ -175,7 +203,7 @@ describe('generate (--suggest-emojis)', function () {
 
   it('uses OpenAI in ai mode with provider defaults and applies suggestions', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+    const fetchStub = stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -186,7 +214,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
@@ -230,7 +258,7 @@ describe('generate (--suggest-emojis)', function () {
 
   it('uses Groq in ai mode with provider defaults and applies suggestions', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+    const fetchStub = stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -241,7 +269,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     process.env['GROQ_API_KEY'] = 'test-groq-key';
@@ -275,7 +303,7 @@ describe('generate (--suggest-emojis)', function () {
       response_format?: unknown;
     };
     expect(requestBody.model).toBe('llama-3.1-8b-instant');
-    expect(requestBody.response_format).toBeUndefined();
+    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
@@ -284,7 +312,7 @@ describe('generate (--suggest-emojis)', function () {
 
   it('uses Vercel AI Gateway in ai mode with provider defaults and applies suggestions', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+    const fetchStub = stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -295,7 +323,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
@@ -329,7 +357,7 @@ describe('generate (--suggest-emojis)', function () {
       response_format?: unknown;
     };
     expect(requestBody.model).toBe('openai/gpt-4o-mini');
-    expect(requestBody.response_format).toBeUndefined();
+    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
@@ -338,7 +366,7 @@ describe('generate (--suggest-emojis)', function () {
 
   it('uses Anthropic automatically when exactly one provider API key is set', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+    const fetchStub = stubFetch().resolves(
       createJsonFetchResponse({
         content: [
           {
@@ -348,7 +376,7 @@ describe('generate (--suggest-emojis)', function () {
             }),
           },
         ],
-      }) as never,
+      }),
     );
 
     restoreEnvVar('OPENAI_API_KEY', undefined);
@@ -388,7 +416,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when multiple provider keys are set and aiProvider is omitted', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     process.env['ANTHROPIC_API_KEY'] = 'test-anthropic-key';
-    const fetchStub = sinon.stub(globalThis, 'fetch');
+    const fetchStub = stubFetch();
 
     await expect(
       generate(fixture.path, {
@@ -431,9 +459,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when ai request fails', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon
-      .stub(globalThis, 'fetch')
-      .rejects(new Error('request failed while connecting'));
+    stubFetch().rejects(new Error('request failed while connecting'));
 
     await expect(
       generate(fixture.path, {
@@ -444,10 +470,48 @@ describe('generate (--suggest-emojis)', function () {
     ).rejects.toThrow('OpenAI request failed: request failed while connecting');
   });
 
+  it('throws when ai request times out', async function () {
+    process.env['OPENAI_API_KEY'] = 'test-openai-key';
+    restoreEnvVar('ANTHROPIC_API_KEY', undefined);
+    sinon.stub(globalThis, 'setTimeout').callsFake((handler) => {
+      if (typeof handler === 'function') {
+        handler();
+      }
+      return 1 as unknown as ReturnType<typeof setTimeout>;
+    });
+    stubFetch().callsFake((_input, init) => {
+      const signal = (
+        init as {
+          signal?: {
+            aborted: boolean;
+          };
+        }
+      ).signal;
+      if (!signal) {
+        return Promise.reject(new Error('missing abort signal'));
+      }
+      if (!signal.aborted) {
+        return Promise.reject(new Error('expected aborted signal'));
+      }
+
+      const abortError = new Error('aborted');
+      abortError.name = 'AbortError';
+      return Promise.reject(abortError);
+    });
+
+    await expect(
+      generate(fixture.path, {
+        suggestEmojis: true,
+        suggestEmojisEngine: 'ai',
+        aiProvider: 'openai',
+      }),
+    ).rejects.toThrow('OpenAI request failed: timed out after 30000ms.');
+  });
+
   it('throws when ai response content is malformed JSON', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves(
+    stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -456,7 +520,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     await expect(
@@ -468,29 +532,18 @@ describe('generate (--suggest-emojis)', function () {
     ).rejects.toThrow('Unexpected token');
   });
 
-  it('throws when OpenAI response is not fetch-like', async function () {
-    process.env['OPENAI_API_KEY'] = 'test-openai-key';
-    restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves({} as never);
-
-    await expect(
-      generate(fixture.path, {
-        suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
-        aiProvider: 'openai',
-      }),
-    ).rejects.toThrow('OpenAI request failed: unexpected HTTP response type.');
-  });
-
   it('throws when OpenAI returns a non-OK HTTP status', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves({
-      ok: false,
-      status: 503,
-      statusText: 'Service Unavailable',
-      json: () => Promise.resolve({}),
-    } as never);
+    stubFetch().resolves(
+      createJsonFetchResponse(
+        {},
+        {
+          status: 503,
+          statusText: 'Service Unavailable',
+        },
+      ),
+    );
 
     await expect(
       generate(fixture.path, {
@@ -504,12 +557,12 @@ describe('generate (--suggest-emojis)', function () {
   it('throws generic HTTP status when non-OK OpenAI error payload is not JSON', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves({
-      ok: false,
-      status: 502,
-      statusText: 'Bad Gateway',
-      json: () => Promise.reject(new Error('invalid json body')),
-    } as never);
+    stubFetch().resolves(
+      createTextFetchResponse('invalid-json', {
+        status: 502,
+        statusText: 'Bad Gateway',
+      }),
+    );
 
     await expect(
       generate(fixture.path, {
@@ -524,19 +577,21 @@ describe('generate (--suggest-emojis)', function () {
     process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves({
-      ok: false,
-      status: 404,
-      statusText: 'Not Found',
-      json: () =>
-        Promise.resolve({
+    stubFetch().resolves(
+      createJsonFetchResponse(
+        {
           error: {
             code: 'model_not_found',
             type: 'invalid_request_error',
             message: 'Model `foo` not found.',
           },
-        }),
-    } as never);
+        },
+        {
+          status: 404,
+          statusText: 'Not Found',
+        },
+      ),
+    );
 
     const error = await generate(fixture.path, {
       suggestEmojis: true,
@@ -562,19 +617,21 @@ describe('generate (--suggest-emojis)', function () {
     process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves({
-      ok: false,
-      status: 429,
-      statusText: 'Too Many Requests',
-      json: () =>
-        Promise.resolve({
+    stubFetch().resolves(
+      createJsonFetchResponse(
+        {
           error: {
             code: 'rate_limit_exceeded',
             type: 'rate_limit_error',
             message: 'Model throughput limit reached.',
           },
-        }),
-    } as never);
+        },
+        {
+          status: 429,
+          statusText: 'Too Many Requests',
+        },
+      ),
+    );
 
     const error = await generate(fixture.path, {
       suggestEmojis: true,
@@ -598,33 +655,31 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when OpenAI payload shape has no assistant content', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    const fetchStub = sinon.stub(globalThis, 'fetch');
-    fetchStub.onCall(0).resolves(createJsonFetchResponse([]) as never);
-    fetchStub
-      .onCall(1)
-      .resolves(createJsonFetchResponse({ choices: [] }) as never);
+    const fetchStub = stubFetch();
+    fetchStub.onCall(0).resolves(createJsonFetchResponse([]));
+    fetchStub.onCall(1).resolves(createJsonFetchResponse({ choices: [] }));
     fetchStub
       .onCall(2)
-      .resolves(createJsonFetchResponse({ choices: [undefined] }) as never);
+      .resolves(createJsonFetchResponse({ choices: [undefined] }));
     fetchStub.onCall(3).resolves(
       createJsonFetchResponse({
         choices: [{ message: undefined }],
-      }) as never,
+      }),
     );
     fetchStub.onCall(4).resolves(
       createJsonFetchResponse({
         choices: [{ message: { content: {} } }],
-      }) as never,
+      }),
     );
     fetchStub.onCall(5).resolves(
       createJsonFetchResponse({
         choices: [{ message: { content: [undefined] } }],
-      }) as never,
+      }),
     );
     fetchStub.onCall(6).resolves(
       createJsonFetchResponse({
         choices: [{ message: { content: [{}] } }],
-      }) as never,
+      }),
     );
 
     for (let index = 0; index < 7; index += 1) {
@@ -643,16 +698,16 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when OpenAI response content is empty or non-object JSON', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    const fetchStub = sinon.stub(globalThis, 'fetch');
+    const fetchStub = stubFetch();
     fetchStub.onCall(0).resolves(
       createJsonFetchResponse({
         choices: [{ message: { content: '' } }],
-      }) as never,
+      }),
     );
     fetchStub.onCall(1).resolves(
       createJsonFetchResponse({
         choices: [{ message: { content: '[]' } }],
-      }) as never,
+      }),
     );
 
     await expect(
@@ -674,35 +729,37 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when Anthropic request fails or payload is invalid', async function () {
     restoreEnvVar('OPENAI_API_KEY', undefined);
     process.env['ANTHROPIC_API_KEY'] = 'test-anthropic-key';
-    const fetchStub = sinon.stub(globalThis, 'fetch');
+    const fetchStub = stubFetch();
     fetchStub.onCall(0).rejects(new Error('anthropic-network-failure'));
-    fetchStub.onCall(1).resolves({} as never);
-    fetchStub.onCall(2).resolves({
-      ok: false,
-      status: 429,
-      statusText: 'Too Many Requests',
-      json: () => Promise.resolve({}),
-    } as never);
-    fetchStub.onCall(3).resolves(createJsonFetchResponse([]) as never);
-    fetchStub.onCall(4).resolves(
+    fetchStub.onCall(1).resolves(
+      createJsonFetchResponse(
+        {},
+        {
+          status: 429,
+          statusText: 'Too Many Requests',
+        },
+      ),
+    );
+    fetchStub.onCall(2).resolves(createJsonFetchResponse([]));
+    fetchStub.onCall(3).resolves(
       createJsonFetchResponse({
         content: {},
-      }) as never,
+      }),
+    );
+    fetchStub.onCall(4).resolves(
+      createJsonFetchResponse({
+        content: [undefined],
+      }),
     );
     fetchStub.onCall(5).resolves(
       createJsonFetchResponse({
-        content: [undefined],
-      }) as never,
+        content: [{ type: 'image' }],
+      }),
     );
     fetchStub.onCall(6).resolves(
       createJsonFetchResponse({
-        content: [{ type: 'image' }],
-      }) as never,
-    );
-    fetchStub.onCall(7).resolves(
-      createJsonFetchResponse({
         content: [{ type: 'text' }],
-      }) as never,
+      }),
     );
 
     await expect(
@@ -718,17 +775,8 @@ describe('generate (--suggest-emojis)', function () {
         suggestEmojisEngine: 'ai',
         aiProvider: 'anthropic',
       }),
-    ).rejects.toThrow(
-      'Anthropic request failed: unexpected HTTP response type.',
-    );
-    await expect(
-      generate(fixture.path, {
-        suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
-        aiProvider: 'anthropic',
-      }),
     ).rejects.toThrow('Anthropic request failed (429 Too Many Requests).');
-    for (let index = 0; index < 5; index += 1) {
+    for (let index = 0; index < 4; index += 1) {
       await expect(
         generate(fixture.path, {
           suggestEmojis: true,
@@ -744,18 +792,20 @@ describe('generate (--suggest-emojis)', function () {
   it('includes parsed Anthropic non-OK payload details', async function () {
     restoreEnvVar('OPENAI_API_KEY', undefined);
     process.env['ANTHROPIC_API_KEY'] = 'test-anthropic-key';
-    sinon.stub(globalThis, 'fetch').resolves({
-      ok: false,
-      status: 400,
-      statusText: 'Bad Request',
-      json: () =>
-        Promise.resolve({
+    stubFetch().resolves(
+      createJsonFetchResponse(
+        {
           error: {
             type: 'invalid_request_error',
             message: 'Model "foo" is not available.',
           },
-        }),
-    } as never);
+        },
+        {
+          status: 400,
+          statusText: 'Bad Request',
+        },
+      ),
+    );
 
     const error = await generate(fixture.path, {
       suggestEmojis: true,
@@ -780,7 +830,7 @@ describe('generate (--suggest-emojis)', function () {
     const consoleLogStub = sinon.stub(console, 'log');
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves(
+    stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -793,7 +843,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     await generate(fixture.path, {
@@ -814,7 +864,7 @@ describe('generate (--suggest-emojis)', function () {
     const consoleLogStub = sinon.stub(console, 'log');
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves(
+    stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -827,7 +877,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     await generate(fixture.path, {
@@ -859,7 +909,7 @@ describe('generate (--suggest-emojis)', function () {
       `,
       async (tempFixture) => {
         const consoleLogStub = sinon.stub(console, 'log');
-        const fetchStub = sinon.stub(globalThis, 'fetch').resolves(
+        const fetchStub = stubFetch().resolves(
           createJsonFetchResponse({
             choices: [
               {
@@ -870,7 +920,7 @@ describe('generate (--suggest-emojis)', function () {
                 },
               },
             ],
-          }) as never,
+          }),
         );
         process.env['OPENAI_API_KEY'] = 'test-openai-key';
         restoreEnvVar('ANTHROPIC_API_KEY', undefined);
@@ -947,7 +997,7 @@ describe('generate (--suggest-emojis)', function () {
     const consoleLogStub = sinon.stub(console, 'log');
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'fetch').resolves(
+    stubFetch().resolves(
       createJsonFetchResponse({
         choices: [
           {
@@ -960,7 +1010,7 @@ describe('generate (--suggest-emojis)', function () {
             },
           },
         ],
-      }) as never,
+      }),
     );
 
     await generate(fixture.path, {
@@ -991,7 +1041,7 @@ describe('generate (--suggest-emojis)', function () {
         const consoleLogStub = sinon.stub(console, 'log');
         process.env['OPENAI_API_KEY'] = 'test-openai-key';
         restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-        sinon.stub(globalThis, 'fetch').resolves(
+        stubFetch().resolves(
           createJsonFetchResponse({
             choices: [
               {
@@ -1002,7 +1052,7 @@ describe('generate (--suggest-emojis)', function () {
                 },
               },
             ],
-          }) as never,
+          }),
         );
 
         await generate(tempFixture.path, {

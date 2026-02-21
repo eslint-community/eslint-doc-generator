@@ -1,5 +1,4 @@
 import { AI_PROVIDER } from './types.js';
-import type { AI_PROVIDER as AiProviderType } from './types.js';
 
 type REQUEST_PROTOCOL = 'openaiCompatible' | 'anthropic';
 
@@ -10,7 +9,7 @@ interface ProviderMetadata {
   protocol: REQUEST_PROTOCOL;
 }
 
-const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
+const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   [AI_PROVIDER.AI_GATEWAY]: {
     apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
     defaultModel: 'openai/gpt-4o-mini',
@@ -55,15 +54,7 @@ const PROVIDER_METADATA: Record<AiProviderType, ProviderMetadata> = {
   },
 };
 
-const AI_PROVIDERS: readonly AiProviderType[] = [
-  AI_PROVIDER.AI_GATEWAY,
-  AI_PROVIDER.ANTHROPIC,
-  AI_PROVIDER.GROQ,
-  AI_PROVIDER.OPENAI,
-  AI_PROVIDER.OPENROUTER,
-  AI_PROVIDER.TOGETHER,
-  AI_PROVIDER.XAI,
-];
+const AI_PROVIDERS = Object.values(AI_PROVIDER) as readonly AI_PROVIDER[];
 
 export const SUPPORTED_API_KEY_ENV_VARS = [
   ...new Set(
@@ -71,7 +62,9 @@ export const SUPPORTED_API_KEY_ENV_VARS = [
   ),
 ];
 
-interface FetchResponseLike {
+const REQUEST_TIMEOUT_MS = 30_000;
+
+interface FetchResponse {
   readonly ok: boolean;
   readonly status: number;
   readonly statusText: string;
@@ -85,17 +78,23 @@ interface ProviderErrorDetails {
 }
 
 interface ProviderWithApiKey {
-  provider: AiProviderType;
+  provider: AI_PROVIDER;
   apiKey: string;
 }
 
+interface ProtocolRequestData {
+  headers: Record<string, string>;
+  body: string;
+  getContent: (payload: unknown) => string | undefined;
+}
+
 export interface AiRequestOptions {
-  aiProvider: AiProviderType | undefined;
+  aiProvider: AI_PROVIDER | undefined;
   aiModel: string | undefined;
 }
 
 export interface AiProviderConfig {
-  provider: AiProviderType;
+  provider: AI_PROVIDER;
   apiKey: string;
   model: string;
   endpoint: string;
@@ -107,7 +106,7 @@ export interface AiJsonRequestPrompt {
   readonly userPrompt: string;
 }
 
-function getProviderLabel(provider: AiProviderType): string {
+function getProviderLabel(provider: AI_PROVIDER): string {
   return (
     {
       [AI_PROVIDER.AI_GATEWAY]: 'Vercel AI Gateway',
@@ -123,16 +122,6 @@ function getProviderLabel(provider: AiProviderType): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function isFetchResponseLike(value: unknown): value is FetchResponseLike {
-  return (
-    isRecord(value) &&
-    typeof value['ok'] === 'boolean' &&
-    typeof value['status'] === 'number' &&
-    typeof value['statusText'] === 'string' &&
-    typeof value['json'] === 'function'
-  );
 }
 
 function getOptionalEnvVar(name: string): string | undefined {
@@ -283,19 +272,7 @@ function getProviderErrorDetails(
   };
 }
 
-function getOpenAiCompatibleErrorDetails(
-  payload: unknown,
-): ProviderErrorDetails | undefined {
-  if (!isRecord(payload)) {
-    return undefined;
-  }
-  return (
-    getProviderErrorDetails(payload['error']) ??
-    getProviderErrorDetails(payload)
-  );
-}
-
-function getAnthropicErrorDetails(
+function getProtocolErrorDetails(
   payload: unknown,
 ): ProviderErrorDetails | undefined {
   if (!isRecord(payload)) {
@@ -328,8 +305,7 @@ function formatProviderErrorDetails(
 }
 
 async function getHttpErrorDetails(
-  response: FetchResponseLike,
-  protocol: REQUEST_PROTOCOL,
+  response: FetchResponse,
 ): Promise<ProviderErrorDetails | undefined> {
   let payload: unknown;
   try {
@@ -338,17 +314,15 @@ async function getHttpErrorDetails(
     return undefined;
   }
 
-  return protocol === 'anthropic'
-    ? getAnthropicErrorDetails(payload)
-    : getOpenAiCompatibleErrorDetails(payload);
+  return getProtocolErrorDetails(payload);
 }
 
 async function throwProviderHttpError(
   providerConfig: AiProviderConfig,
-  response: FetchResponseLike,
+  response: FetchResponse,
 ): Promise<never> {
   const providerLabel = getProviderLabel(providerConfig.provider);
-  const details = await getHttpErrorDetails(response, providerConfig.protocol);
+  const details = await getHttpErrorDetails(response);
   const extraText = formatProviderErrorDetails(details);
 
   throw new Error(
@@ -381,133 +355,136 @@ function parseLlmResponseObject(content: string): Record<string, unknown> {
   return parsed;
 }
 
-async function requestOpenAiCompatibleObject(
+function buildOpenAiCompatibleRequest(
   providerConfig: AiProviderConfig,
   prompt: AiJsonRequestPrompt,
-): Promise<Record<string, unknown>> {
-  let responseUnknown: unknown;
-  const providerLabel = getProviderLabel(providerConfig.provider);
-
-  try {
-    const requestBody: {
-      model: string;
-      temperature: number;
-      messages: readonly { role: 'system' | 'user'; content: string }[];
-      response_format?: { type: 'json_object' };
-    } = {
-      model: providerConfig.model,
-      temperature: 0,
-      messages: [
-        ...(prompt.systemPrompt
-          ? [{ role: 'system' as const, content: prompt.systemPrompt }]
-          : []),
-        {
-          role: 'user',
-          content: prompt.userPrompt,
-        },
-      ],
-    };
-    if (providerConfig.provider === AI_PROVIDER.OPENAI) {
-      requestBody.response_format = { type: 'json_object' };
-    }
-
-    // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    responseUnknown = await fetch(providerConfig.endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${providerConfig.apiKey}`,
-        'Content-Type': 'application/json',
+): ProtocolRequestData {
+  const requestBody = {
+    model: providerConfig.model,
+    temperature: 0,
+    messages: [
+      ...(prompt.systemPrompt
+        ? [{ role: 'system' as const, content: prompt.systemPrompt }]
+        : []),
+      {
+        role: 'user' as const,
+        content: prompt.userPrompt,
       },
-      body: JSON.stringify(requestBody),
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`${providerLabel} request failed: ${message}`, {
-      cause: error,
-    });
-  }
+    ],
+    response_format: {
+      type: 'json_object' as const,
+    },
+  };
 
-  if (!isFetchResponseLike(responseUnknown)) {
-    throw new Error(
-      `${providerLabel} request failed: unexpected HTTP response type.`,
-    );
-  }
-  if (!responseUnknown.ok) {
-    await throwProviderHttpError(providerConfig, responseUnknown);
-  }
-
-  const payload = await responseUnknown.json();
-  const content = getOpenAiContent(payload);
-  if (content === undefined) {
-    throw new Error(
-      `${providerLabel} response did not include assistant text content.`,
-    );
-  }
-  return parseLlmResponseObject(content);
+  return {
+    headers: {
+      Authorization: `Bearer ${providerConfig.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+    getContent: getOpenAiContent,
+  };
 }
 
-async function requestAnthropicObject(
+function buildAnthropicRequest(
+  providerConfig: AiProviderConfig,
+  prompt: AiJsonRequestPrompt,
+): ProtocolRequestData {
+  const requestBody: {
+    model: string;
+    max_tokens: number;
+    temperature: number;
+    messages: readonly { role: 'user'; content: string }[];
+    system?: string;
+  } = {
+    model: providerConfig.model,
+    max_tokens: 512,
+    temperature: 0,
+    messages: [
+      {
+        role: 'user',
+        content: prompt.userPrompt,
+      },
+    ],
+  };
+  if (prompt.systemPrompt) {
+    requestBody.system = prompt.systemPrompt;
+  }
+
+  return {
+    headers: {
+      'x-api-key': providerConfig.apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+    getContent: getAnthropicContent,
+  };
+}
+
+function buildProtocolRequest(
+  providerConfig: AiProviderConfig,
+  prompt: AiJsonRequestPrompt,
+): ProtocolRequestData {
+  return providerConfig.protocol === 'openaiCompatible'
+    ? buildOpenAiCompatibleRequest(providerConfig, prompt)
+    : buildAnthropicRequest(providerConfig, prompt);
+}
+
+async function requestProviderObject(
   providerConfig: AiProviderConfig,
   prompt: AiJsonRequestPrompt,
 ): Promise<Record<string, unknown>> {
-  let responseUnknown: unknown;
   const providerLabel = getProviderLabel(providerConfig.provider);
+  const { headers, body, getContent } = buildProtocolRequest(
+    providerConfig,
+    prompt,
+  );
 
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort();
+  }, REQUEST_TIMEOUT_MS);
+
+  let response: FetchResponse;
   try {
-    const requestBody: {
-      model: string;
-      max_tokens: number;
-      temperature: number;
-      messages: readonly { role: 'user'; content: string }[];
-      system?: string;
-    } = {
-      model: providerConfig.model,
-      max_tokens: 512,
-      temperature: 0,
-      messages: [
-        {
-          role: 'user',
-          content: prompt.userPrompt,
-        },
-      ],
-    };
-    if (prompt.systemPrompt) {
-      requestBody.system = prompt.systemPrompt;
-    }
-
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    responseUnknown = await fetch(providerConfig.endpoint, {
+    response = await fetch(providerConfig.endpoint, {
       method: 'POST',
-      headers: {
-        'x-api-key': providerConfig.apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
+      headers,
+      body,
+      signal: abortController.signal,
     });
   } catch (error) {
+    const isAbortError =
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.name === 'TimeoutError');
+    if (abortController.signal.aborted || isAbortError) {
+      throw new Error(
+        `${providerLabel} request failed: timed out after ${String(REQUEST_TIMEOUT_MS)}ms.`,
+        { cause: error },
+      );
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`${providerLabel} request failed: ${message}`, {
       cause: error,
     });
+  } finally {
+    clearTimeout(timeoutId);
   }
 
-  if (!isFetchResponseLike(responseUnknown)) {
-    throw new Error(
-      `${providerLabel} request failed: unexpected HTTP response type.`,
-    );
-  }
-  if (!responseUnknown.ok) {
-    await throwProviderHttpError(providerConfig, responseUnknown);
+  if (!response.ok) {
+    await throwProviderHttpError(providerConfig, response);
   }
 
-  const payload = await responseUnknown.json();
-  const content = getAnthropicContent(payload);
+  const payload = await response.json();
+  const content = getContent(payload);
   if (content === undefined) {
     throw new Error(
       `${providerLabel} response did not include assistant text content.`,
     );
   }
+
   return parseLlmResponseObject(content);
 }
 
@@ -515,7 +492,5 @@ export function requestAiJsonObject(
   providerConfig: AiProviderConfig,
   prompt: AiJsonRequestPrompt,
 ): Promise<Record<string, unknown>> {
-  return providerConfig.protocol === 'openaiCompatible'
-    ? requestOpenAiCompatibleObject(providerConfig, prompt)
-    : requestAnthropicObject(providerConfig, prompt);
+  return requestProviderObject(providerConfig, prompt);
 }

@@ -24,7 +24,7 @@ import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
-import { generateSuggestedEmojis } from './init-emojis.js';
+import { generateSuggestedEmojis } from './suggest-emojis.js';
 
 // eslint-disable-next-line complexity
 export async function generate(path: string, userOptions?: GenerateOptions) {

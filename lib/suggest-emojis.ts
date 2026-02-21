@@ -1,7 +1,7 @@
 import { table } from 'table';
 import type { Context } from './context.js';
-import { getBuiltinEmojiSuggestions } from './init-emojis-builtin.js';
-import { applyAiEmojiSuggestions } from './init-emojis-ai.js';
+import { getBuiltinEmojiSuggestions } from './suggest-emojis-builtin.js';
+import { applyAiEmojiSuggestions } from './suggest-emojis-ai.js';
 import { SUGGEST_EMOJIS_ENGINE } from './types.js';
 
 function formatSuggestionTable(

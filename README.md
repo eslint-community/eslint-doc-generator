@@ -182,16 +182,14 @@ There's also a `postprocess` option that's only available via a [config file](#c
 
 | Name | Description | Default |
 | :-- | :-- | :-- |
+| `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
+| `--ai-provider` | AI provider to use for AI-enabled features (`aigateway`, `anthropic`, `groq`, `openai`, `openrouter`, `together`, or `xai`). Required if multiple provider API keys are present. | |
 | `--check` | Whether to check for and fail if there is a diff. Any diff will be displayed but no output will be written to files. Typically used during CI. | `false` |
 | `--config-emoji` | Custom emoji to use for a config. Format is `config-name,emoji`. Option can be repeated. | Default emojis are provided for [common configs](./lib/emojis.ts). Configs without emojis will cause an error; use `--ignore-config` to exclude them. See [Badges](#badges) for using custom badges as emojis. |
 | `--config-format` | The format to use for config names. See choices in below [table](#--config-format). | `name` |
 | `--ignore-config` | Config to ignore from being displayed. Often used for an `all` config. Option can be repeated. | |
 | `--ignore-deprecated-rules` | Whether to ignore deprecated rules from being checked, displayed, or updated. | `false` |
 | `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. | `false` |
-| `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. | `false` |
-| `--suggest-emojis-engine` | Engine to use when `--suggest-emojis` is enabled (`builtin` or `ai`). | `builtin` |
-| `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
-| `--ai-provider` | AI provider to use for AI-enabled features (`aigateway`, `anthropic`, `groq`, `openai`, `openrouter`, `together`, or `xai`). Required if multiple provider API keys are present. | |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
 | `--rule-doc-notices` | Ordered, comma-separated list of notices to display in rule doc. Non-applicable notices will be hidden. See choices in below [table](#column-and-notice-types). | `configs`, `deprecated`, `fixableAndHasSuggestions`, `requiresTypeChecking`, `description` |
@@ -201,6 +199,8 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--rule-doc-title-format` | The format to use for rule doc titles. See choices in below [table](#--rule-doc-title-format). | `prefix-name` |
 | `--rule-list-columns` | Ordered, comma-separated list of columns to display in rule list. Empty columns will be hidden. See choices in below [table](#column-and-notice-types). | `name`, `description`, `configsError`, `configsWarn`, `configsOff`, `fixable`, `hasSuggestions`, `requiresTypeChecking`, `deprecated` |
 | `--rule-list-split` | Rule property(s) to split the rules list by. A separate list and header will be created for each value. Example: `meta.type`. A function can also be provided for this option via a [config file](#configuration-file). | |
+| `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. | `false` |
+| `--suggest-emojis-engine` | Engine to use when `--suggest-emojis` is enabled (`builtin` or `ai`). | `builtin` |
 | `--url-configs` | Link to documentation about the ESLint configurations exported by the plugin. | |
 | `--url-rule-doc` | Link to documentation for each rule. Useful when it differs from the rule doc path on disk (e.g. custom documentation site in use). Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | |
 
@@ -249,6 +249,14 @@ Where `no-foo` is the rule name, `Disallow use of foo` is the rule description, 
 ### `--suggest-emojis`
 
 When `--suggest-emojis` is enabled, the tool prints a table of suggested emojis for all exported configs and exits without modifying files.
+
+Example output:
+
+| Config | Emoji |
+| :-- | :-- |
+| `recommended` | `✅` |
+| `strict` | `🔒` |
+| `typescript` | `⌨️` |
 
 Engine behavior:
 
