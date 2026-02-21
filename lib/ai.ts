@@ -88,6 +88,8 @@ interface ProtocolRequestData {
   getContent: (payload: unknown) => string | undefined;
 }
 
+type OpenAiCompatibleResponseFormatType = 'json' | 'json_object';
+
 export interface AiRequestOptions {
   aiProvider: AI_PROVIDER | undefined;
   aiModel: string | undefined;
@@ -359,6 +361,8 @@ function buildOpenAiCompatibleRequest(
   providerConfig: AiProviderConfig,
   prompt: AiJsonRequestPrompt,
 ): ProtocolRequestData {
+  const responseFormatType: OpenAiCompatibleResponseFormatType =
+    providerConfig.provider === AI_PROVIDER.AI_GATEWAY ? 'json' : 'json_object';
   const requestBody = {
     model: providerConfig.model,
     temperature: 0,
@@ -372,7 +376,7 @@ function buildOpenAiCompatibleRequest(
       },
     ],
     response_format: {
-      type: 'json_object' as const,
+      type: responseFormatType,
     },
   };
 

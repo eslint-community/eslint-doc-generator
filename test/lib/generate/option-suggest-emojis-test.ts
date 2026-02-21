@@ -357,7 +357,7 @@ describe('generate (--suggest-emojis)', function () {
       response_format?: unknown;
     };
     expect(requestBody.model).toBe('openai/gpt-4o-mini');
-    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
+    expect(requestBody.response_format).toStrictEqual({ type: 'json' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
