@@ -1,8 +1,6 @@
 import * as nodeEmoji from 'node-emoji';
 import type { Context } from './context.js';
-import { EMOJI_CONFIGS, RESERVED_EMOJIS } from './emojis.js';
-
-const RESERVED_EMOJI_SET = new Set(RESERVED_EMOJIS);
+import { EMOJI_CONFIGS, RESERVED_EMOJI_SET } from './emojis.js';
 
 const FALLBACK_EMOJIS = [
   '🔴',

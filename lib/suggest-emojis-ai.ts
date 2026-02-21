@@ -1,12 +1,10 @@
 import * as nodeEmoji from 'node-emoji';
-import { RESERVED_EMOJIS } from './emojis.js';
+import { RESERVED_EMOJIS, RESERVED_EMOJI_SET } from './emojis.js';
 import {
   requestAiJsonObject,
   resolveAiProviderConfig,
   type AiRequestOptions,
 } from './ai.js';
-
-const RESERVED_EMOJI_SET = new Set(RESERVED_EMOJIS);
 
 function normalizeEmojiCandidate(candidate: string): string | undefined {
   const trimmed = candidate.trim().replaceAll(/^["'`]+|["'`]+$/gu, '');
