@@ -364,6 +364,168 @@ describe('generate (--suggest-emojis)', function () {
     expect(suggestions.get('xyzabc')).toBe('🌐');
   });
 
+  it('uses OpenRouter in ai mode with provider defaults and applies suggestions', async function () {
+    const consoleLogStub = sinon.stub(console, 'log');
+    const fetchStub = stubFetch().resolves(
+      createJsonFetchResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                xyzabc: '🪐',
+              }),
+            },
+          },
+        ],
+      }),
+    );
+
+    process.env['OPENROUTER_API_KEY'] = 'test-openrouter-key';
+
+    await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiProvider: 'openrouter',
+    });
+
+    expect(fetchStub.callCount).toBe(1);
+    expect(fetchStub.firstCall.args[0]).toBe(
+      'https://openrouter.ai/api/v1/chat/completions',
+    );
+    const requestInit = fetchStub.firstCall.args[1];
+    expect(requestInit).toBeTruthy();
+    expect(requestInit).toBeTypeOf('object');
+    if (
+      !requestInit ||
+      typeof requestInit !== 'object' ||
+      !('body' in requestInit)
+    ) {
+      throw new TypeError('Missing request init body in fetch call.');
+    }
+    expect(requestInit.body).toBeTypeOf('string');
+    if (typeof requestInit.body !== 'string') {
+      throw new TypeError('Expected fetch request body to be a string.');
+    }
+    const requestBody = JSON.parse(requestInit.body) as {
+      model?: string;
+      response_format?: unknown;
+    };
+    expect(requestBody.model).toBe('openai/gpt-4o-mini');
+    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
+
+    const output = String(consoleLogStub.firstCall.args[0]);
+    const suggestions = parseSuggestionTable(output);
+    expect(suggestions.get('xyzabc')).toBe('🪐');
+  });
+
+  it('uses Together in ai mode with provider defaults and applies suggestions', async function () {
+    const consoleLogStub = sinon.stub(console, 'log');
+    const fetchStub = stubFetch().resolves(
+      createJsonFetchResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                xyzabc: '🧩',
+              }),
+            },
+          },
+        ],
+      }),
+    );
+
+    process.env['TOGETHER_API_KEY'] = 'test-together-key';
+
+    await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiProvider: 'together',
+    });
+
+    expect(fetchStub.callCount).toBe(1);
+    expect(fetchStub.firstCall.args[0]).toBe(
+      'https://api.together.xyz/v1/chat/completions',
+    );
+    const requestInit = fetchStub.firstCall.args[1];
+    expect(requestInit).toBeTruthy();
+    expect(requestInit).toBeTypeOf('object');
+    if (
+      !requestInit ||
+      typeof requestInit !== 'object' ||
+      !('body' in requestInit)
+    ) {
+      throw new TypeError('Missing request init body in fetch call.');
+    }
+    expect(requestInit.body).toBeTypeOf('string');
+    if (typeof requestInit.body !== 'string') {
+      throw new TypeError('Expected fetch request body to be a string.');
+    }
+    const requestBody = JSON.parse(requestInit.body) as {
+      model?: string;
+      response_format?: unknown;
+    };
+    expect(requestBody.model).toBe('meta-llama/Llama-3.1-8B-Instruct-Turbo');
+    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
+
+    const output = String(consoleLogStub.firstCall.args[0]);
+    const suggestions = parseSuggestionTable(output);
+    expect(suggestions.get('xyzabc')).toBe('🧩');
+  });
+
+  it('uses xAI in ai mode with provider defaults and applies suggestions', async function () {
+    const consoleLogStub = sinon.stub(console, 'log');
+    const fetchStub = stubFetch().resolves(
+      createJsonFetchResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                xyzabc: '🛰️',
+              }),
+            },
+          },
+        ],
+      }),
+    );
+
+    process.env['XAI_API_KEY'] = 'test-xai-key';
+
+    await generate(fixture.path, {
+      suggestEmojis: true,
+      suggestEmojisEngine: 'ai',
+      aiProvider: 'xai',
+    });
+
+    expect(fetchStub.callCount).toBe(1);
+    expect(fetchStub.firstCall.args[0]).toBe(
+      'https://api.x.ai/v1/chat/completions',
+    );
+    const requestInit = fetchStub.firstCall.args[1];
+    expect(requestInit).toBeTruthy();
+    expect(requestInit).toBeTypeOf('object');
+    if (
+      !requestInit ||
+      typeof requestInit !== 'object' ||
+      !('body' in requestInit)
+    ) {
+      throw new TypeError('Missing request init body in fetch call.');
+    }
+    expect(requestInit.body).toBeTypeOf('string');
+    if (typeof requestInit.body !== 'string') {
+      throw new TypeError('Expected fetch request body to be a string.');
+    }
+    const requestBody = JSON.parse(requestInit.body) as {
+      model?: string;
+      response_format?: unknown;
+    };
+    expect(requestBody.model).toBe('grok-2-latest');
+    expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
+
+    const output = String(consoleLogStub.firstCall.args[0]);
+    const suggestions = parseSuggestionTable(output);
+    expect(suggestions.get('xyzabc')).toBe('🛰️');
+  });
+
   it('uses Anthropic automatically when exactly one provider API key is set', async function () {
     const consoleLogStub = sinon.stub(console, 'log');
     const fetchStub = stubFetch().resolves(
