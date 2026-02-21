@@ -24,6 +24,7 @@ import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
+import { generateSuggestedEmojis } from './suggest-emojis.js';
 
 // eslint-disable-next-line complexity
 export async function generate(path: string, userOptions?: GenerateOptions) {
@@ -36,6 +37,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     check,
     ignoreDeprecatedRules,
     initRuleDocs,
+    suggestEmojis,
     pathRuleDoc,
     pathRuleList,
     postprocess,
@@ -43,6 +45,11 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     ruleDocSectionInclude,
     ruleDocSectionOptions,
   } = options;
+
+  if (suggestEmojis) {
+    await generateSuggestedEmojis(context);
+    return;
+  }
 
   if (!plugin.rules) {
     throw new Error('Could not find exported `rules` object in ESLint plugin.');

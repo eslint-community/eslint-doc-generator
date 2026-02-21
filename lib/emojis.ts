@@ -88,3 +88,6 @@ export const RESERVED_EMOJIS = [
   EMOJI_DEPRECATED,
   EMOJI_DESCRIPTION,
 ];
+
+/** Shared set form of `RESERVED_EMOJIS` for fast membership checks. */
+export const RESERVED_EMOJI_SET: ReadonlySet<string> = new Set(RESERVED_EMOJIS);

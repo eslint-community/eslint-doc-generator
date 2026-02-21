@@ -56,6 +56,8 @@
     "json-schema": "^0.4.0",
     "json-schema-traverse": "^1.0.0",
     "markdown-table": "^3.0.3",
+    "node-emoji": "^2.2.0",
+    "table": "^6.9.0",
     "type-fest": "^5.3.1"
   },
   "devDependencies": {

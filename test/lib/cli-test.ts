@@ -4,6 +4,8 @@ import { OPTION_TYPE } from '../../lib/types.js';
 import { type FixtureContext, setupFixture } from '../helpers/fixture.js';
 
 const configFileOptionsAll: { [key in OPTION_TYPE]: unknown } = {
+  aiModel: 'gpt-4o-mini',
+  aiProvider: 'openai',
   check: true,
   configEmoji: [['recommended-from-config-file', '🚲']],
   configFormat: 'name',
@@ -29,11 +31,17 @@ const configFileOptionsAll: { [key in OPTION_TYPE]: unknown } = {
   ruleDocTitleFormat: 'desc',
   ruleListColumns: ['fixable', 'hasSuggestions'],
   ruleListSplit: 'meta.docs.foo-from-config-file',
+  suggestEmojis: true,
+  suggestEmojisEngine: 'ai',
   urlConfigs: 'https://example.com/configs-url-from-config-file',
   urlRuleDoc: 'https://example.com/rule-doc-url-from-config-file',
 };
 
 const cliOptionsAll: { [key in OPTION_TYPE]: readonly string[] } = {
+  [OPTION_TYPE.AI_MODEL]: ['--ai-model', 'claude-3-5-haiku-latest'],
+
+  [OPTION_TYPE.AI_PROVIDER]: ['--ai-provider', 'anthropic'],
+
   [OPTION_TYPE.CHECK]: ['--check'],
 
   [OPTION_TYPE.CONFIG_EMOJI]: ['--config-emoji', 'recommended-from-cli,🚲'],
@@ -92,6 +100,10 @@ const cliOptionsAll: { [key in OPTION_TYPE]: readonly string[] } = {
     '--rule-list-split',
     'meta.docs.foo-from-cli',
   ],
+
+  [OPTION_TYPE.SUGGEST_EMOJIS]: ['--suggest-emojis', 'false'],
+
+  [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: ['--suggest-emojis-engine', 'builtin'],
 
   [OPTION_TYPE.URL_CONFIGS]: [
     '--url-configs',
