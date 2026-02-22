@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.1.0...v3.2.0) (2026-02-22)
+
+
+### Features
+
+* add `--suggest-emojis` and `--ai` for AI-powered config emoji suggestions ([#889](https://github.com/eslint-community/eslint-doc-generator/issues/889)) ([8a72dee](https://github.com/eslint-community/eslint-doc-generator/commit/8a72dee27cf96fcef22b1a8c0023ba728ff6060c))
+
 ## [3.1.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.0.2...v3.1.0) (2026-02-14)
 
 
