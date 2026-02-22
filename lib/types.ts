@@ -214,7 +214,7 @@ export type GenerateOptions = {
   /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
   readonly aiProvider?: AI_PROVIDER;
 
-  /** Whether to suggest emojis for configs and print a table of suggestions. Default: `false`. */
+  /** Whether to suggest emojis for configs and print a table of suggestions. Can be paired with `--ai`. Default: `false`. */
   readonly suggestEmojis?: boolean;
 
   /**

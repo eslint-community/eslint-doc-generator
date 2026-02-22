@@ -322,7 +322,7 @@ export async function run(
     )
     .option(
       '--suggest-emojis [boolean]',
-      `(optional) Whether to suggest emojis for configs and print them in a table. (default: ${String(
+      `(optional) Whether to suggest emojis for configs and print them in a table. Can be paired with \`--ai\`. (default: ${String(
         OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS],
       )})`,
       parseBoolean,

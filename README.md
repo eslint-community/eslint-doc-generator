@@ -201,7 +201,7 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--rule-doc-title-format` | The format to use for rule doc titles. See choices in below [table](#--rule-doc-title-format). | `prefix-name` |
 | `--rule-list-columns` | Ordered, comma-separated list of columns to display in rule list. Empty columns will be hidden. See choices in below [table](#column-and-notice-types). | `name`, `description`, `configsError`, `configsWarn`, `configsOff`, `fixable`, `hasSuggestions`, `requiresTypeChecking`, `deprecated` |
 | `--rule-list-split` | Rule property(s) to split the rules list by. A separate list and header will be created for each value. Example: `meta.type`. A function can also be provided for this option via a [config file](#configuration-file). | |
-| `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. | `false` |
+| `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. Can be paired with `--ai`. | `false` |
 | `--url-configs` | Link to documentation about the ESLint configurations exported by the plugin. | |
 | `--url-rule-doc` | Link to documentation for each rule. Useful when it differs from the rule doc path on disk (e.g. custom documentation site in use). Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | |
 
