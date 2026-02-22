@@ -8,7 +8,7 @@ const PROVIDER_API_KEY_ENV_VARS = [
   'GROQ_API_KEY',
   'OPENROUTER_API_KEY',
   'TOGETHER_API_KEY',
-  'AI_GATEWAY_API_KEY',
+  'VERCEL_AI_GATEWAY_API_KEY',
   'XAI_API_KEY',
 ] as const;
 type ProviderApiKeyEnvVar = (typeof PROVIDER_API_KEY_ENV_VARS)[number];
@@ -326,12 +326,12 @@ describe('generate (--suggest-emojis)', function () {
       }),
     );
 
-    process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
+    process.env['VERCEL_AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
 
     await generate(fixture.path, {
       suggestEmojis: true,
       ai: true,
-      aiProvider: 'aigateway',
+      aiProvider: 'vercelaigateway',
     });
 
     expect(fetchStub.callCount).toBe(1);
@@ -736,7 +736,7 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('includes parsed AI Gateway error details on invalid model', async function () {
-    process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
+    process.env['VERCEL_AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
     stubFetch().resolves(
@@ -759,7 +759,7 @@ describe('generate (--suggest-emojis)', function () {
       suggestEmojis: true,
       ai: true,
       aiModel: 'foo',
-      aiProvider: 'aigateway',
+      aiProvider: 'vercelaigateway',
     }).then(
       () => undefined,
       (error_: unknown) => error_ as Error,
@@ -776,7 +776,7 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('includes parsed AI Gateway error details for non-model errors', async function () {
-    process.env['AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
+    process.env['VERCEL_AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
     stubFetch().resolves(
@@ -799,7 +799,7 @@ describe('generate (--suggest-emojis)', function () {
       suggestEmojis: true,
       ai: true,
       aiModel: 'foo',
-      aiProvider: 'aigateway',
+      aiProvider: 'vercelaigateway',
     }).then(
       () => undefined,
       (error_: unknown) => error_ as Error,

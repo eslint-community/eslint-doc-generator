@@ -62,12 +62,12 @@ export type RuleNamesAndRules = readonly (readonly [
 export type ConfigEmojis = readonly { config: string; emoji: string }[];
 
 export const AI_PROVIDER = {
-  AI_GATEWAY: 'aigateway',
   ANTHROPIC: 'anthropic',
   GROQ: 'groq',
   OPENAI: 'openai',
   OPENROUTER: 'openrouter',
   TOGETHER: 'together',
+  VERCEL_AI_GATEWAY: 'vercelaigateway',
   XAI: 'xai',
 } as const;
 export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];

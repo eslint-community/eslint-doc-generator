@@ -10,12 +10,6 @@ interface ProviderMetadata {
 }
 
 const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
-  [AI_PROVIDER.AI_GATEWAY]: {
-    apiKeyEnvVar: 'AI_GATEWAY_API_KEY',
-    defaultModel: 'openai/gpt-5.2',
-    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
-    protocol: 'openaiCompatible',
-  },
   [AI_PROVIDER.ANTHROPIC]: {
     apiKeyEnvVar: 'ANTHROPIC_API_KEY',
     defaultModel: 'claude-sonnet-4-6',
@@ -44,6 +38,12 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
     apiKeyEnvVar: 'TOGETHER_API_KEY',
     defaultModel: 'openai/gpt-oss-20b',
     endpoint: 'https://api.together.xyz/v1/chat/completions',
+    protocol: 'openaiCompatible',
+  },
+  [AI_PROVIDER.VERCEL_AI_GATEWAY]: {
+    apiKeyEnvVar: 'VERCEL_AI_GATEWAY_API_KEY',
+    defaultModel: 'openai/gpt-5.2',
+    endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
   [AI_PROVIDER.XAI]: {
@@ -111,12 +111,12 @@ export interface AiJsonRequestPrompt {
 function getProviderLabel(provider: AI_PROVIDER): string {
   return (
     {
-      [AI_PROVIDER.AI_GATEWAY]: 'Vercel AI Gateway',
       [AI_PROVIDER.ANTHROPIC]: 'Anthropic',
       [AI_PROVIDER.GROQ]: 'Groq',
       [AI_PROVIDER.OPENAI]: 'OpenAI',
       [AI_PROVIDER.OPENROUTER]: 'OpenRouter',
       [AI_PROVIDER.TOGETHER]: 'Together',
+      [AI_PROVIDER.VERCEL_AI_GATEWAY]: 'Vercel AI Gateway',
       [AI_PROVIDER.XAI]: 'xAI',
     } as const
   )[provider];
@@ -362,7 +362,9 @@ function buildOpenAiCompatibleRequest(
   prompt: AiJsonRequestPrompt,
 ): ProtocolRequestData {
   const responseFormatType: OpenAiCompatibleResponseFormatType =
-    providerConfig.provider === AI_PROVIDER.AI_GATEWAY ? 'json' : 'json_object';
+    providerConfig.provider === AI_PROVIDER.VERCEL_AI_GATEWAY
+      ? 'json'
+      : 'json_object';
   const requestBody = {
     model: providerConfig.model,
     temperature: 0,
