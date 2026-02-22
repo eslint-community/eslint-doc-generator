@@ -34,6 +34,7 @@ Also performs [configurable](#configuration-options) section consistency checks 
   - [Column and notice types](#column-and-notice-types)
   - [`--config-format`](#--config-format)
   - [`--rule-doc-title-format`](#--rule-doc-title-format)
+  - [`--suggest-emojis`](#--suggest-emojis)
   - [Configuration file](#configuration-file)
   - [Badges](#badges)
 - [Compatibility](#compatibility)
