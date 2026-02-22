@@ -18,7 +18,7 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   },
   [AI_PROVIDER.ANTHROPIC]: {
     apiKeyEnvVar: 'ANTHROPIC_API_KEY',
-    defaultModel: 'claude-3-5-haiku-latest',
+    defaultModel: 'claude-sonnet-4-6',
     endpoint: 'https://api.anthropic.com/v1/messages',
     protocol: 'anthropic',
   },
