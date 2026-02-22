@@ -185,7 +185,7 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | :-- | :-- | :-- |
 | `--ai` | Whether to use AI for AI-enabled features. | `false` |
 | `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
-| `--ai-provider` | AI provider to use for AI-enabled features (`anthropic`, `groq`, `openai`, `openrouter`, `together`, `vercelaigateway`, or `xai`). Required if multiple provider API keys are present. | |
+| `--ai-provider` | AI provider to use for AI-enabled features (`anthropic`, `groq`, `openai`, `openrouter`, `together`, `vercelaigateway`, or `xai`). | Defaults to the specified provider environment variable. Required if multiple provider API keys are present. |
 | `--check` | Whether to check for and fail if there is a diff. Any diff will be displayed but no output will be written to files. Typically used during CI. | `false` |
 | `--config-emoji` | Custom emoji to use for a config. Format is `config-name,emoji`. Option can be repeated. | Default emojis are provided for [common configs](./lib/emojis.ts). Configs without emojis will cause an error; use `--ignore-config` to exclude them. See [Badges](#badges) for using custom badges as emojis. |
 | `--config-format` | The format to use for config names. See choices in below [table](#--config-format). | `name` |
