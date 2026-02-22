@@ -259,10 +259,10 @@ Example output:
 | `strict` | `🔒` |
 | `typescript` | `⌨️` |
 
-Engine behavior:
+Generation straetgy:
 
-- `--suggest-emojis` uses deterministic local suggestions only.
-- `--suggest-emojis --ai` uses an external provider.
+- `--suggest-emojis` uses deterministic local suggestions only
+- `--suggest-emojis --ai` uses an external provider
 
 When `--ai` is used, suggestions will be generated using an external provider based on:
 
