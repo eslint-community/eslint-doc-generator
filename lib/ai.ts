@@ -42,7 +42,7 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   },
   [AI_PROVIDER.TOGETHER]: {
     apiKeyEnvVar: 'TOGETHER_API_KEY',
-    defaultModel: 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
+    defaultModel: 'openai/gpt-oss-20b',
     endpoint: 'https://api.together.xyz/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
