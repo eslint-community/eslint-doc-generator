@@ -48,7 +48,7 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   },
   [AI_PROVIDER.XAI]: {
     apiKeyEnvVar: 'XAI_API_KEY',
-    defaultModel: 'grok-2-latest',
+    defaultModel: 'grok-4-1-fast-reasoning',
     endpoint: 'https://api.x.ai/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
