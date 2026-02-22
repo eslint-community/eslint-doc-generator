@@ -4,13 +4,7 @@ import { OPTION_DEFAULTS } from './options.js';
 import { cosmiconfig } from 'cosmiconfig';
 import Ajv from 'ajv';
 import merge from 'deepmerge';
-import {
-  AI_PROVIDER,
-  COLUMN_TYPE,
-  NOTICE_TYPE,
-  OPTION_TYPE,
-  SUGGEST_EMOJIS_ENGINE,
-} from './types.js';
+import { AI_PROVIDER, COLUMN_TYPE, NOTICE_TYPE, OPTION_TYPE } from './types.js';
 import type { GenerateOptions } from './types.js';
 import { getCurrentPackageVersion } from './package-json.js';
 import { boolean, isBooleanable } from './boolean.js';
@@ -92,6 +86,7 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
     };
 
     const properties: { [key in OPTION_TYPE]: unknown } = {
+      ai: { type: 'boolean' },
       aiModel: { type: 'string' },
       aiProvider: {
         type: 'string',
@@ -130,10 +125,6 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
             }
           : { anyOf: [{ type: 'string' }, schemaStringArray] },
       suggestEmojis: { type: 'boolean' },
-      suggestEmojisEngine: {
-        type: 'string',
-        enum: Object.values(SUGGEST_EMOJIS_ENGINE),
-      },
       urlConfigs: { type: 'string' },
       urlRuleDoc:
         /* istanbul ignore next -- TODO: haven't tested JavaScript config files yet https://github.com/eslint-community/eslint-doc-generator/issues/366 */
@@ -201,6 +192,13 @@ export async function run(
     .version(await getCurrentPackageVersion())
     .addArgument(
       new Argument('[path]', 'path to ESLint plugin root').default('.'),
+    )
+    .option(
+      '--ai [boolean]',
+      `(optional) Whether to use AI for AI-enabled features. (default: ${String(
+        OPTION_DEFAULTS[OPTION_TYPE.AI],
+      )})`,
+      parseBoolean,
     )
     .addOption(
       new Option(
@@ -328,14 +326,6 @@ export async function run(
         OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS],
       )})`,
       parseBoolean,
-    )
-    .addOption(
-      new Option(
-        '--suggest-emojis-engine <engine>',
-        `(optional) Engine to use when \`--suggest-emojis\` is enabled. (default: ${
-          OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]
-        })`,
-      ).choices(Object.values(SUGGEST_EMOJIS_ENGINE)),
     )
     .option(
       '--url-configs <url>',

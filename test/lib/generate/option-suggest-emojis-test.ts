@@ -222,7 +222,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'openai',
     });
 
@@ -248,7 +248,7 @@ describe('generate (--suggest-emojis)', function () {
       model?: string;
       response_format?: { type?: string };
     };
-    expect(requestBody.model).toBe('gpt-4o-mini');
+    expect(requestBody.model).toBe('gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
@@ -276,7 +276,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'groq',
     });
 
@@ -302,7 +302,7 @@ describe('generate (--suggest-emojis)', function () {
       model?: string;
       response_format?: unknown;
     };
-    expect(requestBody.model).toBe('llama-3.1-8b-instant');
+    expect(requestBody.model).toBe('llama-3.3-70b-versatile');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
@@ -330,7 +330,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'aigateway',
     });
 
@@ -356,7 +356,7 @@ describe('generate (--suggest-emojis)', function () {
       model?: string;
       response_format?: unknown;
     };
-    expect(requestBody.model).toBe('openai/gpt-4o-mini');
+    expect(requestBody.model).toBe('openai/gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
@@ -384,7 +384,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'openrouter',
     });
 
@@ -410,7 +410,7 @@ describe('generate (--suggest-emojis)', function () {
       model?: string;
       response_format?: unknown;
     };
-    expect(requestBody.model).toBe('openai/gpt-4o-mini');
+    expect(requestBody.model).toBe('openai/gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
@@ -438,7 +438,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'together',
     });
 
@@ -464,7 +464,7 @@ describe('generate (--suggest-emojis)', function () {
       model?: string;
       response_format?: unknown;
     };
-    expect(requestBody.model).toBe('meta-llama/Llama-3.1-8B-Instruct-Turbo');
+    expect(requestBody.model).toBe('openai/gpt-oss-20b');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
@@ -492,7 +492,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'xai',
     });
 
@@ -518,7 +518,7 @@ describe('generate (--suggest-emojis)', function () {
       model?: string;
       response_format?: unknown;
     };
-    expect(requestBody.model).toBe('grok-2-latest');
+    expect(requestBody.model).toBe('grok-4-1-fast-reasoning');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
     const output = String(consoleLogStub.firstCall.args[0]);
@@ -546,7 +546,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
     });
 
     expect(fetchStub.callCount).toBe(1);
@@ -568,7 +568,7 @@ describe('generate (--suggest-emojis)', function () {
       throw new TypeError('Expected fetch request body to be a string.');
     }
     const requestBody = JSON.parse(requestInit.body) as { model?: string };
-    expect(requestBody.model).toBe('claude-3-5-haiku-latest');
+    expect(requestBody.model).toBe('claude-sonnet-4-6');
 
     const output = String(consoleLogStub.firstCall.args[0]);
     const suggestions = parseSuggestionTable(output);
@@ -583,7 +583,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
       }),
     ).rejects.toThrow('Multiple AI provider API keys found');
 
@@ -593,7 +593,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when no provider API key is set for ai mode', async function () {
     const error = await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
     }).then(
       () => undefined,
       (error_: unknown) => error_ as Error,
@@ -612,7 +612,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('Provider "openai" requires OPENAI_API_KEY to be set.');
@@ -626,7 +626,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('OpenAI request failed: request failed while connecting');
@@ -664,7 +664,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('OpenAI request failed: timed out after 30000ms.');
@@ -688,7 +688,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('Unexpected token');
@@ -710,7 +710,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('OpenAI request failed (503 Service Unavailable).');
@@ -729,7 +729,7 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('OpenAI request failed (502 Bad Gateway).');
@@ -757,7 +757,7 @@ describe('generate (--suggest-emojis)', function () {
 
     const error = await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiModel: 'foo',
       aiProvider: 'aigateway',
     }).then(
@@ -797,7 +797,7 @@ describe('generate (--suggest-emojis)', function () {
 
     const error = await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiModel: 'foo',
       aiProvider: 'aigateway',
     }).then(
@@ -848,7 +848,7 @@ describe('generate (--suggest-emojis)', function () {
       await expect(
         generate(fixture.path, {
           suggestEmojis: true,
-          suggestEmojisEngine: 'ai',
+          ai: true,
           aiProvider: 'openai',
         }),
       ).rejects.toThrow(
@@ -875,14 +875,14 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('AI response was empty.');
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'openai',
       }),
     ).rejects.toThrow('AI response was not a JSON object.');
@@ -927,14 +927,14 @@ describe('generate (--suggest-emojis)', function () {
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'anthropic',
       }),
     ).rejects.toThrow('Anthropic request failed: anthropic-network-failure');
     await expect(
       generate(fixture.path, {
         suggestEmojis: true,
-        suggestEmojisEngine: 'ai',
+        ai: true,
         aiProvider: 'anthropic',
       }),
     ).rejects.toThrow('Anthropic request failed (429 Too Many Requests).');
@@ -942,7 +942,7 @@ describe('generate (--suggest-emojis)', function () {
       await expect(
         generate(fixture.path, {
           suggestEmojis: true,
-          suggestEmojisEngine: 'ai',
+          ai: true,
           aiProvider: 'anthropic',
         }),
       ).rejects.toThrow(
@@ -971,7 +971,7 @@ describe('generate (--suggest-emojis)', function () {
 
     const error = await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiModel: 'foo',
       aiProvider: 'anthropic',
     }).then(
@@ -1010,7 +1010,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'openai',
     });
 
@@ -1044,7 +1044,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'openai',
     });
 
@@ -1089,7 +1089,7 @@ describe('generate (--suggest-emojis)', function () {
 
         await generate(tempFixture.path, {
           suggestEmojis: true,
-          suggestEmojisEngine: 'ai',
+          ai: true,
           aiProvider: 'openai',
         });
 
@@ -1177,7 +1177,7 @@ describe('generate (--suggest-emojis)', function () {
 
     await generate(fixture.path, {
       suggestEmojis: true,
-      suggestEmojisEngine: 'ai',
+      ai: true,
       aiProvider: 'openai',
     });
 
@@ -1219,7 +1219,7 @@ describe('generate (--suggest-emojis)', function () {
 
         await generate(tempFixture.path, {
           suggestEmojis: true,
-          suggestEmojisEngine: 'ai',
+          ai: true,
           aiProvider: 'openai',
           configEmoji: [['typescript']],
         });

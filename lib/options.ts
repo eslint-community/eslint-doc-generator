@@ -49,6 +49,7 @@ const DEFAULT_RULE_DOC_TITLE_FORMAT: RuleDocTitleFormat = 'prefix-name';
 const DEFAULT_CONFIG_FORMAT: ConfigFormat = 'name';
 
 export const OPTION_DEFAULTS = {
+  [OPTION_TYPE.AI]: false,
   [OPTION_TYPE.AI_MODEL]: undefined,
   [OPTION_TYPE.AI_PROVIDER]: undefined,
   [OPTION_TYPE.CHECK]: false,
@@ -76,7 +77,6 @@ export const OPTION_DEFAULTS = {
     .map(([col]) => col),
   [OPTION_TYPE.RULE_LIST_SPLIT]: [],
   [OPTION_TYPE.SUGGEST_EMOJIS]: false,
-  [OPTION_TYPE.SUGGEST_EMOJIS_ENGINE]: 'builtin',
   [OPTION_TYPE.URL_CONFIGS]: undefined,
   [OPTION_TYPE.URL_RULE_DOC]: undefined,
 } satisfies Record<OPTION_TYPE, unknown>; // Satisfies is used to ensure all options are included without losing type information.
@@ -89,6 +89,7 @@ export function getResolvedOptions(
   plugin: Plugin,
   userOptions: GenerateOptions = {},
 ) {
+  const ai = userOptions.ai ?? OPTION_DEFAULTS[OPTION_TYPE.AI];
   const aiModel = userOptions.aiModel ?? OPTION_DEFAULTS[OPTION_TYPE.AI_MODEL];
   const aiProvider =
     userOptions.aiProvider ?? OPTION_DEFAULTS[OPTION_TYPE.AI_PROVIDER];
@@ -142,15 +143,13 @@ export function getResolvedOptions(
         );
   const suggestEmojis =
     userOptions.suggestEmojis ?? OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS];
-  const suggestEmojisEngine =
-    userOptions.suggestEmojisEngine ??
-    OPTION_DEFAULTS[OPTION_TYPE.SUGGEST_EMOJIS_ENGINE];
   const urlConfigs =
     userOptions.urlConfigs ?? OPTION_DEFAULTS[OPTION_TYPE.URL_CONFIGS];
   const urlRuleDoc =
     userOptions.urlRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.URL_RULE_DOC];
 
   return {
+    ai,
     aiModel,
     aiProvider,
     check,
@@ -170,7 +169,6 @@ export function getResolvedOptions(
     ruleListColumns,
     ruleListSplit,
     suggestEmojis,
-    suggestEmojisEngine,
     urlConfigs,
     urlRuleDoc,
   };

@@ -72,13 +72,6 @@ export const AI_PROVIDER = {
 } as const;
 export type AI_PROVIDER = (typeof AI_PROVIDER)[keyof typeof AI_PROVIDER];
 
-export const SUGGEST_EMOJIS_ENGINE = {
-  BUILTIN: 'builtin',
-  AI: 'ai',
-} as const;
-export type SUGGEST_EMOJIS_ENGINE =
-  (typeof SUGGEST_EMOJIS_ENGINE)[keyof typeof SUGGEST_EMOJIS_ENGINE];
-
 /**
  * Rule doc notices.
  */
@@ -118,6 +111,7 @@ export type COLUMN_TYPE = (typeof COLUMN_TYPE)[keyof typeof COLUMN_TYPE];
  * CLI/config file options.
  */
 export const OPTION_TYPE = {
+  AI: 'ai',
   AI_MODEL: 'aiModel',
   AI_PROVIDER: 'aiProvider',
   CHECK: 'check',
@@ -137,7 +131,6 @@ export const OPTION_TYPE = {
   RULE_LIST_COLUMNS: 'ruleListColumns',
   RULE_LIST_SPLIT: 'ruleListSplit',
   SUGGEST_EMOJIS: 'suggestEmojis',
-  SUGGEST_EMOJIS_ENGINE: 'suggestEmojisEngine',
   URL_CONFIGS: 'urlConfigs',
   URL_RULE_DOC: 'urlRuleDoc',
 } as const;
@@ -178,6 +171,13 @@ export type PathRuleDocFunction = (name: string) => string;
 /** The type for the config file (e.g. `.eslint-doc-generatorrc.js`) and internal `generate()` function. */
 export type GenerateOptions = {
   /**
+   * Whether to use AI for AI-capable features.
+   * For example with `suggestEmojis`, enables provider-backed suggestions.
+   * Default: `false`.
+   */
+  readonly ai?: boolean;
+
+  /**
    * Whether to check for and fail if there is a diff.
    * Any diff will be displayed but no output will be written to files.
    * Typically used during CI.
@@ -216,9 +216,6 @@ export type GenerateOptions = {
 
   /** Whether to suggest emojis for configs and print a table of suggestions. Default: `false`. */
   readonly suggestEmojis?: boolean;
-
-  /** Engine used by `suggestEmojis`. `builtin` uses deterministic local suggestions and `ai` uses an external provider. Default: `builtin`. */
-  readonly suggestEmojisEngine?: SUGGEST_EMOJIS_ENGINE;
 
   /**
    * Path (or function to generate a path) to to markdown file for each rule doc.

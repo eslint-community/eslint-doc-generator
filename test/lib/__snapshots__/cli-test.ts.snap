@@ -4,6 +4,7 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
 [
   ".",
   {
+    "ai": false,
     "aiModel": "claude-3-5-haiku-latest",
     "aiProvider": "anthropic",
     "check": true,
@@ -59,7 +60,6 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
       "meta.docs.foo-from-cli",
     ],
     "suggestEmojis": false,
-    "suggestEmojisEngine": "builtin",
     "urlConfigs": "https://example.com/configs-url-from-cli",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-cli",
   },
@@ -70,6 +70,7 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
 [
   ".",
   {
+    "ai": false,
     "aiModel": "claude-3-5-haiku-latest",
     "aiProvider": "anthropic",
     "check": true,
@@ -110,7 +111,6 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
       "meta.docs.foo-from-cli",
     ],
     "suggestEmojis": false,
-    "suggestEmojisEngine": "builtin",
     "urlConfigs": "https://example.com/configs-url-from-cli",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-cli",
   },
@@ -121,6 +121,7 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
 [
   ".",
   {
+    "ai": true,
     "aiModel": "gpt-4o-mini",
     "aiProvider": "openai",
     "check": true,
@@ -162,7 +163,6 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
       "meta.docs.foo-from-config-file",
     ],
     "suggestEmojis": true,
-    "suggestEmojisEngine": "ai",
     "urlConfigs": "https://example.com/configs-url-from-config-file",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-config-file",
   },

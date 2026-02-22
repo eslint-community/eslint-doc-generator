@@ -2,7 +2,6 @@ import { table } from 'table';
 import type { Context } from './context.js';
 import { getBuiltinEmojiSuggestions } from './suggest-emojis-builtin.js';
 import { applyAiEmojiSuggestions } from './suggest-emojis-ai.js';
-import { SUGGEST_EMOJIS_ENGINE } from './types.js';
 
 function formatSuggestionTable(
   configNames: readonly string[],
@@ -23,7 +22,7 @@ function formatSuggestionTable(
 export async function generateSuggestedEmojis(context: Context): Promise<void> {
   const { configNames, emojiByConfig } = getBuiltinEmojiSuggestions(context);
 
-  if (context.options.suggestEmojisEngine === SUGGEST_EMOJIS_ENGINE.AI) {
+  if (context.options.ai) {
     await applyAiEmojiSuggestions(configNames, emojiByConfig, {
       aiProvider: context.options.aiProvider,
       aiModel: context.options.aiModel,
