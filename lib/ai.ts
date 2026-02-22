@@ -30,7 +30,7 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   },
   [AI_PROVIDER.OPENAI]: {
     apiKeyEnvVar: 'OPENAI_API_KEY',
-    defaultModel: 'gpt-4o-mini',
+    defaultModel: 'gpt-5.2',
     endpoint: 'https://api.openai.com/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
