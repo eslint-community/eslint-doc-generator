@@ -24,7 +24,7 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   },
   [AI_PROVIDER.GROQ]: {
     apiKeyEnvVar: 'GROQ_API_KEY',
-    defaultModel: 'llama-3.1-8b-instant',
+    defaultModel: 'llama-3.3-70b-versatile',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
