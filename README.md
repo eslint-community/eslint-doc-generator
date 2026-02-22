@@ -259,7 +259,7 @@ Example output:
 | `strict` | `🔒` |
 | `typescript` | `⌨️` |
 
-Generation straetgy:
+Generation strategy:
 
 - `--suggest-emojis` uses deterministic local suggestions only
 - `--suggest-emojis --ai` uses an external provider
