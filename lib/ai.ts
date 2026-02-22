@@ -36,7 +36,7 @@ const PROVIDER_METADATA: Record<AI_PROVIDER, ProviderMetadata> = {
   },
   [AI_PROVIDER.OPENROUTER]: {
     apiKeyEnvVar: 'OPENROUTER_API_KEY',
-    defaultModel: 'openai/gpt-4o-mini',
+    defaultModel: 'openai/gpt-5.2',
     endpoint: 'https://openrouter.ai/api/v1/chat/completions',
     protocol: 'openaiCompatible',
   },
