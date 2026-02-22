@@ -177,6 +177,12 @@ export type GenerateOptions = {
    */
   readonly ai?: boolean;
 
+  /** Optional model override used by any AI-enabled feature. If omitted, the provider default model is used. */
+  readonly aiModel?: string;
+
+  /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
+  readonly aiProvider?: AI_PROVIDER;
+
   /**
    * Whether to check for and fail if there is a diff.
    * Any diff will be displayed but no output will be written to files.
@@ -207,15 +213,6 @@ export type GenerateOptions = {
 
   /** Whether to create rule doc files if they don't yet exist. Default: `false`. */
   readonly initRuleDocs?: boolean;
-
-  /** Optional model override used by any AI-enabled feature. If omitted, the provider default model is used. */
-  readonly aiModel?: string;
-
-  /** AI provider used by any AI-enabled feature. Required if multiple provider API keys are present in the environment. */
-  readonly aiProvider?: AI_PROVIDER;
-
-  /** Whether to suggest emojis for configs and print a table of suggestions. Can be paired with `--ai`. Default: `false`. */
-  readonly suggestEmojis?: boolean;
 
   /**
    * Path (or function to generate a path) to to markdown file for each rule doc.
@@ -271,6 +268,9 @@ export type GenerateOptions = {
    * Example: `meta.type`.
    */
   readonly ruleListSplit?: string | readonly string[] | RuleListSplitFunction;
+
+  /** Whether to suggest emojis for configs and print a table of suggestions. Can be paired with `--ai`. Default: `false`. */
+  readonly suggestEmojis?: boolean;
 
   /** Link to documentation about the ESLint configurations exported by the plugin. */
   readonly urlConfigs?: string;
