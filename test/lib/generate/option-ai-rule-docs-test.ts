@@ -652,6 +652,86 @@ describe('generate (--ai rule docs)', function () {
     }
   });
 
+  it('includes type, fixable, hasSuggestions, and config summary in the prompt', async function () {
+    const fixture = await setupFixture({
+      fixture: 'esm-base',
+      overrides: {
+        'docs/rules/no-foo.md': EXISTING_DOC,
+        'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: {
+                  docs: { description: 'Description of no-foo.' },
+                  type: 'problem',
+                  fixable: 'code',
+                  hasSuggestions: true,
+                },
+                create(context) {},
+              },
+            },
+            configs: {
+              recommended: {
+                rules: { 'test/no-foo': 'error' },
+              },
+            },
+          };
+        `,
+      },
+    });
+
+    process.env['OPENAI_API_KEY'] = 'test-openai-key';
+    const fetchStub = stubFetch().resolves(
+      createOpenAiTextResponse(SAMPLE_AI_MARKDOWN),
+    );
+
+    try {
+      await generate(fixture.path, { ai: true, aiProvider: 'openai' });
+
+      const requestInit = fetchStub.firstCall.args[1] as {
+        body?: string;
+      };
+      const requestBody = JSON.parse(requestInit.body!) as {
+        messages?: { role: string; content: string }[];
+      };
+      const userMessage = requestBody.messages?.find(
+        (m) => m.role === 'user',
+      );
+      expect(userMessage!.content).toContain('Type: problem');
+      expect(userMessage!.content).toContain('Fixable: code');
+      expect(userMessage!.content).toContain('Has suggestions: true');
+      expect(userMessage!.content).toContain('Configs:');
+      expect(userMessage!.content).toContain('recommended');
+    } finally {
+      await fixture.cleanup();
+    }
+  });
+
+  it('throws with non-JSON error payload from provider', async function () {
+    const fixture = await setupFixture({
+      fixture: 'esm-base',
+      overrides: {
+        'docs/rules/no-foo.md': EXISTING_DOC,
+      },
+    });
+
+    process.env['OPENAI_API_KEY'] = 'test-openai-key';
+    stubFetch().resolves({
+      ok: false,
+      status: 502,
+      statusText: 'Bad Gateway',
+      json: () => Promise.resolve(null),
+    });
+
+    try {
+      await expect(
+        generate(fixture.path, { ai: true, aiProvider: 'openai' }),
+      ).rejects.toThrow('OpenAI request failed (502 Bad Gateway)');
+    } finally {
+      await fixture.cleanup();
+    }
+  });
+
   it('passes system prompt instructing not to include title', async function () {
     const fixture = await setupFixture({
       fixture: 'esm-base',
