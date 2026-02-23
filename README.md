@@ -10,6 +10,7 @@ Generates the following documentation covering a [wide variety](#column-and-noti
 - `README.md` configs table
 - Rule doc titles and notices
 - Rule doc options lists
+- AI-generated rule doc content (with [`--ai`](#--ai))
 
 Also performs [configurable](#configuration-options) section consistency checks on rule docs:
 
@@ -31,6 +32,7 @@ Also performs [configurable](#configuration-options) section consistency checks 
   - [Rule doc options lists](#rule-doc-options-lists)
   - [Users](#users)
 - [Configuration options](#configuration-options)
+  - [`--ai`](#--ai)
   - [Column and notice types](#column-and-notice-types)
   - [`--config-format`](#--config-format)
   - [`--rule-doc-title-format`](#--rule-doc-title-format)
@@ -191,7 +193,7 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--config-format` | The format to use for config names. See choices in below [table](#--config-format). | `name` |
 | `--ignore-config` | Config to ignore from being displayed. Often used for an `all` config. Option can be repeated. | |
 | `--ignore-deprecated-rules` | Whether to ignore deprecated rules from being checked, displayed, or updated. | `false` |
-| `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. | `false` |
+| `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. Can be paired with `--ai`. | `false` |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
 | `--rule-doc-notices` | Ordered, comma-separated list of notices to display in rule doc. Non-applicable notices will be hidden. See choices in below [table](#column-and-notice-types). | `configs`, `deprecated`, `fixableAndHasSuggestions`, `requiresTypeChecking`, `description` |
@@ -204,6 +206,29 @@ There's also a `postprocess` option that's only available via a [config file](#c
 | `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. Can be paired with `--ai`. | `false` |
 | `--url-configs` | Link to documentation about the ESLint configurations exported by the plugin. | |
 | `--url-rule-doc` | Link to documentation for each rule. Useful when it differs from the rule doc path on disk (e.g. custom documentation site in use). Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | |
+
+### `--ai`
+
+Enables AI-powered features using an external LLM provider. Requires a provider API key environment variable to be set.
+
+| Command | Behavior |
+| :-- | :-- |
+| `--ai` | Enhances existing rule docs with AI. Rewrites body content. |
+| `--ai --init-rule-docs` | Creates missing rule docs with AI-generated drafts. Existing docs are not touched. |
+| `--ai --suggest-emojis` | Only suggests emojis via AI. Prints table and exits. Rule docs are not touched. |
+| `--ai --check` | Disallowed. Throws an error because AI output is non-deterministic. |
+
+Supported provider environment variables:
+
+- `ANTHROPIC_API_KEY`
+- `GROQ_API_KEY`
+- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `TOGETHER_API_KEY`
+- `VERCEL_AI_GATEWAY_API_KEY`
+- `XAI_API_KEY`
+
+Use `--ai-provider` to select a provider when multiple API keys are set, and `--ai-model` to override the default model.
 
 ### Column and notice types
 
@@ -262,23 +287,7 @@ Example output:
 Generation strategy:
 
 - `--suggest-emojis` uses deterministic local suggestions only
-- `--suggest-emojis --ai` uses an external provider
-
-When `--ai` is used, suggestions will be generated using an external provider based on:
-
-- The provider environment variable specified
-- (optionally) `--ai-provider`
-- (optionally) `--ai-model`
-
-Supported provider environment variables:
-
-- `ANTHROPIC_API_KEY`
-- `GROQ_API_KEY`
-- `OPENAI_API_KEY`
-- `OPENROUTER_API_KEY`
-- `TOGETHER_API_KEY`
-- `VERCEL_AI_GATEWAY_API_KEY`
-- `XAI_API_KEY`
+- `--suggest-emojis --ai` uses an external provider (see [`--ai`](#--ai) for provider setup)
 
 ### Configuration file
 
