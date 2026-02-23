@@ -79,9 +79,7 @@ function buildUserPrompt(
   const createSource = getRuleCreateSource(rule);
   const configSummary = getConfigSummary(context, ruleName);
 
-  const sections: string[] = [];
-
-  sections.push(`Rule: ${context.pluginPrefix}/${ruleName}`);
+  const sections: string[] = [`Rule: ${context.pluginPrefix}/${ruleName}`];
 
   if (rule.meta?.docs?.description) {
     sections.push(`Description: ${rule.meta.docs.description}`);
@@ -99,7 +97,9 @@ function buildUserPrompt(
     sections.push(`Configs: ${configSummary}`);
   }
   if (ruleHasOptions && namedOptions.length > 0) {
-    sections.push(`Options schema:\n${JSON.stringify(namedOptions, null, 2)}`);
+    sections.push(
+      `Options schema:\n${JSON.stringify(namedOptions, undefined, 2)}`,
+    );
   }
   if (createSource) {
     sections.push(`Rule implementation:\n${createSource}`);
@@ -132,7 +132,7 @@ function sanitizeAiResponse(
   }
 
   // Strip leading title if the AI included one despite instructions.
-  const lines = result.split(/\r?\n/);
+  const lines = result.split(/\r?\n/u);
   if (lines[0] && /^#\s+/u.test(lines[0])) {
     lines.shift();
     result = lines.join(endOfLine).trimStart();
@@ -157,9 +157,7 @@ function sanitizeAiResponse(
  * Extract the body from a rule doc (everything after the header marker).
  * If the marker is not present (e.g. freshly-created skeleton), returns the entire content.
  */
-export function extractDocBody(
-  docContents: string,
-): string {
+export function extractDocBody(docContents: string): string {
   const markerIndex = docContents.indexOf(END_RULE_HEADER_MARKER);
   if (markerIndex === -1) {
     return docContents;
@@ -177,10 +175,7 @@ function extractOptionsListSection(body: string): string | undefined {
   if (beginIndex === -1 || endIndex === -1) {
     return undefined;
   }
-  return body.slice(
-    beginIndex,
-    endIndex + END_RULE_OPTIONS_LIST_MARKER.length,
-  );
+  return body.slice(beginIndex, endIndex + END_RULE_OPTIONS_LIST_MARKER.length);
 }
 
 /**
@@ -201,10 +196,7 @@ function stripOptionsListSection(body: string): string {
  * Replace the body in a rule doc (everything after the header marker) with new content.
  * If the marker is not present (e.g. freshly-created skeleton), replaces the entire content.
  */
-export function replaceDocBody(
-  docContents: string,
-  newBody: string,
-): string {
+export function replaceDocBody(docContents: string, newBody: string): string {
   const markerIndex = docContents.indexOf(END_RULE_HEADER_MARKER);
   if (markerIndex === -1) {
     return `${newBody}\n`;
@@ -227,8 +219,7 @@ function reinsertOptionsListSection(
 ): string {
   const optionsHeadingMatch = body.match(/^(##\s+Options\s*)$/mu);
   if (optionsHeadingMatch?.index !== undefined) {
-    const insertPos =
-      optionsHeadingMatch.index + optionsHeadingMatch[0].length;
+    const insertPos = optionsHeadingMatch.index + optionsHeadingMatch[0].length;
     const before = body.slice(0, insertPos);
     const after = body.slice(insertPos);
     return `${before}${endOfLine}${endOfLine}${optionsSection}${after}`;

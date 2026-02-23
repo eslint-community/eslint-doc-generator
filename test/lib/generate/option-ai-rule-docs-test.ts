@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { generate } from '../../../lib/generator.js';
-import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
+import { setupFixture } from '../../helpers/fixture.js';
 
 const PROVIDER_API_KEY_ENV_VARS = [
   'OPENAI_API_KEY',
@@ -84,6 +84,36 @@ interface FetchStubTarget {
 
 function stubFetch() {
   return sinon.stub(globalThis as unknown as FetchStubTarget, 'fetch');
+}
+
+function parseFetchBody(stub: sinon.SinonStub): Record<string, unknown> {
+  const requestInit: unknown = stub.firstCall.args[1];
+  if (
+    !requestInit ||
+    typeof requestInit !== 'object' ||
+    !('body' in requestInit)
+  ) {
+    throw new TypeError('Missing request init body in fetch call.');
+  }
+  const { body } = requestInit as { body: unknown };
+  if (typeof body !== 'string') {
+    throw new TypeError('Expected fetch request body to be a string.');
+  }
+  return JSON.parse(body) as Record<string, unknown>;
+}
+
+function findMessage(
+  body: Record<string, unknown>,
+  role: string,
+): { role: string; content: string } {
+  const messages = body['messages'] as
+    | { role: string; content: string }[]
+    | undefined;
+  const message = messages?.find((m) => m.role === role);
+  if (!message) {
+    throw new Error(`No message with role "${role}" found in request body.`);
+  }
+  return message;
 }
 
 const SAMPLE_AI_MARKDOWN = [
@@ -200,9 +230,7 @@ describe('generate (--ai rule docs)', function () {
     try {
       await expect(
         generate(fixture.path, { check: true, ai: true }),
-      ).rejects.toThrow(
-        '--check and --ai cannot be used together',
-      );
+      ).rejects.toThrow('--check and --ai cannot be used together');
     } finally {
       await fixture.cleanup();
     }
@@ -247,18 +275,10 @@ describe('generate (--ai rule docs)', function () {
         'https://api.openai.com/v1/chat/completions',
       );
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        model?: string;
-        temperature?: number;
-        response_format?: unknown;
-      };
-      expect(requestBody.model).toBe('gpt-5.2');
-      expect(requestBody.temperature).toBe(0.2);
-      // Text mode: no response_format
-      expect(requestBody.response_format).toBeUndefined();
+      const requestBody = parseFetchBody(fetchStub);
+      expect(requestBody['model']).toBe('gpt-5.2');
+      expect(requestBody['temperature']).toBe(0.2);
+      expect(requestBody['response_format']).toBeUndefined();
 
       const doc = await fixture.readFile('docs/rules/no-foo.md');
       expect(doc).toContain('## Examples');
@@ -293,17 +313,10 @@ describe('generate (--ai rule docs)', function () {
         'https://api.anthropic.com/v1/messages',
       );
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        model?: string;
-        max_tokens?: number;
-        temperature?: number;
-      };
-      expect(requestBody.model).toBe('claude-sonnet-4-6');
-      expect(requestBody.max_tokens).toBe(4096);
-      expect(requestBody.temperature).toBe(0.2);
+      const requestBody = parseFetchBody(fetchStub);
+      expect(requestBody['model']).toBe('claude-sonnet-4-6');
+      expect(requestBody['max_tokens']).toBe(4096);
+      expect(requestBody['temperature']).toBe(0.2);
 
       const doc = await fixture.readFile('docs/rules/no-foo.md');
       expect(doc).toContain('## Examples');
@@ -317,7 +330,8 @@ describe('generate (--ai rule docs)', function () {
     const fixture = await setupFixture({
       fixture: 'esm-base',
       overrides: {
-        'README.md': '# test\n\n<!-- begin auto-generated rules list -->\n<!-- end auto-generated rules list -->',
+        'README.md':
+          '# test\n\n<!-- begin auto-generated rules list -->\n<!-- end auto-generated rules list -->',
         'index.js': `
           export default {
             rules: {
@@ -384,19 +398,11 @@ describe('generate (--ai rule docs)', function () {
     try {
       await generate(fixture.path, { ai: true, aiProvider: 'openai' });
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        messages?: { role: string; content: string }[];
-      };
-      const userMessage = requestBody.messages?.find(
-        (m) => m.role === 'user',
-      );
-      expect(userMessage).toBeTruthy();
-      expect(userMessage!.content).toContain('test/no-foo');
-      expect(userMessage!.content).toContain('Description of no-foo');
-      expect(userMessage!.content).toContain('Old description');
+      const requestBody = parseFetchBody(fetchStub);
+      const userMessage = findMessage(requestBody, 'user');
+      expect(userMessage.content).toContain('test/no-foo');
+      expect(userMessage.content).toContain('Description of no-foo');
+      expect(userMessage.content).toContain('Old description');
     } finally {
       await fixture.cleanup();
     }
@@ -436,17 +442,10 @@ describe('generate (--ai rule docs)', function () {
     try {
       await generate(fixture.path, { ai: true, aiProvider: 'openai' });
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        messages?: { role: string; content: string }[];
-      };
-      const userMessage = requestBody.messages?.find(
-        (m) => m.role === 'user',
-      );
-      expect(userMessage!.content).toContain('Rule implementation');
-      expect(userMessage!.content).toContain('Identifier');
+      const requestBody = parseFetchBody(fetchStub);
+      const userMessage = findMessage(requestBody, 'user');
+      expect(userMessage.content).toContain('Rule implementation');
+      expect(userMessage.content).toContain('Identifier');
     } finally {
       await fixture.cleanup();
     }
@@ -469,17 +468,10 @@ describe('generate (--ai rule docs)', function () {
     try {
       await generate(fixture.path, { ai: true, aiProvider: 'openai' });
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        messages?: { role: string; content: string }[];
-      };
-      const userMessage = requestBody.messages?.find(
-        (m) => m.role === 'user',
-      );
-      expect(userMessage!.content).toContain('allowBar');
-      expect(userMessage!.content).toContain('Options schema');
+      const requestBody = parseFetchBody(fetchStub);
+      const userMessage = findMessage(requestBody, 'user');
+      expect(userMessage.content).toContain('allowBar');
+      expect(userMessage.content).toContain('Options schema');
     } finally {
       await fixture.cleanup();
     }
@@ -502,10 +494,9 @@ describe('generate (--ai rule docs)', function () {
       await generate(fixture.path, { ai: true, aiProvider: 'openai' });
 
       const doc = await fixture.readFile('docs/rules/no-foo.md');
-      // The body should not contain a duplicate title
-      const bodyAfterMarker = doc.split(
-        '<!-- end auto-generated rule header -->',
-      )[1]!;
+      const parts = doc.split('<!-- end auto-generated rule header -->');
+      const bodyAfterMarker = parts[1];
+      expect(bodyAfterMarker).toBeTruthy();
       expect(bodyAfterMarker).not.toContain('# no-foo');
       expect(bodyAfterMarker).toContain('## Examples');
     } finally {
@@ -523,9 +514,7 @@ describe('generate (--ai rule docs)', function () {
 
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     stubFetch().resolves(
-      createOpenAiTextResponse(
-        `\`\`\`markdown\n${SAMPLE_AI_MARKDOWN}\n\`\`\``,
-      ),
+      createOpenAiTextResponse(`\`\`\`markdown\n${SAMPLE_AI_MARKDOWN}\n\`\`\``),
     );
 
     try {
@@ -594,12 +583,8 @@ describe('generate (--ai rule docs)', function () {
 
       const doc = await fixture.readFile('docs/rules/no-foo.md');
       // Options markers should still be present (managed by existing code)
-      expect(doc).toContain(
-        '<!-- begin auto-generated rule options list -->',
-      );
-      expect(doc).toContain(
-        '<!-- end auto-generated rule options list -->',
-      );
+      expect(doc).toContain('<!-- begin auto-generated rule options list -->');
+      expect(doc).toContain('<!-- end auto-generated rule options list -->');
     } finally {
       await fixture.cleanup();
     }
@@ -644,9 +629,7 @@ describe('generate (--ai rule docs)', function () {
     try {
       await expect(
         generate(fixture.path, { ai: true, aiProvider: 'openai' }),
-      ).rejects.toThrow(
-        'OpenAI request failed (500 Internal Server Error)',
-      );
+      ).rejects.toThrow('OpenAI request failed (500 Internal Server Error)');
     } finally {
       await fixture.cleanup();
     }
@@ -688,20 +671,13 @@ describe('generate (--ai rule docs)', function () {
     try {
       await generate(fixture.path, { ai: true, aiProvider: 'openai' });
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        messages?: { role: string; content: string }[];
-      };
-      const userMessage = requestBody.messages?.find(
-        (m) => m.role === 'user',
-      );
-      expect(userMessage!.content).toContain('Type: problem');
-      expect(userMessage!.content).toContain('Fixable: code');
-      expect(userMessage!.content).toContain('Has suggestions: true');
-      expect(userMessage!.content).toContain('Configs:');
-      expect(userMessage!.content).toContain('recommended');
+      const requestBody = parseFetchBody(fetchStub);
+      const userMessage = findMessage(requestBody, 'user');
+      expect(userMessage.content).toContain('Type: problem');
+      expect(userMessage.content).toContain('Fixable: code');
+      expect(userMessage.content).toContain('Has suggestions: true');
+      expect(userMessage.content).toContain('Configs:');
+      expect(userMessage.content).toContain('recommended');
     } finally {
       await fixture.cleanup();
     }
@@ -720,7 +696,7 @@ describe('generate (--ai rule docs)', function () {
       ok: false,
       status: 502,
       statusText: 'Bad Gateway',
-      json: () => Promise.resolve(null),
+      json: () => Promise.resolve(undefined),
     });
 
     try {
@@ -748,20 +724,12 @@ describe('generate (--ai rule docs)', function () {
     try {
       await generate(fixture.path, { ai: true, aiProvider: 'openai' });
 
-      const requestInit = fetchStub.firstCall.args[1] as {
-        body?: string;
-      };
-      const requestBody = JSON.parse(requestInit.body!) as {
-        messages?: { role: string; content: string }[];
-      };
-      const systemMessage = requestBody.messages?.find(
-        (m) => m.role === 'system',
-      );
-      expect(systemMessage).toBeTruthy();
-      expect(systemMessage!.content).toContain(
+      const requestBody = parseFetchBody(fetchStub);
+      const systemMessage = findMessage(requestBody, 'system');
+      expect(systemMessage.content).toContain(
         'Do NOT include a top-level heading',
       );
-      expect(systemMessage!.content).toContain(
+      expect(systemMessage.content).toContain(
         'Do NOT include notice/badge lines',
       );
     } finally {

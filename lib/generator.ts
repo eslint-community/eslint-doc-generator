@@ -143,12 +143,19 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const contentsOldBuffer = await readFile(pathToDoc);
     let contentsOld = contentsOldBuffer.toString();
 
-    const shouldAiEnhance = ai && (!initRuleDocs || initializedRuleDocs.has(name));
+    const shouldAiEnhance =
+      ai && (!initRuleDocs || initializedRuleDocs.has(name));
     if (shouldAiEnhance) {
-      contentsOld = await enhanceRuleDocWithAi(context, name, rule, contentsOld, {
-        aiProvider,
-        aiModel,
-      });
+      contentsOld = await enhanceRuleDocWithAi(
+        context,
+        name,
+        rule,
+        contentsOld,
+        {
+          aiProvider,
+          aiModel,
+        },
+      );
     }
 
     const contentsNew = await postprocess(
