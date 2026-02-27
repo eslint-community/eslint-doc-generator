@@ -1,6 +1,8 @@
+import { join } from 'node:path';
 import { END_RULE_HEADER_MARKER } from './comment-markers.js';
 import {
   EMOJI_DEPRECATED,
+  EMOJI_DESCRIPTION,
   EMOJI_FIXABLE,
   EMOJI_HAS_SUGGESTIONS,
   EMOJI_REQUIRES_TYPE_CHECKING,
@@ -8,20 +10,12 @@ import {
   EMOJI_OPTIONS,
 } from './emojis.js';
 import { findConfigEmoji, getConfigsForRule } from './plugin-configs.js';
-import {
-  RuleModule,
-  DeprecatedInfo,
-  Plugin,
-  ConfigsToRules,
-  ConfigEmojis,
-  SEVERITY_TYPE,
-  NOTICE_TYPE,
-  UrlRuleDocFunction,
-  PathRuleDocFunction,
-  ReplacedByInfo,
-} from './types.js';
-import { RULE_TYPE, RULE_TYPE_MESSAGES_NOTICES } from './rule-type.js';
-import { RuleDocTitleFormat } from './rule-doc-title-format.js';
+import { getPluginRoot } from './package-json.js';
+import { SEVERITY_TYPE, NOTICE_TYPE } from './types.js';
+import type { RuleModule, DeprecatedInfo, ReplacedByInfo } from './types.js';
+import type { RULE_TYPE } from './rule-type.js';
+import { RULE_TYPE_MESSAGES_NOTICES } from './rule-type.js';
+import type { RuleDocTitleFormat } from './rule-doc-title-format.js';
 import { hasOptions } from './rule-options.js';
 import {
   getLinkToRule,
@@ -32,23 +26,24 @@ import {
   toSentenceCase,
   removeTrailingPeriod,
   addTrailingPeriod,
-  getEndOfLine,
 } from './string.js';
-import { ConfigFormat, configNameToDisplay } from './config-format.js';
-
-const EOL = getEndOfLine();
+import { configNameToDisplay } from './config-format.js';
+import type { Context } from './context.js';
 
 function severityToTerminology(severity: SEVERITY_TYPE) {
   switch (severity) {
     case SEVERITY_TYPE.error: {
       return 'is enabled';
     }
+
     case SEVERITY_TYPE.warn: {
       return '_warns_';
     }
+
     case SEVERITY_TYPE.off: {
       return 'is _disabled_';
     }
+
     /* istanbul ignore next -- this shouldn't happen */
     default: {
       throw new Error(`Unknown severity: ${String(severity)}`);
@@ -57,22 +52,19 @@ function severityToTerminology(severity: SEVERITY_TYPE) {
 }
 
 function configsToNoticeSentence(
+  context: Context,
   configs: readonly string[],
   severity: SEVERITY_TYPE,
   configsLinkOrWord: string,
   configLinkOrWord: string,
-  configEmojis: ConfigEmojis,
-  configFormat: ConfigFormat,
-  pluginPrefix: string,
 ): string | undefined {
   // Create CSV list of configs with their emojis.
   const csv = configs
     .map((config) => {
-      const emoji = findConfigEmoji(configEmojis, config);
+      const emoji = findConfigEmoji(context, config);
       return `${emoji ? `${emoji} ` : ''}\`${configNameToDisplay(
+        context,
         config,
-        configFormat,
-        pluginPrefix,
       )}\``;
     })
     .join(', ');
@@ -89,12 +81,9 @@ function configsToNoticeSentence(
 }
 
 function replacedByToNoticeSentence(
+  context: Context,
   deprecated: DeprecatedInfo,
-  plugin: Plugin,
-  pluginPrefix: string,
-  pathPlugin: string,
-  pathRuleDoc: string | PathRuleDocFunction,
-  urlRuleDoc: string | UrlRuleDocFunction | undefined,
+  pathCurrentPage: string,
 ): string | undefined {
   if (!deprecated.replacedBy || deprecated.replacedBy.length === 0) {
     return undefined;
@@ -105,34 +94,26 @@ function replacedByToNoticeSentence(
     idx: number,
     arr: ReplacedByInfo[],
   ): string | undefined {
-    // A plugin maintainer should at least specify a rule name
     if (!info.rule?.name) {
       return undefined;
     }
 
     const conjunction = arr.length > 1 && idx === arr.length - 1 ? 'and ' : '';
 
-    // @todo - generate (deprecated rules)
-    // using prefix ahead of replacement rule name uses correct replacement rule link 4
-    // with nested rule names has the correct links, especially replacement rule link 5
-    // with --path-rule-doc has the correct links, especially replacement rule link 5
     const replacementRule = info.rule.url
       ? getMarkdownLink(info.rule.name, true, info.rule.url)
       : getLinkToRule(
+          context,
           info.rule.name,
-          plugin,
-          pluginPrefix,
-          pathPlugin,
-          pathRuleDoc,
-          replaceRulePlaceholder(pathRuleDoc, info.rule.name),
+          pathCurrentPage,
           true,
           true,
-          urlRuleDoc,
         );
 
-    const externalPlugin = info.plugin?.name && info.plugin.name !== 'eslint'
-      ? ` from ${getMarkdownLink(info.plugin.name, false, info.plugin.url)}`
-      : '';
+    const externalPlugin =
+      info.plugin?.name && info.plugin.name !== 'eslint'
+        ? ` from ${getMarkdownLink(info.plugin.name, false, info.plugin.url)}`
+        : '';
 
     return `${conjunction}${replacementRule}${externalPlugin}${
       info.message ? ` (${info.message})` : ''
@@ -150,43 +131,38 @@ const NOTICE_FIXABLE = `${EMOJI_FIXABLE} This rule is automatically fixable by t
 const NOTICE_HAS_SUGGESTIONS = `${EMOJI_HAS_SUGGESTIONS} This rule is manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).`;
 
 /**
- * An object containing the text for each notice type (as a string or function to generate the string).
+ * An object containing the text for each notice type (as a string or function to generate the
+ * string).
  */
 const RULE_NOTICES: {
   [key in NOTICE_TYPE]:
     | string
     | undefined
     | ((data: {
+        context: Context;
         ruleName: string;
         configsError: readonly string[];
         configsWarn: readonly string[];
         configsOff: readonly string[];
-        configEmojis: ConfigEmojis;
-        configFormat: ConfigFormat;
         description?: string;
         fixable: boolean;
         hasSuggestions: boolean;
-        urlConfigs?: string;
         deprecated: boolean | DeprecatedInfo | undefined;
         replacedBy: readonly string[] | undefined;
-        plugin: Plugin;
-        pluginPrefix: string;
-        pathPlugin: string;
-        pathRuleDoc: string | PathRuleDocFunction;
-        type?: `${RULE_TYPE}`;
-        urlRuleDoc?: string | UrlRuleDocFunction;
+        path: string;
+        type?: RULE_TYPE;
       }) => string);
 } = {
   // Configs notice varies based on whether the rule is configured in one or more configs.
   [NOTICE_TYPE.CONFIGS]: ({
+    context,
     configsError,
     configsWarn,
     configsOff,
-    configEmojis,
-    configFormat,
-    pluginPrefix,
-    urlConfigs,
   }) => {
+    const { options } = context;
+    const { urlConfigs } = options;
+
     // Add link to configs documentation if provided.
     const configsLinkOrWord = urlConfigs
       ? `[configs](${urlConfigs})`
@@ -218,31 +194,25 @@ const RULE_NOTICES: {
 
     const sentences = [
       configsToNoticeSentence(
+        context,
         configsError,
         SEVERITY_TYPE.error,
         configsLinkOrWord,
         configLinkOrWord,
-        configEmojis,
-        configFormat,
-        pluginPrefix,
       ),
       configsToNoticeSentence(
+        context,
         configsWarn,
         SEVERITY_TYPE.warn,
         configsLinkOrWord,
         configLinkOrWord,
-        configEmojis,
-        configFormat,
-        pluginPrefix,
       ),
       configsToNoticeSentence(
+        context,
         configsOff,
         SEVERITY_TYPE.off,
         configsLinkOrWord,
         configLinkOrWord,
-        configEmojis,
-        configFormat,
-        pluginPrefix,
       ),
     ]
       .filter(Boolean)
@@ -251,16 +221,15 @@ const RULE_NOTICES: {
     return `${emojis.join('')} ${sentences}`;
   },
 
-  [NOTICE_TYPE.DEPRECATED]: ({
-    deprecated,
-    replacedBy,
-    plugin,
-    pluginPrefix,
-    pathPlugin,
-    pathRuleDoc,
-    ruleName,
-    urlRuleDoc,
-  }) => {
+  [NOTICE_TYPE.DEPRECATED]: ({ context, deprecated, replacedBy, ruleName }) => {
+    const { options, path } = context;
+    const { pathRuleDoc } = options;
+    // pathCurrentPage must be an absolute path for relative() to work correctly in getLinkToRule.
+    const pathCurrentPage = join(
+      getPluginRoot(path),
+      replaceRulePlaceholder(pathRuleDoc, ruleName),
+    );
+
     if (typeof deprecated === 'object') {
       const sentenceDeprecated = `${EMOJI_DEPRECATED} This rule ${
         deprecated.deprecatedSince ? 'has been' : 'is'
@@ -275,12 +244,9 @@ const RULE_NOTICES: {
       }.`;
 
       const sentenceReplacedBy = replacedByToNoticeSentence(
+        context,
         deprecated,
-        plugin,
-        pluginPrefix,
-        pathPlugin,
-        pathRuleDoc,
-        urlRuleDoc,
+        pathCurrentPage,
       );
 
       const deprecatedMessage = deprecated.message
@@ -292,18 +258,16 @@ const RULE_NOTICES: {
         .join(' ');
     }
 
-    const replacementRuleList = (replacedBy ?? []).map((replacementRuleName) =>
-      getLinkToRule(
-        replacementRuleName,
-        plugin,
-        pluginPrefix,
-        pathPlugin,
-        pathRuleDoc,
-        replaceRulePlaceholder(pathRuleDoc, ruleName),
-        true,
-        true,
-        urlRuleDoc,
-      ),
+    const replacementRuleList = (replacedBy ?? []).map(
+      (replacementRuleName) => {
+        return getLinkToRule(
+          context,
+          replacementRuleName,
+          pathCurrentPage,
+          true,
+          true,
+        );
+      },
     );
 
     return `${EMOJI_DEPRECATED} This rule is deprecated.${
@@ -320,8 +284,9 @@ const RULE_NOTICES: {
         'Should not be trying to display description notice for rule with no description.',
       );
     }
+
     // Return the description like a normal body sentence.
-    return addTrailingPeriod(toSentenceCase(description));
+    return `${EMOJI_DESCRIPTION} ${addTrailingPeriod(toSentenceCase(description))}`;
   },
 
   [NOTICE_TYPE.TYPE]: ({ type }) => {
@@ -331,6 +296,7 @@ const RULE_NOTICES: {
         'Should not be trying to display type notice for rule with no type.',
       );
     }
+
     return RULE_TYPE_MESSAGES_NOTICES[type];
   },
 
@@ -339,11 +305,15 @@ const RULE_NOTICES: {
   [NOTICE_TYPE.FIXABLE_AND_HAS_SUGGESTIONS]: ({ fixable, hasSuggestions }) => {
     if (fixable && hasSuggestions) {
       return `${EMOJI_FIXABLE}${EMOJI_HAS_SUGGESTIONS} This rule is automatically fixable by the [\`--fix\` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix) and manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).`;
-    } else if (fixable) {
+    }
+    if (fixable) {
       return NOTICE_FIXABLE;
-    } else if (hasSuggestions) {
+    }
+    /* istanbul ignore else -- V8 branch coverage doesn't detect this branch is tested */
+    if (hasSuggestions) {
       return NOTICE_HAS_SUGGESTIONS;
     }
+
     /* istanbul ignore next -- this shouldn't happen */
     throw new Error(
       'Should not be trying to display fixable and has suggestions column when neither apply.',
@@ -359,12 +329,15 @@ const RULE_NOTICES: {
  * Determine which notices should and should not be included at the top of a rule doc.
  */
 function getNoticesForRule(
+  context: Context,
   rule: RuleModule,
   configsError: readonly string[],
   configsWarn: readonly string[],
   configsOff: readonly string[],
-  ruleDocNotices: readonly NOTICE_TYPE[],
 ) {
+  const { options } = context;
+  const { ruleDocNotices } = options;
+
   const notices: {
     [key in NOTICE_TYPE]: boolean;
   } = {
@@ -373,7 +346,7 @@ function getNoticesForRule(
       configsError.length > 0 ||
       configsWarn.length > 0 ||
       configsOff.length > 0,
-    [NOTICE_TYPE.DEPRECATED]: Boolean(rule.meta?.deprecated) || false,
+    [NOTICE_TYPE.DEPRECATED]: Boolean(rule.meta?.deprecated),
     [NOTICE_TYPE.DESCRIPTION]: Boolean(rule.meta?.docs?.description) || false,
 
     // Fixable/suggestions.
@@ -398,20 +371,10 @@ function getNoticesForRule(
 /**
  * Get the lines for the notice section at the top of a rule doc.
  */
-function getRuleNoticeLines(
-  ruleName: string,
-  plugin: Plugin,
-  configsToRules: ConfigsToRules,
-  pluginPrefix: string,
-  pathPlugin: string,
-  pathRuleDoc: string | PathRuleDocFunction,
-  configEmojis: ConfigEmojis,
-  configFormat: ConfigFormat,
-  ignoreConfig: readonly string[],
-  ruleDocNotices: readonly NOTICE_TYPE[],
-  urlConfigs?: string,
-  urlRuleDoc?: string | UrlRuleDocFunction,
-) {
+function getRuleNoticeLines(context: Context, ruleName: string) {
+  const { path, options, plugin } = context;
+  const { ignoreConfig } = options;
+
   const lines: string[] = [];
 
   const rule = plugin.rules?.[ruleName];
@@ -428,32 +391,29 @@ function getRuleNoticeLines(
   }
 
   const configsError = getConfigsForRule(
+    context,
     ruleName,
-    configsToRules,
-    pluginPrefix,
     SEVERITY_TYPE.error,
   ).filter((configName) => !ignoreConfig.includes(configName));
 
   const configsWarn = getConfigsForRule(
+    context,
     ruleName,
-    configsToRules,
-    pluginPrefix,
     SEVERITY_TYPE.warn,
   ).filter((configName) => !ignoreConfig.includes(configName));
 
   const configsOff = getConfigsForRule(
+    context,
     ruleName,
-    configsToRules,
-    pluginPrefix,
     SEVERITY_TYPE.off,
   ).filter((configName) => !ignoreConfig.includes(configName));
 
   const notices = getNoticesForRule(
+    context,
     rule,
     configsError,
     configsWarn,
     configsOff,
-    ruleDocNotices,
   );
 
   let noticeType: keyof typeof notices;
@@ -476,27 +436,23 @@ function getRuleNoticeLines(
       continue;
     }
 
+    const description = rule.meta?.docs?.description;
     lines.push(
       typeof ruleNoticeStrOrFn === 'function'
         ? ruleNoticeStrOrFn({
+            context,
             ruleName,
             configsError,
             configsWarn,
             configsOff,
-            configEmojis,
-            configFormat,
-            description: rule.meta?.docs?.description,
+            ...(description !== undefined && { description }),
             fixable: Boolean(rule.meta?.fixable),
             hasSuggestions: Boolean(rule.meta?.hasSuggestions),
-            urlConfigs,
             deprecated: rule.meta?.deprecated,
-            replacedBy: rule.meta?.replacedBy, // eslint-disable-line @typescript-eslint/no-deprecated
-            plugin,
-            pluginPrefix,
-            pathPlugin,
-            pathRuleDoc,
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            replacedBy: rule.meta?.replacedBy,
+            path,
             type: rule.meta?.type,
-            urlRuleDoc,
           })
         : ruleNoticeStrOrFn,
     );
@@ -506,11 +462,13 @@ function getRuleNoticeLines(
 }
 
 function makeRuleDocTitle(
+  context: Context,
   name: string,
   description: string | undefined,
-  pluginPrefix: string,
-  ruleDocTitleFormat: RuleDocTitleFormat,
 ) {
+  const { options, pluginPrefix } = context;
+  const { ruleDocTitleFormat } = options;
+
   const descriptionFormatted = description
     ? removeTrailingPeriod(toSentenceCase(description))
     : undefined;
@@ -526,16 +484,18 @@ function makeRuleDocTitle(
         ruleDocTitleFormatWithFallback = 'prefix-name';
         break;
       }
+
       case 'desc-parens-name': {
         ruleDocTitleFormatWithFallback = 'name';
         break;
       }
+
       /* istanbul ignore next -- this shouldn't happen */
       default: {
         throw new Error(
-          `Unhandled rule doc title format fallback: ${String(
-            ruleDocTitleFormatWithFallback,
-          )}`,
+          `Unhandled rule doc title format fallback: ${
+            ruleDocTitleFormatWithFallback
+          }`,
         );
       }
     }
@@ -552,6 +512,7 @@ function makeRuleDocTitle(
       }
       return `# ${descriptionFormatted}`;
     }
+
     case 'desc-parens-name': {
       /* istanbul ignore next -- this shouldn't happen */
       if (!descriptionFormatted) {
@@ -561,6 +522,7 @@ function makeRuleDocTitle(
       }
       return `# ${descriptionFormatted} (\`${name}\`)`;
     }
+
     case 'desc-parens-prefix-name': {
       /* istanbul ignore next -- this shouldn't happen */
       if (!descriptionFormatted) {
@@ -570,12 +532,15 @@ function makeRuleDocTitle(
       }
       return `# ${descriptionFormatted} (\`${pluginPrefix}/${name}\`)`;
     }
+
     case 'name': {
       return `# ${name}`;
     }
+
     case 'prefix-name': {
       return `# ${pluginPrefix}/${name}`;
     }
+
     /* istanbul ignore next -- this shouldn't happen */
     default: {
       throw new Error(
@@ -592,38 +557,16 @@ function makeRuleDocTitle(
  * @returns {string} - new header including marker
  */
 export function generateRuleHeaderLines(
+  context: Context,
   description: string | undefined,
   name: string,
-  plugin: Plugin,
-  configsToRules: ConfigsToRules,
-  pluginPrefix: string,
-  pathPlugin: string,
-  pathRuleDoc: string | PathRuleDocFunction,
-  configEmojis: ConfigEmojis,
-  configFormat: ConfigFormat,
-  ignoreConfig: readonly string[],
-  ruleDocNotices: readonly NOTICE_TYPE[],
-  ruleDocTitleFormat: RuleDocTitleFormat,
-  urlConfigs?: string,
-  urlRuleDoc?: string | UrlRuleDocFunction,
 ): string {
+  const { endOfLine } = context;
+
   return [
-    makeRuleDocTitle(name, description, pluginPrefix, ruleDocTitleFormat),
-    ...getRuleNoticeLines(
-      name,
-      plugin,
-      configsToRules,
-      pluginPrefix,
-      pathPlugin,
-      pathRuleDoc,
-      configEmojis,
-      configFormat,
-      ignoreConfig,
-      ruleDocNotices,
-      urlConfigs,
-      urlRuleDoc,
-    ),
+    makeRuleDocTitle(context, name, description),
+    ...getRuleNoticeLines(context, name),
     '',
     END_RULE_HEADER_MARKER,
-  ].join(EOL);
+  ].join(endOfLine);
 }

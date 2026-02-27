@@ -1,4 +1,6 @@
-# Enforce using bar (`test/prefer-bar`)
+# test/prefer-bar
+
+📝 Enforce using bar.
 
 💼⚠️ This rule is enabled in the ✅ `recommended` config. This rule _warns_ in the 🎨 `stylistic` config.
 

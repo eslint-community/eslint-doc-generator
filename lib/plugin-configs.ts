@@ -1,18 +1,14 @@
+import type { Context } from './context.js';
 import { SEVERITY_TYPE_TO_SET } from './types.js';
-import type {
-  Plugin,
-  ConfigsToRules,
-  ConfigEmojis,
-  SEVERITY_TYPE,
-} from './types.js';
+import type { SEVERITY_TYPE } from './types.js';
 
 export function getConfigsThatSetARule(
-  plugin: Plugin,
-  configsToRules: ConfigsToRules,
-  pluginPrefix: string,
-  ignoreConfig: readonly string[],
+  context: Context,
   severityType?: SEVERITY_TYPE,
 ) {
+  const { configsToRules, options, plugin } = context;
+  const { ignoreConfig } = options;
+
   /* istanbul ignore next -- this shouldn't happen */
   if (!plugin.rules) {
     throw new Error('Missing rules in plugin.');
@@ -23,18 +19,15 @@ export function getConfigsThatSetARule(
       .filter(([configName]) =>
         // Only consider configs that configure at least one of the plugin's rules.
         ruleNames.some((ruleName) =>
-          getConfigsForRule(
-            ruleName,
-            configsToRules,
-            pluginPrefix,
-            severityType,
-          ).includes(configName),
+          getConfigsForRule(context, ruleName, severityType).includes(
+            configName,
+          ),
         ),
       )
       // Filter out ignored configs.
       .filter(([configName]) => !ignoreConfig.includes(configName))
       .map(([configName]) => configName)
-      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+      .toSorted((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
   );
 }
 
@@ -43,18 +36,29 @@ export function getConfigsThatSetARule(
  * @param severityType - Include configs that set the rule to this severity. Omit to allow any severity.
  */
 export function getConfigsForRule(
+  context: Context,
   ruleName: string,
-  configsToRules: ConfigsToRules,
-  pluginPrefix: string,
   severityType?: SEVERITY_TYPE,
 ) {
+  const { configsToRules, options, pluginPrefix } = context;
+  const { ignoreConfig } = options;
+
+  const configsToRulesWithoutIgnored = Object.fromEntries(
+    Object.entries(configsToRules).filter(
+      ([configName]) => !ignoreConfig.includes(configName),
+    ),
+  );
+
   const severity = severityType
     ? SEVERITY_TYPE_TO_SET[severityType]
     : undefined;
   const configNames: Array<keyof typeof configsToRules> = [];
 
-  for (const configName in configsToRules) {
+  for (const configName in configsToRulesWithoutIgnored) {
     const rules = configsToRules[configName];
+    if (!rules) {
+      continue;
+    }
     const value = rules[`${pluginPrefix}/${ruleName}`];
     const isSet =
       ((typeof value === 'string' || typeof value === 'number') &&
@@ -69,67 +73,50 @@ export function getConfigsForRule(
     }
   }
 
-  return configNames.sort((a, b) =>
+  return configNames.toSorted((a, b) =>
     a.toLowerCase().localeCompare(b.toLowerCase()),
   );
 }
 
 /**
  * Find the representation of a config to display.
- * @param configEmojis - known list of configs and corresponding emojis
+ * @param context - the context object
  * @param configName - name of the config to find an emoji for
- * @param options
- * @param options.fallback - if true and no emoji is found, choose whether to fallback to a badge.
- * @returns the string to display for the config
+ * @returns the emoji string to display for the config, or undefined if not found
  */
 export function findConfigEmoji(
-  configEmojis: ConfigEmojis,
+  context: Context,
   configName: string,
-  options?: {
-    fallback?: 'badge';
-  },
-) {
-  let emoji = configEmojis.find(
-    (configEmoji) => configEmoji.config === configName,
-  )?.emoji;
-  if (!emoji) {
-    if (options?.fallback === 'badge') {
-      emoji = `![badge-${configName}][]`;
-    } else {
-      // No fallback.
-      return undefined;
-    }
-  }
+): string | undefined {
+  const { options } = context;
+  const { configEmojis } = options;
 
-  return emoji;
+  return configEmojis.find((configEmoji) => configEmoji.config === configName)
+    ?.emoji;
 }
 
 /**
  * Get the emojis for the configs that set a rule to a certain severity.
+ * Throws an error if a config is missing an emoji.
  */
 export function getEmojisForConfigsSettingRuleToSeverity(
+  context: Context,
   ruleName: string,
-  configsToRulesWithoutIgnored: ConfigsToRules,
-  pluginPrefix: string,
-  configEmojis: ConfigEmojis,
   severityType: SEVERITY_TYPE,
 ) {
   const configsOfThisSeverity = getConfigsForRule(
+    context,
     ruleName,
-    configsToRulesWithoutIgnored,
-    pluginPrefix,
     severityType,
   );
 
   const emojis: string[] = [];
   for (const configName of configsOfThisSeverity) {
-    // Find the emoji for each config or otherwise use a badge that can be defined in markdown.
-    const emoji = findConfigEmoji(configEmojis, configName, {
-      fallback: 'badge',
-    });
-    /* istanbul ignore next -- this shouldn't happen */
-    if (typeof emoji !== 'string') {
-      throw new TypeError('Emoji will always be a string thanks to fallback');
+    const emoji = findConfigEmoji(context, configName);
+    if (!emoji) {
+      throw new Error(
+        `Config "${configName}" does not have an emoji. Please provide one using the --config-emoji option or ignore the config using --ignore-config.`,
+      );
     }
     emojis.push(emoji);
   }

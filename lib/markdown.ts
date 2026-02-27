@@ -1,6 +1,6 @@
-import { getEndOfLine } from './string.js';
-
 // General helpers for dealing with markdown files / content.
+
+import type { Context } from './context.js';
 
 /**
  * Replace the header of a doc up to and including the specified marker.
@@ -10,13 +10,14 @@ import { getEndOfLine } from './string.js';
  * @param marker - marker to indicate end of header
  */
 export function replaceOrCreateHeader(
+  context: Context,
   markdown: string,
   newHeader: string,
   marker: string,
 ) {
-  const EOL = getEndOfLine();
+  const { endOfLine } = context;
 
-  const lines = markdown.split(EOL);
+  const lines = markdown.split(endOfLine);
 
   const titleLineIndex = lines.findIndex((line) => line.startsWith('# '));
   const markerLineIndex = lines.indexOf(marker);
@@ -26,31 +27,32 @@ export function replaceOrCreateHeader(
   // Any YAML front matter or anything else above the title should be kept as-is ahead of the new header.
   const preHeader = lines
     .slice(0, Math.max(titleLineIndex, dashesLineIndex2 + 1))
-    .join(EOL);
+    .join(endOfLine);
 
   // Anything after the marker comment, title, or YAML front matter should be kept as-is after the new header.
   const postHeader = lines
     .slice(
       Math.max(markerLineIndex + 1, titleLineIndex + 1, dashesLineIndex2 + 1),
     )
-    .join(EOL);
+    .join(endOfLine);
 
   return `${
-    preHeader ? `${preHeader}${EOL}` : ''
-  }${newHeader}${EOL}${postHeader}`;
+    preHeader ? `${preHeader}${endOfLine}` : ''
+  }${newHeader}${endOfLine}${postHeader}`;
 }
 
 /**
  * Find the section most likely to be the top-level section for a given string.
  */
 export function findSectionHeader(
+  context: Context,
   markdown: string,
   str: string,
 ): string | undefined {
-  const EOL = getEndOfLine();
+  const { endOfLine } = context;
 
   // Get all the matching strings.
-  const regexp = new RegExp(`## .*${str}.*${EOL}`, 'giu');
+  const regexp = new RegExp(`## .*${str}.*${endOfLine}`, 'giu');
   const sectionPotentialMatches = [...markdown.matchAll(regexp)].map(
     (match) => match[0],
   );
@@ -66,16 +68,18 @@ export function findSectionHeader(
   }
 
   // Otherwise assume the shortest match is the correct one.
-  return sectionPotentialMatches.sort(
+  return sectionPotentialMatches.toSorted(
     (a: string, b: string) => a.length - b.length,
   )[0];
 }
 
-export function findFinalHeaderLevel(str: string) {
-  const EOL = getEndOfLine();
+export function findFinalHeaderLevel(context: Context, str: string) {
+  const { endOfLine } = context;
 
-  const lines = str.split(EOL);
-  const finalHeader = lines.reverse().find((line) => line.match('^(#+) .+$'));
+  const lines = str.split(endOfLine);
+  const finalHeader = lines
+    .toReversed()
+    .find((line) => line.match('^(#+) .+$'));
   return finalHeader ? finalHeader.indexOf(' ') : undefined;
 }
 
@@ -113,13 +117,14 @@ export function expectContentOrFail(
 }
 
 export function expectSectionHeaderOrFail(
+  context: Context,
   contentName: string,
   contents: string,
   possibleHeaders: readonly string[],
   expected: boolean,
 ) {
   const found = possibleHeaders.some((header) =>
-    findSectionHeader(contents, header),
+    findSectionHeader(context, contents, header),
   );
   if (found !== expected) {
     if (possibleHeaders.length > 1) {

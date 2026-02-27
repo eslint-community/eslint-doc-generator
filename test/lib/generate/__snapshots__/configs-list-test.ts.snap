@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (configs list) basic generates the documentation 1`] = `
+exports[`generate (configs list) > basic > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -19,7 +19,7 @@ exports[`generate (configs list) basic generates the documentation 1`] = `
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) when a config description needs to be escaped in table generates the documentation 1`] = `
+exports[`generate (configs list) > when a config description needs to be escaped in table > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -38,7 +38,7 @@ exports[`generate (configs list) when a config description needs to be escaped i
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) when a config exports a description property=description generates the documentation 1`] = `
+exports[`generate (configs list) > when a config exports a description > property=description > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -58,7 +58,7 @@ exports[`generate (configs list) when a config exports a description property=de
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) when a config exports a description property=meta.description generates the documentation 1`] = `
+exports[`generate (configs list) > when a config exports a description > property=meta.description > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -78,7 +78,7 @@ exports[`generate (configs list) when a config exports a description property=me
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) when a config exports a description property=meta.docs.description generates the documentation 1`] = `
+exports[`generate (configs list) > when a config exports a description > property=meta.docs.description > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -98,7 +98,7 @@ exports[`generate (configs list) when a config exports a description property=me
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) when all configs are ignored generates the documentation 1`] = `
+exports[`generate (configs list) > when all configs are ignored > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -112,7 +112,7 @@ exports[`generate (configs list) when all configs are ignored generates the docu
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) when there are no configs generates the documentation 1`] = `
+exports[`generate (configs list) > when there are no configs > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -126,7 +126,7 @@ exports[`generate (configs list) when there are no configs generates the documen
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) with --config-format generates the documentation 1`] = `
+exports[`generate (configs list) > with --config-format > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -145,7 +145,7 @@ exports[`generate (configs list) with --config-format generates the documentatio
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) with --ignore-config generates the documentation 1`] = `
+exports[`generate (configs list) > with --ignore-config > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -164,7 +164,7 @@ exports[`generate (configs list) with --ignore-config generates the documentatio
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) with configs not defined in alphabetical order generates the documentation 1`] = `
+exports[`generate (configs list) > with configs not defined in alphabetical order > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 

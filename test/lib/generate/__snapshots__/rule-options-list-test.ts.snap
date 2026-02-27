@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (rule options list) basic generates the documentation 1`] = `
+exports[`generate (rule options list) > basic > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -24,7 +24,7 @@ exports[`generate (rule options list) basic generates the documentation 1`] = `
 <!-- end auto-generated rule options list -->"
 `;
 
-exports[`generate (rule options list) displays default column even when only falsy value, hiding deprecated/required cols with only falsy value generates the documentation 1`] = `
+exports[`generate (rule options list) > displays default column even when only falsy value, hiding deprecated/required cols with only falsy value > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -38,7 +38,7 @@ exports[`generate (rule options list) displays default column even when only fal
 <!-- end auto-generated rule options list -->"
 `;
 
-exports[`generate (rule options list) with no marker comments generates the documentation 1`] = `
+exports[`generate (rule options list) > with no marker comments > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -46,7 +46,7 @@ exports[`generate (rule options list) with no marker comments generates the docu
 foo"
 `;
 
-exports[`generate (rule options list) with no options generates the documentation 1`] = `
+exports[`generate (rule options list) > with no options > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -58,7 +58,7 @@ exports[`generate (rule options list) with no options generates the documentatio
 <!-- end auto-generated rule options list -->"
 `;
 
-exports[`generate (rule options list) with string that needs to be escaped in table generates the documentation 1`] = `
+exports[`generate (rule options list) > with string that needs to be escaped in table > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->

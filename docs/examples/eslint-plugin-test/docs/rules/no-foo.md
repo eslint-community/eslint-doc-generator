@@ -1,4 +1,6 @@
-# Disallow using foo (`test/no-foo`)
+# test/no-foo
+
+📝 Disallow using foo.
 
 💼 This rule is enabled in the ✅ `recommended` config.
 

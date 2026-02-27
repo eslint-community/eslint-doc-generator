@@ -1,26 +1,16 @@
 import { generate } from '../../../lib/generator.js';
-import mockFs from 'mock-fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
-import { jest } from '@jest/globals';
+import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 import { outdent } from 'outdent';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const PATH_NODE_MODULES = resolve(__dirname, '..', '..', '..', 'node_modules');
 
 describe('generate (comment markers)', function () {
   describe('with one blank line around comment markers', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          type: 'module',
-          exports: 'index.js',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
                       export default {
                         rules: {
                           'no-foo': {
@@ -29,55 +19,48 @@ describe('generate (comment markers)', function () {
                           },
                         },
                       };`,
+          'README.md': outdent`
+            # Rules
 
-        'README.md': outdent`
-          # Rules
+            One blank line after this.
 
-          One blank line after this.
-
-          <!-- begin auto-generated rules list -->
+            <!-- begin auto-generated rules list -->
 
 
-          <!-- end auto-generated rules list -->
+            <!-- end auto-generated rules list -->
 
-          One blank line before this.
-        `,
+            One blank line before this.
+          `,
+          'docs/rules/no-foo.md': outdent`
+            <!-- end auto-generated rule header -->
 
-        'docs/rules/no-foo.md': outdent`
-          <!-- end auto-generated rule header -->
-
-          One blank line before this.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+            One blank line before this.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('generates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('with no blank lines around comment markers', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          type: 'module',
-          exports: 'index.js',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
                       export default {
                         rules: {
                           'no-foo': {
@@ -86,50 +69,43 @@ describe('generate (comment markers)', function () {
                           },
                         },
                       };`,
+          'README.md': outdent`
+            # Rules
 
-        'README.md': outdent`
-          # Rules
-
-          No blank line after this.
-          <!-- begin auto-generated rules list -->
-          <!-- end auto-generated rules list -->
-          No blank line before this.
-        `,
-
-        'docs/rules/no-foo.md': outdent`
-          <!-- end auto-generated rule header -->
-          No blank line before this.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+            No blank line after this.
+            <!-- begin auto-generated rules list -->
+            <!-- end auto-generated rules list -->
+            No blank line before this.
+          `,
+          'docs/rules/no-foo.md': outdent`
+            <!-- end auto-generated rule header -->
+            No blank line before this.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('generates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('no existing comment markers - with no blank lines in existing content', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          type: 'module',
-          exports: 'index.js',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
                       export default {
                         rules: {
                           'no-foo': {
@@ -138,46 +114,39 @@ describe('generate (comment markers)', function () {
                           },
                         },
                       };`,
-
-        'README.md': outdent`
-          ## Rules
-          Existing rules section content.
-        `,
-
-        'docs/rules/no-foo.md': outdent`
-          # no-foo
-          Existing rule doc content.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': outdent`
+            ## Rules
+            Existing rules section content.
+          `,
+          'docs/rules/no-foo.md': outdent`
+            # no-foo
+            Existing rule doc content.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('generates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('no existing comment markers - with one blank line around existing content', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          type: 'module',
-          exports: 'index.js',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
                       export default {
                         rules: {
                           'no-foo': {
@@ -186,48 +155,41 @@ describe('generate (comment markers)', function () {
                           },
                         },
                       };`,
+          'README.md': outdent`
+            ## Rules
 
-        'README.md': outdent`
-          ## Rules
+            Existing rules section content.
+          `,
+          'docs/rules/no-foo.md': outdent`
+            # no-foo
 
-          Existing rules section content.
-        `,
-
-        'docs/rules/no-foo.md': outdent`
-          # no-foo
-
-          Existing rule doc content.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+            Existing rule doc content.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('generates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('no existing comment markers - minimal doc content', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          type: 'module',
-          exports: 'index.js',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
                       export default {
                         rules: {
                           'no-foo': {
@@ -236,89 +198,75 @@ describe('generate (comment markers)', function () {
                           },
                         },
                       };`,
-
-        'README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('generates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('no existing comment markers - rule doc with YAML-formatted metadata (front matter) above title', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: { 'no-foo': { meta: { docs: { description: 'Description.' }, }, create(context) {} }, },
             configs: { recommended: { rules: { 'test/no-foo': 'error', } } }
           };`,
-
-        'README.md': '## Rules\n',
-
-        // YAML-formatted metadata (front matter) content above title.
-        'docs/rules/no-foo.md': outdent`
-          ---
-          pageClass: "rule-details"
-          sidebarDepth: 0
-          title: "plugin/rule-name"
-          description: "disallow foo"
-          since: "v0.12.0"
-          ---
-          # Some pre-existing title.
-          Pre-existing notice about the rule being recommended.
-          ## Rule details
-          Details.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          // YAML-formatted metadata (front matter) content above title.
+          'docs/rules/no-foo.md': outdent`
+            ---
+            pageClass: "rule-details"
+            sidebarDepth: 0
+            title: "plugin/rule-name"
+            description: "disallow foo"
+            since: "v0.12.0"
+            ---
+            # Some pre-existing title.
+            Pre-existing notice about the rule being recommended.
+            ## Rule details
+            Details.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('updates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('README missing rule list markers but with rules section', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -328,47 +276,42 @@ describe('generate (comment markers)', function () {
             },
             configs: {}
           };`,
+          'README.md': outdent`
+            # eslint-plugin-test
 
-        'README.md': outdent`
-          # eslint-plugin-test
+            Foo.
 
-          Foo.
+            ## Rules
 
-          ## Rules
+            Old rules list.
 
-          Old rules list.
+            ## Other
 
-          ## Other
-
-          Bar.
-        `,
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+            Bar.
+          `,
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('adds rule list markers to rule section', async function () {
-      await generate('.');
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      await generate(fixture.path);
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
     });
   });
 
   describe('README missing rule list markers and no rules section', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -377,158 +320,136 @@ describe('generate (comment markers)', function () {
               },
             },
           };`,
-
-        'README.md': '# eslint-plugin-test',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '# eslint-plugin-test',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('throws an error', async function () {
-      await expect(generate('.')).rejects.toThrowErrorMatchingSnapshot();
+      await expect(
+        generate(fixture.path),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
 
   describe('rule doc without header marker but pre-existing header', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: { 'no-foo': { meta: { docs: { description: 'Description.' }, }, create(context) {} }, },
             configs: { recommended: { rules: { 'test/no-foo': 'error', } } }
           };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': outdent`
-          # Some pre-existing title.
-          Pre-existing notice about the rule being recommended.
-          ## Rule details
-          Details.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': outdent`
+            # Some pre-existing title.
+            Pre-existing notice about the rule being recommended.
+            ## Rule details
+            Details.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('updates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('rule doc with YAML-formatted metadata (front matter) above title and comment marker', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: { 'no-foo': { meta: { docs: { description: 'Description.' }, }, create(context) {} }, },
             configs: { recommended: { rules: { 'test/no-foo': 'error', } } }
           };`,
-
-        'README.md': '## Rules\n',
-
-        // YAML-formatted metadata (front matter) above title.
-        'docs/rules/no-foo.md': outdent`
-          ---
-          pageClass: "rule-details"
-          sidebarDepth: 0
-          title: "plugin/rule-name"
-          description: "disallow foo"
-          since: "v0.12.0"
-          ---
-          # Outdated title.
-          Outdated content.
-          <!-- end auto-generated rule header -->
-          ## Rule details
-          Details.
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          // YAML-formatted metadata (front matter) above title.
+          'docs/rules/no-foo.md': outdent`
+            ---
+            pageClass: "rule-details"
+            sidebarDepth: 0
+            title: "plugin/rule-name"
+            description: "disallow foo"
+            since: "v0.12.0"
+            ---
+            # Outdated title.
+            Outdated content.
+            <!-- end auto-generated rule header -->
+            ## Rule details
+            Details.
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('updates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('rule doc with YAML-formatted metadata (front matter) and nothing else', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: { 'no-foo': { meta: { docs: { description: 'Description.' }, }, create(context) {} }, },
             configs: { recommended: { rules: { 'test/no-foo': 'error', } } }
           };`,
-
-        'README.md': '## Rules\n',
-
-        // YAML-formatted metadata (front matter) only.
-        'docs/rules/no-foo.md': outdent`
-          ---
-          pageClass: "rule-details"
-          sidebarDepth: 0
-          title: "plugin/rule-name"
-          description: "disallow foo"
-          since: "v0.12.0"
-          ---
-        `,
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          // YAML-formatted metadata (front matter) only.
+          'docs/rules/no-foo.md': outdent`
+            ---
+            pageClass: "rule-details"
+            sidebarDepth: 0
+            title: "plugin/rule-name"
+            description: "disallow foo"
+            since: "v0.12.0"
+            ---
+          `,
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('updates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 });

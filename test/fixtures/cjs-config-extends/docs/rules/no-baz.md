@@ -1,4 +1,6 @@
-# Description of no-baz (`test/no-baz`)
+# test/no-baz
+
+📝 Description of no-baz.
 
 💼 This rule is enabled in the ✅ `recommended` config.
 

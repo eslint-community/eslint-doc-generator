@@ -1,9 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`cli all CLI options and all config files options merges correctly, with CLI options taking precedence 1`] = `
+exports[`cli > all CLI options and all config files options > merges correctly, with CLI options taking precedence 1`] = `
 [
   ".",
   {
+    "ai": false,
+    "aiModel": "claude-3-5-haiku-latest",
+    "aiProvider": "anthropic",
     "check": true,
     "configEmoji": [
       [
@@ -56,16 +59,20 @@ exports[`cli all CLI options and all config files options merges correctly, with
       "meta.docs.foo-from-config-file",
       "meta.docs.foo-from-cli",
     ],
+    "suggestEmojis": false,
     "urlConfigs": "https://example.com/configs-url-from-cli",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-cli",
   },
 ]
 `;
 
-exports[`cli all CLI options, no config file options is called correctly 1`] = `
+exports[`cli > all CLI options, no config file options > is called correctly 1`] = `
 [
   ".",
   {
+    "ai": false,
+    "aiModel": "claude-3-5-haiku-latest",
+    "aiProvider": "anthropic",
     "check": true,
     "configEmoji": [
       [
@@ -103,16 +110,20 @@ exports[`cli all CLI options, no config file options is called correctly 1`] = `
     "ruleListSplit": [
       "meta.docs.foo-from-cli",
     ],
+    "suggestEmojis": false,
     "urlConfigs": "https://example.com/configs-url-from-cli",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-cli",
   },
 ]
 `;
 
-exports[`cli all config files options, no CLI options is called correctly 1`] = `
+exports[`cli > all config files options, no CLI options > is called correctly 1`] = `
 [
   ".",
   {
+    "ai": true,
+    "aiModel": "gpt-4o-mini",
+    "aiProvider": "openai",
     "check": true,
     "configEmoji": [
       [
@@ -151,13 +162,14 @@ exports[`cli all config files options, no CLI options is called correctly 1`] = 
     "ruleListSplit": [
       "meta.docs.foo-from-config-file",
     ],
+    "suggestEmojis": true,
     "urlConfigs": "https://example.com/configs-url-from-config-file",
     "urlRuleDoc": "https://example.com/rule-doc-url-from-config-file",
   },
 ]
 `;
 
-exports[`cli boolean option - false (explicit) is called correctly 1`] = `
+exports[`cli > boolean option - false (explicit) > is called correctly 1`] = `
 [
   ".",
   {
@@ -174,7 +186,7 @@ exports[`cli boolean option - false (explicit) is called correctly 1`] = `
 ]
 `;
 
-exports[`cli boolean option - true (explicit) is called correctly 1`] = `
+exports[`cli > boolean option - true (explicit) > is called correctly 1`] = `
 [
   ".",
   {
@@ -191,7 +203,7 @@ exports[`cli boolean option - true (explicit) is called correctly 1`] = `
 ]
 `;
 
-exports[`cli boolean option - true (implicit) is called correctly 1`] = `
+exports[`cli > boolean option - true (implicit) > is called correctly 1`] = `
 [
   ".",
   {
@@ -208,7 +220,7 @@ exports[`cli boolean option - true (implicit) is called correctly 1`] = `
 ]
 `;
 
-exports[`cli no options is called correctly 1`] = `
+exports[`cli > no options > is called correctly 1`] = `
 [
   ".",
   {
@@ -224,7 +236,7 @@ exports[`cli no options is called correctly 1`] = `
 ]
 `;
 
-exports[`cli pathRuleList as array in config file and CLI merges correctly 1`] = `
+exports[`cli > pathRuleList as array in config file and CLI > merges correctly 1`] = `
 [
   ".",
   {

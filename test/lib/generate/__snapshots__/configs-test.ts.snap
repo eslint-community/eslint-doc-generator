@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (configs) config as flat config updates the documentation 1`] = `
+exports[`generate (configs) > config as flat config > updates the documentation 1`] = `
 "<!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\\
@@ -14,8 +14,10 @@ exports[`generate (configs) config as flat config updates the documentation 1`] 
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (configs) config as flat config updates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (configs) > config as flat config > updates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -23,8 +25,10 @@ exports[`generate (configs) config as flat config updates the documentation 2`] 
 "
 `;
 
-exports[`generate (configs) config as flat config updates the documentation 3`] = `
-"# Description of no-bar (\`test/no-bar\`)
+exports[`generate (configs) > config as flat config > updates the documentation 3`] = `
+"# test/no-bar
+
+📝 Description of no-bar.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -32,7 +36,7 @@ exports[`generate (configs) config as flat config updates the documentation 3`] 
 "
 `;
 
-exports[`generate (configs) config with overrides generates the documentation 1`] = `
+exports[`generate (configs) > config with overrides > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -47,8 +51,10 @@ exports[`generate (configs) config with overrides generates the documentation 1`
 "
 `;
 
-exports[`generate (configs) config with overrides generates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (configs) > config with overrides > generates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -56,7 +62,7 @@ exports[`generate (configs) config with overrides generates the documentation 2`
 "
 `;
 
-exports[`generate (configs) only a \`recommended\` config updates the documentation 1`] = `
+exports[`generate (configs) > only a \`recommended\` config > updates the documentation 1`] = `
 "<!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\\
@@ -69,8 +75,10 @@ exports[`generate (configs) only a \`recommended\` config updates the documentat
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (configs) only a \`recommended\` config updates the documentation 2`] = `
-"# Description (\`test/no-foo\`)
+exports[`generate (configs) > only a \`recommended\` config > updates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -78,7 +86,7 @@ exports[`generate (configs) only a \`recommended\` config updates the documentat
 "
 `;
 
-exports[`generate (configs) rule config with options generates the documentation 1`] = `
+exports[`generate (configs) > rule config with options > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -93,8 +101,10 @@ exports[`generate (configs) rule config with options generates the documentation
 "
 `;
 
-exports[`generate (configs) rule config with options generates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (configs) > rule config with options > generates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -102,93 +112,108 @@ exports[`generate (configs) rule config with options generates the documentation
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 1`] = `
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\\
 ⚠️ Configurations set to warn in.\\
 🚫 Configurations disabled in.\\
-✅ Set in the \`recommended\` configuration.
+🌟 Set in the \`other\` configuration.\\
+🔥 Set in the \`recommended\` configuration.
 
-| Name                           | Description            | 💼 | ⚠️                 | 🚫                 |
-| :----------------------------- | :--------------------- | :- | :----------------- | :----------------- |
-| [no-bar](docs/rules/no-bar.md) | Description of no-bar. |    |                    | ✅ ![badge-other][] |
-| [no-baz](docs/rules/no-baz.md) | Description of no-baz. | ✅  |                    | ![badge-other][]   |
-| [no-bez](docs/rules/no-bez.md) | Description of no-bez. |    | ![badge-other][]   |                    |
-| [no-biz](docs/rules/no-biz.md) | Description of no-biz. |    |                    | ![badge-other][]   |
-| [no-boz](docs/rules/no-boz.md) | Description of no-boz. |    | ✅                  |                    |
-| [no-buz](docs/rules/no-buz.md) | Description of no-buz. |    | ✅ ![badge-other][] |                    |
-| [no-foo](docs/rules/no-foo.md) | Description of no-foo. |    |                    | ✅                  |
+| Name                           | Description            | 💼 | ⚠️    | 🚫    |
+| :----------------------------- | :--------------------- | :- | :---- | :---- |
+| [no-bar](docs/rules/no-bar.md) | Description of no-bar. |    |       | 🌟 🔥 |
+| [no-baz](docs/rules/no-baz.md) | Description of no-baz. | 🔥 |       | 🌟    |
+| [no-bez](docs/rules/no-bez.md) | Description of no-bez. |    | 🌟    |       |
+| [no-biz](docs/rules/no-biz.md) | Description of no-biz. |    |       | 🌟    |
+| [no-boz](docs/rules/no-boz.md) | Description of no-boz. |    | 🔥    |       |
+| [no-buz](docs/rules/no-buz.md) | Description of no-buz. |    | 🌟 🔥 |       |
+| [no-foo](docs/rules/no-foo.md) | Description of no-foo. |    |       | 🔥    |
 
 <!-- end auto-generated rules list -->
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 2`] = `
+"# test/no-foo
 
-🚫 This rule is _disabled_ in the ✅ \`recommended\` config.
+📝 Description of no-foo.
 
-<!-- end auto-generated rule header -->
-"
-`;
-
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 3`] = `
-"# Description of no-bar (\`test/no-bar\`)
-
-🚫 This rule is _disabled_ in the following configs: \`other\`, ✅ \`recommended\`.
+🚫 This rule is _disabled_ in the 🔥 \`recommended\` config.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 4`] = `
-"# Description of no-baz (\`test/no-baz\`)
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 3`] = `
+"# test/no-bar
 
-💼🚫 This rule is enabled in the ✅ \`recommended\` config. This rule is _disabled_ in the \`other\` config.
+📝 Description of no-bar.
 
-<!-- end auto-generated rule header -->
-"
-`;
-
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 5`] = `
-"# Description of no-biz (\`test/no-biz\`)
-
-🚫 This rule is _disabled_ in the \`other\` config.
+🚫 This rule is _disabled_ in the following configs: 🌟 \`other\`, 🔥 \`recommended\`.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 6`] = `
-"# Description of no-boz (\`test/no-boz\`)
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 4`] = `
+"# test/no-baz
 
-⚠️ This rule _warns_ in the ✅ \`recommended\` config.
+📝 Description of no-baz.
 
-<!-- end auto-generated rule header -->
-"
-`;
-
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 7`] = `
-"# Description of no-buz (\`test/no-buz\`)
-
-⚠️ This rule _warns_ in the following configs: \`other\`, ✅ \`recommended\`.
+💼🚫 This rule is enabled in the 🔥 \`recommended\` config. This rule is _disabled_ in the 🌟 \`other\` config.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn generates the documentation 8`] = `
-"# Description of no-bez (\`test/no-bez\`)
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 5`] = `
+"# test/no-biz
 
-⚠️ This rule _warns_ in the \`other\` config.
+📝 Description of no-biz.
+
+🚫 This rule is _disabled_ in the 🌟 \`other\` config.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn, only one config present generates the documentation 1`] = `
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 6`] = `
+"# test/no-boz
+
+📝 Description of no-boz.
+
+⚠️ This rule _warns_ in the 🔥 \`recommended\` config.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 7`] = `
+"# test/no-buz
+
+📝 Description of no-buz.
+
+⚠️ This rule _warns_ in the following configs: 🌟 \`other\`, 🔥 \`recommended\`.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (configs) > rules that are disabled or set to warn > generates the documentation 8`] = `
+"# test/no-bez
+
+📝 Description of no-bez.
+
+⚠️ This rule _warns_ in the 🌟 \`other\` config.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (configs) > rules that are disabled or set to warn, only one config present > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -205,8 +230,10 @@ exports[`generate (configs) rules that are disabled or set to warn, only one con
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn, only one config present generates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (configs) > rules that are disabled or set to warn, only one config present > generates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 ⚠️ This rule _warns_ in the ✅ \`recommended\` config.
 
@@ -214,8 +241,10 @@ exports[`generate (configs) rules that are disabled or set to warn, only one con
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn, only one config present generates the documentation 3`] = `
-"# Description of no-bar (\`test/no-bar\`)
+exports[`generate (configs) > rules that are disabled or set to warn, only one config present > generates the documentation 3`] = `
+"# test/no-bar
+
+📝 Description of no-bar.
 
 🚫 This rule is _disabled_ in the ✅ \`recommended\` config.
 
@@ -223,7 +252,7 @@ exports[`generate (configs) rules that are disabled or set to warn, only one con
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn, two configs present generates the documentation 1`] = `
+exports[`generate (configs) > rules that are disabled or set to warn, two configs present > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -240,8 +269,10 @@ exports[`generate (configs) rules that are disabled or set to warn, two configs 
 "
 `;
 
-exports[`generate (configs) rules that are disabled or set to warn, two configs present generates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (configs) > rules that are disabled or set to warn, two configs present > generates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 ⚠️🚫 This rule _warns_ in the ✅ \`recommended\` config. This rule is _disabled_ in the ⌨️ \`typescript\` config.
 
@@ -249,7 +280,7 @@ exports[`generate (configs) rules that are disabled or set to warn, two configs 
 "
 `;
 
-exports[`generate (configs) with --ignore-config hides the ignored config 1`] = `
+exports[`generate (configs) > with --ignore-config > hides the ignored config 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -264,8 +295,10 @@ exports[`generate (configs) with --ignore-config hides the ignored config 1`] = 
 "
 `;
 
-exports[`generate (configs) with --ignore-config hides the ignored config 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (configs) > with --ignore-config > hides the ignored config 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -273,7 +306,7 @@ exports[`generate (configs) with --ignore-config hides the ignored config 2`] = 
 "
 `;
 
-exports[`generate (configs) with config that does not have any rules uses recommended config emoji since it is the only relevant config 1`] = `
+exports[`generate (configs) > with config that does not have any rules > uses recommended config emoji since it is the only relevant config 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -288,8 +321,10 @@ exports[`generate (configs) with config that does not have any rules uses recomm
 "
 `;
 
-exports[`generate (configs) with config that does not have any rules uses recommended config emoji since it is the only relevant config 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (configs) > with config that does not have any rules > uses recommended config emoji since it is the only relevant config 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -297,7 +332,7 @@ exports[`generate (configs) with config that does not have any rules uses recomm
 "
 `;
 
-exports[`generate (configs) with external rules in config ignores external rules 1`] = `
+exports[`generate (configs) > with external rules in config > ignores external rules 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 

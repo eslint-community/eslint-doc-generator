@@ -2,9 +2,7 @@ import {
   addTrailingPeriod,
   removeTrailingPeriod,
   toSentenceCase,
-  getEndOfLine,
 } from '../../lib/string.js';
-import { EOL } from 'node:os';
 
 describe('strings', function () {
   describe('#addTrailingPeriod', function () {
@@ -34,12 +32,6 @@ describe('strings', function () {
 
     it('handles when uppercase first letter', function () {
       expect(toSentenceCase('Hello World')).toStrictEqual('Hello World');
-    });
-  });
-
-  describe('#getEndOfLine', function () {
-    it('handles when .editorconfig is not available and fallbacks to `EOL` from `node:os`', function () {
-      expect(getEndOfLine()).toStrictEqual(EOL);
     });
   });
 });

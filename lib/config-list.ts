@@ -3,11 +3,10 @@ import {
   END_CONFIG_LIST_MARKER,
 } from './comment-markers.js';
 import { markdownTable } from 'markdown-table';
-import type { ConfigsToRules, ConfigEmojis, Plugin, Config } from './types.js';
-import { ConfigFormat, configNameToDisplay } from './config-format.js';
-import { getEndOfLine, sanitizeMarkdownTable } from './string.js';
-
-const EOL = getEndOfLine();
+import type { Config } from './types.js';
+import { configNameToDisplay } from './config-format.js';
+import { sanitizeMarkdownTable } from './string.js';
+import type { Context } from './context.js';
 
 /**
  * Check potential locations for the config description.
@@ -30,14 +29,10 @@ function configToDescription(config: Config): string | undefined {
   );
 }
 
-function generateConfigListMarkdown(
-  plugin: Plugin,
-  configsToRules: ConfigsToRules,
-  pluginPrefix: string,
-  configEmojis: ConfigEmojis,
-  configFormat: ConfigFormat,
-  ignoreConfig: readonly string[],
-): string {
+function generateConfigListMarkdown(context: Context): string {
+  const { configsToRules, options, plugin } = context;
+  const { configEmojis, ignoreConfig } = options;
+
   /* istanbul ignore next -- configs are sure to exist at this point */
   const configs = Object.values(plugin.configs || {});
   const hasDescription = configs.some((config) => configToDescription(config));
@@ -50,34 +45,29 @@ function generateConfigListMarkdown(
     listHeaderRow,
     ...Object.keys(configsToRules)
       .filter((configName) => !ignoreConfig.includes(configName))
-      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+      .toSorted((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
       .map((configName) => {
         const config = plugin.configs?.[configName];
         /* istanbul ignore next -- config should exist at this point */
         const description = config ? configToDescription(config) : undefined;
         return [
           configEmojis.find((obj) => obj.config === configName)?.emoji || '',
-          `\`${configNameToDisplay(configName, configFormat, pluginPrefix)}\``,
+          `\`${configNameToDisplay(context, configName)}\``,
           hasDescription ? description || '' : undefined,
         ].filter((col) => col !== undefined);
       }),
   ];
 
   return markdownTable(
-    sanitizeMarkdownTable(rows),
+    sanitizeMarkdownTable(context, rows),
     { align: 'l' }, // Left-align headers.
   );
 }
 
-export function updateConfigsList(
-  markdown: string,
-  plugin: Plugin,
-  configsToRules: ConfigsToRules,
-  pluginPrefix: string,
-  configEmojis: ConfigEmojis,
-  configFormat: ConfigFormat,
-  ignoreConfig: readonly string[],
-): string {
+export function updateConfigsList(context: Context, markdown: string): string {
+  const { configsToRules, endOfLine, options } = context;
+  const { ignoreConfig } = options;
+
   const listStartIndex = markdown.indexOf(BEGIN_CONFIG_LIST_MARKER);
   let listEndIndex = markdown.indexOf(END_CONFIG_LIST_MARKER);
 
@@ -102,14 +92,7 @@ export function updateConfigsList(
   const postList = markdown.slice(Math.max(0, listEndIndex));
 
   // New config list.
-  const list = generateConfigListMarkdown(
-    plugin,
-    configsToRules,
-    pluginPrefix,
-    configEmojis,
-    configFormat,
-    ignoreConfig,
-  );
+  const list = generateConfigListMarkdown(context);
 
-  return `${preList}${BEGIN_CONFIG_LIST_MARKER}${EOL}${EOL}${list}${EOL}${EOL}${END_CONFIG_LIST_MARKER}${postList}`;
+  return `${preList}${BEGIN_CONFIG_LIST_MARKER}${endOfLine}${endOfLine}${list}${endOfLine}${endOfLine}${END_CONFIG_LIST_MARKER}${postList}`;
 }

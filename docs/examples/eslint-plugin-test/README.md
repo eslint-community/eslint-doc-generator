@@ -8,7 +8,7 @@ This plugin is for x purpose.
 
 |    | Name          | Description                                      |
 | :- | :------------ | :----------------------------------------------- |
-| ✅  | `recommended` | These rules are recommended for everyone.        |
+| ✅ | `recommended` | These rules are recommended for everyone.        |
 | 🎨 | `stylistic`   | These rules are more about code style than bugs. |
 | ⌨️ | `typescript`  | These are good rules to use with TypeScript.     |
 
@@ -34,10 +34,10 @@ This plugin is for x purpose.
 📏 Focuses on code formatting.\
 ❌ Deprecated.
 
-| Name                                     | Description        | 💼 | ⚠️ | 🚫 | 🔧 | 💡 | ⚙️ | 💭 | 🗂️ | ❌  |
-| :--------------------------------------- | :----------------- | :- | :- | :- | :- | :- | :- | :- | :-- | :- |
-| [no-foo](docs/rules/no-foo.md)           | disallow using foo | ✅  |    |    | 🔧 |    | ⚙️ | 💭 | ❗   |    |
-| [prefer-bar](docs/rules/prefer-bar.md)   | enforce using bar  | ✅  | 🎨 |    |    | 💡 |    | 💭 | 📖  |    |
-| [require-baz](docs/rules/require-baz.md) | require using baz  |    |    | ⌨️ | 🔧 |    |    |    | 📏  | ❌  |
+| Name                                     | Description        | 💼 | ⚠️ | 🚫 | 🔧 | 💡 | ⚙️ | 💭 | 🗂️ | ❌ |
+| :--------------------------------------- | :----------------- | :- | :- | :- | :- | :- | :- | :- | :- | :- |
+| [no-foo](docs/rules/no-foo.md)           | disallow using foo | ✅ |    |    | 🔧 |    | ⚙️ | 💭 | ❗ |    |
+| [prefer-bar](docs/rules/prefer-bar.md)   | enforce using bar  | ✅ | 🎨 |    |    | 💡 |    | 💭 | 📖 |    |
+| [require-baz](docs/rules/require-baz.md) | require using baz  |    |    | ⌨️ | 🔧 |    |    |    | 📏 | ❌ |
 
 <!-- end auto-generated rules list -->

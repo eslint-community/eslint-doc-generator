@@ -1,3 +1,5 @@
-# Disallow foo (`test/no-foo`)
+# test/no-foo
+
+📝 Disallow foo.
 
 <!-- end auto-generated rule header -->

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (cjs) basic generates the documentation 1`] = `
+exports[`generate (cjs) > basic > generates the documentation 1`] = `
 "# eslint-plugin-test
 
 <!-- begin auto-generated rules list -->
@@ -13,14 +13,16 @@ exports[`generate (cjs) basic generates the documentation 1`] = `
 "
 `;
 
-exports[`generate (cjs) basic generates the documentation 2`] = `
-"# Disallow foo (\`test/no-foo\`)
+exports[`generate (cjs) > basic > generates the documentation 2`] = `
+"# test/no-foo
+
+📝 Disallow foo.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (cjs) config that extends another config generates the documentation 1`] = `
+exports[`generate (cjs) > config that extends another config > generates the documentation 1`] = `
 "# eslint-plugin-test
 
 ## Rules
@@ -41,8 +43,10 @@ exports[`generate (cjs) config that extends another config generates the documen
 "
 `;
 
-exports[`generate (cjs) config that extends another config generates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (cjs) > config that extends another config > generates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -50,8 +54,10 @@ exports[`generate (cjs) config that extends another config generates the documen
 "
 `;
 
-exports[`generate (cjs) config that extends another config generates the documentation 3`] = `
-"# Description of no-bar (\`test/no-bar\`)
+exports[`generate (cjs) > config that extends another config > generates the documentation 3`] = `
+"# test/no-bar
+
+📝 Description of no-bar.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -59,8 +65,10 @@ exports[`generate (cjs) config that extends another config generates the documen
 "
 `;
 
-exports[`generate (cjs) config that extends another config generates the documentation 4`] = `
-"# Description of no-baz (\`test/no-baz\`)
+exports[`generate (cjs) > config that extends another config > generates the documentation 4`] = `
+"# test/no-baz
+
+📝 Description of no-baz.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -68,8 +76,10 @@ exports[`generate (cjs) config that extends another config generates the documen
 "
 `;
 
-exports[`generate (cjs) config that extends another config generates the documentation 5`] = `
-"# Description of no-biz (\`test/no-biz\`)
+exports[`generate (cjs) > config that extends another config > generates the documentation 5`] = `
+"# test/no-biz
+
+📝 Description of no-biz.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 

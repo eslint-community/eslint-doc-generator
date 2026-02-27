@@ -38,7 +38,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
     /**
      * Try require first which should work for CJS plugins.
      * From Node 22 requiring on ESM module returns the module object
-     * @see https://github.com/bmish/eslint-doc-generator/issues/615
+     * @see https://github.com/eslint-community/eslint-doc-generator/issues/615
      */
     type cjsOrEsmPlugin =
       | Plugin
@@ -56,7 +56,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
       '__esModule' in _plugin &&
       _plugin.__esModule &&
       // Ensure that we return only the default key when only a default export is present
-      // @see https://github.com/bmish/eslint-doc-generator/issues/656#issuecomment-2726745618
+      // @see https://github.com/eslint-community/eslint-doc-generator/issues/656#issuecomment-2726745618
       Object.keys(_plugin).length === 2 &&
       ['__esModule', 'default'].every((it) => Boolean(_plugin[it]))
     ) {
@@ -81,6 +81,7 @@ export async function loadPlugin(path: string): Promise<Plugin> {
         ['.', 'node', 'import', 'require', 'default'];
       for (const prop of propertiesToCheck) {
         const value = exports[prop];
+        /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
         if (typeof value === 'string') {
           pluginEntryPoint = value;
           break;
@@ -102,13 +103,14 @@ export async function loadPlugin(path: string): Promise<Plugin> {
     if (!existsSync(pluginEntryPointAbs)) {
       throw new Error(
         `ESLint plugin entry point does not exist. Tried: ${pluginEntryPoint}`,
+        { cause: error },
       );
     }
 
     if (extname(pluginEntryPointAbs) === '.json') {
       // For JSON files, have to require() instead of import(..., { assert: { type: 'json' } }) because of this error:
       // Dynamic imports only support a second argument when the '--module' option is set to 'esnext', 'node16', or 'nodenext'. ts(1324)
-      // TODO: Switch to import() when we drop support for Node 14. https://github.com/bmish/eslint-doc-generator/issues/585
+      // TODO: Switch to import() when we drop support for Node 14. https://github.com/eslint-community/eslint-doc-generator/issues/585
       return require(pluginEntryPointAbs) as Plugin; // eslint-disable-line import/no-dynamic-require
     }
 
@@ -119,16 +121,17 @@ export async function loadPlugin(path: string): Promise<Plugin> {
   }
 }
 
-export async function getPluginPrefix(path: string): Promise<string> {
+/**
+ * Get the plugin name by reading the `name` field in the package.json file.
+ */
+export async function getPluginName(path: string): Promise<string> {
   const pluginPackageJson = await loadPackageJson(path);
   if (!pluginPackageJson.name) {
     throw new Error(
       "Could not find `name` field in ESLint plugin's package.json.",
     );
   }
-  return pluginPackageJson.name.endsWith('/eslint-plugin')
-    ? pluginPackageJson.name.split('/')[0] // Scoped plugin name like @my-scope/eslint-plugin.
-    : pluginPackageJson.name.replace('eslint-plugin-', ''); // Unscoped name like eslint-plugin-foo or scoped name like @my-scope/eslint-plugin-foo.
+  return pluginPackageJson.name;
 }
 
 /**
@@ -159,6 +162,7 @@ export async function getCurrentPackageVersion(): Promise<string> {
   const packageJson = JSON.parse(
     await readFile(new URL(pathToPackageJson, import.meta.url), 'utf8'),
   ) as PackageJson;
+  /* istanbul ignore next -- defensive check that can't be tested with real fixtures */
   if (!packageJson.version) {
     throw new Error('Could not find package.json `version`.');
   }

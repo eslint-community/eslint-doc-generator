@@ -1,4 +1,5 @@
 {
   "name": "eslint-plugin-test",
-  "type": "commonjs"
+  "type": "commonjs",
+  "main": "index.cjs"
 }

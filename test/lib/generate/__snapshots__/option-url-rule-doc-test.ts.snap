@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (--url-rule-doc) basic uses the right URLs 1`] = `
+exports[`generate (--url-rule-doc) > basic > uses the right URLs 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -15,8 +15,10 @@ exports[`generate (--url-rule-doc) basic uses the right URLs 1`] = `
 "
 `;
 
-exports[`generate (--url-rule-doc) basic uses the right URLs 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--url-rule-doc) > basic > uses the right URLs 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 ❌ This rule is deprecated. It was replaced by [\`test/no-bar\`](https://example.com/rule-docs/no-bar/).
 
@@ -24,60 +26,16 @@ exports[`generate (--url-rule-doc) basic uses the right URLs 2`] = `
 "
 `;
 
-exports[`generate (--url-rule-doc) basic uses the right URLs 3`] = `
-"# Description for no-bar (\`test/no-bar\`)
+exports[`generate (--url-rule-doc) > basic > uses the right URLs 3`] = `
+"# test/no-bar
+
+📝 Description for no-bar.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--url-rule-doc) function returns undefined should fallback to the normal URL 1`] = `
-"## Rules
-<!-- begin auto-generated rules list -->
-
-❌ Deprecated.
-
-| Name                           | Description             | ❌  |
-| :----------------------------- | :---------------------- | :- |
-| [no-bar](docs/rules/no-bar.md) | Description for no-bar. |    |
-| [no-foo](docs/rules/no-foo.md) | Description for no-foo. | ❌  |
-
-<!-- end auto-generated rules list -->
-"
-`;
-
-exports[`generate (--url-rule-doc) function returns undefined should fallback to the normal URL 2`] = `
-"## Rules
-<!-- begin auto-generated rules list -->
-
-❌ Deprecated.
-
-| Name                              | Description             | ❌  |
-| :-------------------------------- | :---------------------- | :- |
-| [no-bar](../docs/rules/no-bar.md) | Description for no-bar. |    |
-| [no-foo](../docs/rules/no-foo.md) | Description for no-foo. | ❌  |
-
-<!-- end auto-generated rules list -->
-"
-`;
-
-exports[`generate (--url-rule-doc) function returns undefined should fallback to the normal URL 3`] = `
-"# Description for no-foo (\`test/no-foo\`)
-
-❌ This rule is deprecated. It was replaced by [\`test/no-bar\`](no-bar.md).
-
-<!-- end auto-generated rule header -->
-"
-`;
-
-exports[`generate (--url-rule-doc) function returns undefined should fallback to the normal URL 4`] = `
-"# Description for no-bar (\`test/no-bar\`)
-
-<!-- end auto-generated rule header -->
-"
-`;
-
-exports[`generate (--url-rule-doc) function uses the custom URL 1`] = `
+exports[`generate (--url-rule-doc) > function > uses the custom URL 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -92,7 +50,7 @@ exports[`generate (--url-rule-doc) function uses the custom URL 1`] = `
 "
 `;
 
-exports[`generate (--url-rule-doc) function uses the custom URL 2`] = `
+exports[`generate (--url-rule-doc) > function > uses the custom URL 2`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -107,8 +65,10 @@ exports[`generate (--url-rule-doc) function uses the custom URL 2`] = `
 "
 `;
 
-exports[`generate (--url-rule-doc) function uses the custom URL 3`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--url-rule-doc) > function > uses the custom URL 3`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 ❌ This rule is deprecated. It was replaced by [\`test/no-bar\`](https://example.com/rule-docs/name:no-bar/path:docs/rules/no-foo.md).
 
@@ -116,8 +76,60 @@ exports[`generate (--url-rule-doc) function uses the custom URL 3`] = `
 "
 `;
 
-exports[`generate (--url-rule-doc) function uses the custom URL 4`] = `
-"# Description for no-bar (\`test/no-bar\`)
+exports[`generate (--url-rule-doc) > function > uses the custom URL 4`] = `
+"# test/no-bar
+
+📝 Description for no-bar.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--url-rule-doc) > function returns undefined > should fallback to the normal URL 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+❌ Deprecated.
+
+| Name                           | Description             | ❌  |
+| :----------------------------- | :---------------------- | :- |
+| [no-bar](docs/rules/no-bar.md) | Description for no-bar. |    |
+| [no-foo](docs/rules/no-foo.md) | Description for no-foo. | ❌  |
+
+<!-- end auto-generated rules list -->
+"
+`;
+
+exports[`generate (--url-rule-doc) > function returns undefined > should fallback to the normal URL 2`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+❌ Deprecated.
+
+| Name                              | Description             | ❌  |
+| :-------------------------------- | :---------------------- | :- |
+| [no-bar](../docs/rules/no-bar.md) | Description for no-bar. |    |
+| [no-foo](../docs/rules/no-foo.md) | Description for no-foo. | ❌  |
+
+<!-- end auto-generated rules list -->
+"
+`;
+
+exports[`generate (--url-rule-doc) > function returns undefined > should fallback to the normal URL 3`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
+
+❌ This rule is deprecated. It was replaced by [\`test/no-bar\`](no-bar.md).
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--url-rule-doc) > function returns undefined > should fallback to the normal URL 4`] = `
+"# test/no-bar
+
+📝 Description for no-bar.
 
 <!-- end auto-generated rule header -->
 "

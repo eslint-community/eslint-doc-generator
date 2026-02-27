@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (file paths) custom path to rule docs and rules list generates the documentation 1`] = `
+exports[`generate (file paths) > custom path to rule docs and rules list > generates the documentation 1`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                       |
@@ -10,14 +10,14 @@ exports[`generate (file paths) custom path to rule docs and rules list generates
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (file paths) custom path to rule docs and rules list generates the documentation 2`] = `
+exports[`generate (file paths) > custom path to rule docs and rules list > generates the documentation 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (file paths) custom path to rule docs and rules list generates the documentation using a function for pathRuleDoc 1`] = `
+exports[`generate (file paths) > custom path to rule docs using function > generates the documentation using a function for pathRuleDoc 1`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                             |
@@ -27,14 +27,14 @@ exports[`generate (file paths) custom path to rule docs and rules list generates
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (file paths) custom path to rule docs and rules list generates the documentation using a function for pathRuleDoc 2`] = `
+exports[`generate (file paths) > custom path to rule docs using function > generates the documentation using a function for pathRuleDoc 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (file paths) empty array of rule lists (happens when CLI option is not passed) falls back to default rules list 1`] = `
+exports[`generate (file paths) > empty array of rule lists (happens when CLI option is not passed) > falls back to default rules list 1`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                           |
@@ -44,24 +44,29 @@ exports[`generate (file paths) empty array of rule lists (happens when CLI optio
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (file paths) lowercase README file generates the documentation 1`] = `
-"<!-- begin auto-generated rules list -->
+exports[`generate (file paths) > lowercase README file > generates the documentation 1`] = `
+"# eslint-plugin-test
+
+## Rules
+
+<!-- begin auto-generated rules list -->
 
 | Name                           |
 | :----------------------------- |
 | [no-foo](docs/rules/no-foo.md) |
 
-<!-- end auto-generated rules list -->"
+<!-- end auto-generated rules list -->
+"
 `;
 
-exports[`generate (file paths) missing rule doc when initRuleDocs is true creates the rule doc 1`] = `
+exports[`generate (file paths) > missing rule doc with initRuleDocs > when initRuleDocs is true > creates the rule doc 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (file paths) missing rule doc when initRuleDocs is true creates the rule doc 2`] = `
+exports[`generate (file paths) > missing rule doc with initRuleDocs > when initRuleDocs is true > creates the rule doc 2`] = `
 "# test/no-bar
 
 <!-- end auto-generated rule header -->
@@ -78,16 +83,14 @@ exports[`generate (file paths) missing rule doc when initRuleDocs is true create
 "
 `;
 
-exports[`generate (file paths) missing rule doc, initRuleDocs is true, and with ruleDocSectionInclude creates the rule doc including the mandatory section 1`] = `
+exports[`generate (file paths) > missing rule doc, initRuleDocs is true, and with ruleDocSectionInclude > creates the rule doc including the mandatory section 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
-
-## Examples
 "
 `;
 
-exports[`generate (file paths) missing rule doc, initRuleDocs is true, and with ruleDocSectionInclude creates the rule doc including the mandatory section 2`] = `
+exports[`generate (file paths) > missing rule doc, initRuleDocs is true, and with ruleDocSectionInclude > creates the rule doc including the mandatory section 2`] = `
 "# test/no-bar
 
 <!-- end auto-generated rule header -->
@@ -106,7 +109,7 @@ exports[`generate (file paths) missing rule doc, initRuleDocs is true, and with 
 "
 `;
 
-exports[`generate (file paths) multiple rules lists generates the documentation 1`] = `
+exports[`generate (file paths) > multiple rules lists > generates the documentation 1`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                           |
@@ -116,7 +119,7 @@ exports[`generate (file paths) multiple rules lists generates the documentation 
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (file paths) multiple rules lists generates the documentation 2`] = `
+exports[`generate (file paths) > multiple rules lists > generates the documentation 2`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                              |
@@ -126,7 +129,7 @@ exports[`generate (file paths) multiple rules lists generates the documentation 
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (file paths) multiple rules lists generates the documentation 3`] = `
+exports[`generate (file paths) > multiple rules lists > generates the documentation 3`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                |

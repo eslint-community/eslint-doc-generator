@@ -1,11 +1,12 @@
 /**
- * Enum version of this union type: TSESLint.RuleMetaData<''>['type'];
+ * Const object version of this union type: TSESLint.RuleMetaData<''>['type'];
  */
-export enum RULE_TYPE {
-  'problem' = 'problem',
-  'suggestion' = 'suggestion',
-  'layout' = 'layout',
-}
+export const RULE_TYPE = {
+  problem: 'problem',
+  suggestion: 'suggestion',
+  layout: 'layout',
+} as const;
+export type RULE_TYPE = (typeof RULE_TYPE)[keyof typeof RULE_TYPE];
 
 export const RULE_TYPES = ['problem', 'suggestion', 'layout'] as const;
 

@@ -1,48 +1,34 @@
 import { generate } from '../../../lib/generator.js';
-import mockFs from 'mock-fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { jest } from '@jest/globals';
+import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 import * as sinon from 'sinon';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const PATH_NODE_MODULES = resolve(__dirname, '..', '..', '..', 'node_modules');
 
 describe('generate (rule doc sections)', function () {
   describe('with `--rule-doc-section-include` and `--rule-doc-section-exclude` and no problems', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
               export default {
                 rules: {
                   'no-foo': { meta: { docs: { description: 'Description for no-foo.'} }, create(context) {} },
                 },
               };`,
-
-        'README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '## Examples\n',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '## Examples\n',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('has no issues', async function () {
       await expect(
-        generate('.', {
+        generate(fixture.path, {
           ruleDocSectionInclude: ['Examples'],
           ruleDocSectionExclude: ['Unwanted Section'],
         }),
@@ -51,38 +37,31 @@ describe('generate (rule doc sections)', function () {
   });
 
   describe('with `--rule-doc-section-include` and `--rule-doc-section-exclude` and problems', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
               export default {
                 rules: {
                   'no-foo': { meta: { docs: { description: 'Description for no-foo.'} }, create(context) {} },
                 },
               };`,
-
-        'README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '## Unwanted Section\n',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '## Unwanted Section\n',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('prints errors', async function () {
       const consoleErrorStub = sinon.stub(console, 'error');
-      await generate('.', {
+      await generate(fixture.path, {
         ruleDocSectionInclude: ['Examples'],
         ruleDocSectionExclude: ['Unwanted Section'],
       });

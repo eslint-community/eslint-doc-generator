@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (general) basic updates the documentation 1`] = `
+exports[`generate (general) > basic > updates the documentation 1`] = `
 "# eslint-plugin-test
 Description.
 ## Rules
@@ -23,8 +23,10 @@ Description.
 more content."
 `;
 
-exports[`generate (general) basic updates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (general) > basic > updates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the following configs: 🌐 \`all\`, ✅ \`recommended\`.
 
@@ -38,8 +40,10 @@ optionToDoSomething1 - explanation
 optionToDoSomething2 - explanation"
 `;
 
-exports[`generate (general) basic updates the documentation 3`] = `
-"# Description of no-bar (\`test/no-bar\`)
+exports[`generate (general) > basic > updates the documentation 3`] = `
+"# test/no-bar
+
+📝 Description of no-bar.
 
 💼 This rule is enabled in the following configs: 🌐 \`all\`, 🎨 \`style\`.
 
@@ -50,8 +54,66 @@ exports[`generate (general) basic updates the documentation 3`] = `
 details"
 `;
 
-exports[`generate (general) basic updates the documentation 4`] = `
-"# Description of no-boz (\`test/no-baz\`)
+exports[`generate (general) > basic > updates the documentation 4`] = `
+"# test/no-baz
+
+📝 Description of no-boz.
+
+<!-- end auto-generated rule header -->
+## Rule details
+details"
+`;
+
+exports[`generate (general) > plugin prefix > uses \`plugin.meta.name\` as source for rule prefix 1`] = `
+"# eslint-plugin-test
+Description.
+## Rules
+<!-- begin auto-generated rules list -->
+
+🔧 Automatically fixable by the [\`--fix\` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).\\
+💡 Manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
+
+| Name                           | Description            | 🔧 | 💡 |
+| :----------------------------- | :--------------------- | :- | :- |
+| [no-bar](docs/rules/no-bar.md) | Description of no-bar. | 🔧 |    |
+| [no-baz](docs/rules/no-baz.md) | Description of no-boz. |    |    |
+| [no-foo](docs/rules/no-foo.md) | Description of no-foo. | 🔧 | 💡 |
+
+<!-- end auto-generated rules list -->
+more content."
+`;
+
+exports[`generate (general) > plugin prefix > uses \`plugin.meta.name\` as source for rule prefix 2`] = `
+"# custom/no-foo
+
+📝 Description of no-foo.
+
+🔧💡 This rule is automatically fixable by the [\`--fix\` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix) and manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
+
+<!-- end auto-generated rule header -->
+## Rule details
+details
+## Options
+optionToDoSomething1 - explanation
+optionToDoSomething2 - explanation"
+`;
+
+exports[`generate (general) > plugin prefix > uses \`plugin.meta.name\` as source for rule prefix 3`] = `
+"# custom/no-bar
+
+📝 Description of no-bar.
+
+🔧 This rule is automatically fixable by the [\`--fix\` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
+
+<!-- end auto-generated rule header -->
+## Rule details
+details"
+`;
+
+exports[`generate (general) > plugin prefix > uses \`plugin.meta.name\` as source for rule prefix 4`] = `
+"# custom/no-baz
+
+📝 Description of no-boz.
 
 <!-- end auto-generated rule header -->
 ## Rule details

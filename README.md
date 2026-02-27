@@ -34,6 +34,7 @@ Also performs [configurable](#configuration-options) section consistency checks 
   - [Column and notice types](#column-and-notice-types)
   - [`--config-format`](#--config-format)
   - [`--rule-doc-title-format`](#--rule-doc-title-format)
+  - [`--suggest-emojis`](#--suggest-emojis)
   - [Configuration file](#configuration-file)
   - [Badges](#badges)
 - [Compatibility](#compatibility)
@@ -109,7 +110,7 @@ Optionally, add these marker comments to your rule docs in an `## Options` secti
 <!-- end auto-generated rule options list -->
 ```
 
-Note that rule option lists are subject-to-change as we add support for more kinds and properties of schemas. To fully take advantage of them, you'll want to ensure your rules have the `meta.schema` property fleshed out with properties like `description`, `type`, `enum`, `default`, `required`, `deprecated`.
+Note that rule option lists are subject-to-change as we add support for more kinds and properties of schemas. To fully take advantage of them, you'll want to ensure your rules have the `meta.schema` property fleshed out with properties like `description`, `type`, `enum`, `default`, `required`, and `deprecated`.
 
 ### Configure linting
 
@@ -151,15 +152,21 @@ See the generated rule doc options lists in our example rule doc [`no-foo.md`](.
 
 This tool is used by popular ESLint plugins like:
 
+- [@vitest/eslint-plugin](https://github.com/vitest-dev/eslint-plugin-vitest#rules)
 - [eslint-plugin-ava](https://github.com/avajs/eslint-plugin-ava#rules)
 - [eslint-plugin-ember](https://github.com/ember-cli/eslint-plugin-ember#-rules)
 - [eslint-plugin-eslint-plugin](https://github.com/eslint-community/eslint-plugin-eslint-plugin#rules)
 - [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import#rules)
 - [eslint-plugin-jest](https://github.com/jest-community/eslint-plugin-jest#rules)
+- [eslint-plugin-jest-dom](https://github.com/testing-library/eslint-plugin-jest-dom#rules)
 - [eslint-plugin-jsx-a11y](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y#supported-rules)
+- [eslint-plugin-n](https://github.com/eslint-community/eslint-plugin-n#-rules)
 - [eslint-plugin-promise](https://github.com/eslint-community/eslint-plugin-promise#rules)
 - [eslint-plugin-qunit](https://github.com/platinumazure/eslint-plugin-qunit#rules)
 - [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react#list-of-supported-rules)
+- [eslint-plugin-regexp](https://github.com/ota-meshi/eslint-plugin-regexp#white_check_mark-rules)
+- [eslint-plugin-security](https://github.com/eslint-community/eslint-plugin-security#rules)
+- [eslint-plugin-testing-library](https://github.com/testing-library/eslint-plugin-testing-library)
 - [eslint-plugin-unicorn](https://github.com/sindresorhus/eslint-plugin-unicorn#rules)
 
 ## Configuration options
@@ -174,23 +181,27 @@ eslint-doc-generator path/to/eslint-plugin
 
 There's also a `postprocess` option that's only available via a [config file](#configuration-file).
 
-| Name | Description | Default |
+| Name | Description | Default |
 | :-- | :-- | :-- |
+| `--ai` | Whether to use AI for AI-enabled features. | `false` |
+| `--ai-model` | AI model to use for AI-enabled features. | Provider default model |
+| `--ai-provider` | AI provider to use for AI-enabled features (`anthropic`, `groq`, `openai`, `openrouter`, `together`, `vercelaigateway`, or `xai`). | Defaults to the specified provider environment variable. Required if multiple provider API keys are present. |
 | `--check` | Whether to check for and fail if there is a diff. Any diff will be displayed but no output will be written to files. Typically used during CI. | `false` |
-| `--config-emoji` | Custom emoji to use for a config. Format is `config-name,emoji`. Option can be repeated. | Default emojis are provided for [common configs](./lib/emojis.ts). See [Badges](#badges) for an alternative to emojis. |
+| `--config-emoji` | Custom emoji to use for a config. Format is `config-name,emoji`. Option can be repeated. | Default emojis are provided for [common configs](./lib/emojis.ts). Configs without emojis will cause an error; use `--ignore-config` to exclude them. See [Badges](#badges) for using custom badges as emojis. |
 | `--config-format` | The format to use for config names. See choices in below [table](#--config-format). | `name` |
 | `--ignore-config` | Config to ignore from being displayed. Often used for an `all` config. Option can be repeated. | |
 | `--ignore-deprecated-rules` | Whether to ignore deprecated rules from being checked, displayed, or updated. | `false` |
 | `--init-rule-docs` | Whether to create rule doc files if they don't yet exist. | `false` |
 | `--path-rule-doc` | Path to markdown file for each rule doc. Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | `docs/rules/{name}.md` |
 | `--path-rule-list` | Path to markdown file where the rules table list should live. Option can be repeated. | `README.md` |
-| `--rule-doc-notices` | Ordered, comma-separated list of notices to display in rule doc. Non-applicable notices will be hidden. See choices in below [table](#column-and-notice-types). | `deprecated`, `configs`, `fixableAndHasSuggestions`, `requiresTypeChecking` |
+| `--rule-doc-notices` | Ordered, comma-separated list of notices to display in rule doc. Non-applicable notices will be hidden. See choices in below [table](#column-and-notice-types). | `configs`, `deprecated`, `fixableAndHasSuggestions`, `requiresTypeChecking`, `description` |
 | `--rule-doc-section-exclude` | Disallowed section in each rule doc. Exit with failure if present. Option can be repeated. | |
 | `--rule-doc-section-include` | Required section in each rule doc. Exit with failure if missing. Option can be repeated. | |
 | `--rule-doc-section-options` | Whether to require an "Options" or "Config" rule doc section and mention of any named options for rules with options. | `true` |
-| `--rule-doc-title-format` | The format to use for rule doc titles. See choices in below [table](#--rule-doc-title-format). | `desc-parens-prefix-name` |
+| `--rule-doc-title-format` | The format to use for rule doc titles. See choices in below [table](#--rule-doc-title-format). | `prefix-name` |
 | `--rule-list-columns` | Ordered, comma-separated list of columns to display in rule list. Empty columns will be hidden. See choices in below [table](#column-and-notice-types). | `name`, `description`, `configsError`, `configsWarn`, `configsOff`, `fixable`, `hasSuggestions`, `requiresTypeChecking`, `deprecated` |
 | `--rule-list-split` | Rule property(s) to split the rules list by. A separate list and header will be created for each value. Example: `meta.type`. A function can also be provided for this option via a [config file](#configuration-file). | |
+| `--suggest-emojis` | Whether to suggest emojis for configs and print them in a table. Can be paired with `--ai`. | `false` |
 | `--url-configs` | Link to documentation about the ESLint configurations exported by the plugin. | |
 | `--url-rule-doc` | Link to documentation for each rule. Useful when it differs from the rule doc path on disk (e.g. custom documentation site in use). Use `{name}` placeholder for the rule name. A function can also be provided for this option via a [config file](#configuration-file). | |
 
@@ -204,8 +215,8 @@ These are the types of rule metadata that are available for display in rule list
 | 🚫 | `configsOff` | Yes | No | Whether a rule is set to `off` in a config. |
 | ⚠️ | `configsWarn` | Yes | No | Whether a rule is set to `warn` in a config. |
 | 💼 | `configs` | No | Yes | What configs set a rule to what [severities](https://eslint.org/docs/latest/user-guide/configuring/rules#rule-severities). |
-| ❌ | `deprecated`  | Yes | Yes | Whether a rule is deprecated (i.e. likely to be removed/renamed in a future major version). |
-| | `description`  | Yes | Yes | The rule description. |
+| ❌ | `deprecated` | Yes | Yes | Whether a rule is deprecated (i.e. likely to be removed/renamed in a future major version). |
+| 📝 | `description` | Yes | Yes | The rule description. |
 | 🔧💡 | `fixableAndHasSuggestions` | Yes | Yes | Whether a rule is [fixable](https://eslint.org/docs/latest/developer-guide/working-with-rules#applying-fixes) and/or has [suggestions](https://eslint.org/docs/latest/developer-guide/working-with-rules#providing-suggestions). |
 | 🔧 | `fixable` | Yes | Yes | Whether a rule is [fixable](https://eslint.org/docs/latest/developer-guide/working-with-rules#applying-fixes). |
 | 💡 | `hasSuggestions` | Yes | Yes | Whether a rule has [suggestions](https://eslint.org/docs/latest/developer-guide/working-with-rules#providing-suggestions). |
@@ -232,9 +243,42 @@ Where `no-foo` is the rule name, `Disallow use of foo` is the rule description, 
 | :-- | :-- |
 | `desc` | `# Disallow use of foo` |
 | `desc-parens-name` | `# Disallow use of foo (no-foo)` |
-| `desc-parens-prefix-name` (default) | `# Disallow use of foo (test/no-foo)` |
+| `desc-parens-prefix-name` | `# Disallow use of foo (test/no-foo)` |
 | `name` | `# no-foo` |
-| `prefix-name` | `# test/no-foo` |
+| `prefix-name` (default) | `# test/no-foo` |
+
+### `--suggest-emojis`
+
+When `--suggest-emojis` is enabled, the tool prints a table of suggested emojis for all exported configs and exits without modifying files.
+
+Example output:
+
+| Config | Emoji |
+| :-- | :-- |
+| `recommended` | `✅` |
+| `strict` | `🔒` |
+| `typescript` | `⌨️` |
+
+Generation strategy:
+
+- `--suggest-emojis` uses deterministic local suggestions only
+- `--suggest-emojis --ai` uses an external provider
+
+When `--ai` is used, suggestions will be generated using an external provider based on:
+
+- The provider environment variable specified
+- (optionally) `--ai-provider`
+- (optionally) `--ai-model`
+
+Supported provider environment variables:
+
+- `ANTHROPIC_API_KEY`
+- `GROQ_API_KEY`
+- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `TOGETHER_API_KEY`
+- `VERCEL_AI_GATEWAY_API_KEY`
+- `XAI_API_KEY`
 
 ### Configuration file
 

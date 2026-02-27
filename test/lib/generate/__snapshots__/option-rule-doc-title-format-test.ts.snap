@@ -1,56 +1,66 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (--rule-doc-title-format) desc uses the right rule doc title format 1`] = `
+exports[`generate (--rule-doc-title-format) > desc > uses the right rule doc title format 1`] = `
 "# Description for no-foo
+
+📝 Description for no-foo.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) desc uses the right rule doc title format 2`] = `
+exports[`generate (--rule-doc-title-format) > desc > uses the right rule doc title format 2`] = `
 "# test/no-bar
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) desc-parens-name uses the right rule doc title format 1`] = `
+exports[`generate (--rule-doc-title-format) > desc-parens-name > uses the right rule doc title format 1`] = `
 "# Description for no-foo (\`no-foo\`)
+
+📝 Description for no-foo.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) desc-parens-name uses the right rule doc title format 2`] = `
+exports[`generate (--rule-doc-title-format) > desc-parens-name > uses the right rule doc title format 2`] = `
 "# no-bar
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) desc-parens-prefix-name uses the right rule doc title format, with fallback when missing description 1`] = `
+exports[`generate (--rule-doc-title-format) > desc-parens-prefix-name > uses the right rule doc title format, with fallback when missing description 1`] = `
 "# Description for no-foo (\`test/no-foo\`)
+
+📝 Description for no-foo.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) desc-parens-prefix-name uses the right rule doc title format, with fallback when missing description 2`] = `
+exports[`generate (--rule-doc-title-format) > desc-parens-prefix-name > uses the right rule doc title format, with fallback when missing description 2`] = `
 "# test/no-bar
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) name uses the right rule doc title format 1`] = `
+exports[`generate (--rule-doc-title-format) > name > uses the right rule doc title format 1`] = `
 "# no-foo
+
+📝 Description for no-foo.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--rule-doc-title-format) prefix-name uses the right rule doc title format 1`] = `
+exports[`generate (--rule-doc-title-format) > prefix-name > uses the right rule doc title format 1`] = `
 "# test/no-foo
+
+📝 Description for no-foo.
 
 <!-- end auto-generated rule header -->
 "

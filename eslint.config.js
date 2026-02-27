@@ -2,7 +2,7 @@
 
 import js from '@eslint/js';
 import eslintPluginN from 'eslint-plugin-n';
-import eslintPluginJest from 'eslint-plugin-jest';
+import eslintPluginVitest from '@vitest/eslint-plugin';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'; // eslint-disable-line import/extensions -- false positive
 import * as eslintPluginImport from 'eslint-plugin-import';
@@ -12,7 +12,7 @@ export default tseslint.config(
   // Configs:
   js.configs.recommended,
   eslintPluginImport.flatConfigs.typescript,
-  eslintPluginJest.configs['flat/recommended'],
+  eslintPluginVitest.configs.recommended,
   eslintPluginN.configs['flat/recommended'],
   eslintPluginPrettierRecommended,
   eslintPluginUnicorn.configs['flat/recommended'],
@@ -35,6 +35,10 @@ export default tseslint.config(
       'unicorn/prevent-abbreviations': 'off',
 
       // typescript-eslint rules:
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+      ],
       '@typescript-eslint/no-unnecessary-condition': 'off', // Dozens of places where the rule's `meta` property needs optional chaining get flagged by this.
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-readonly': 'error',
@@ -135,7 +139,8 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname, // eslint-disable-line n/no-unsupported-features/node-builtins
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins
+        tsconfigRootDir: import.meta.dirname,
       },
     },
 

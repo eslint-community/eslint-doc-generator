@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (--rule-list-columns) basic shows the right columns and legend 1`] = `
+exports[`generate (--rule-list-columns) > basic > shows the right columns and legend 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -15,8 +15,10 @@ exports[`generate (--rule-list-columns) basic shows the right columns and legend
 "
 `;
 
-exports[`generate (--rule-list-columns) basic shows the right columns and legend 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--rule-list-columns) > basic > shows the right columns and legend 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 ❌ This rule is deprecated.
 
@@ -26,7 +28,7 @@ exports[`generate (--rule-list-columns) basic shows the right columns and legend
 "
 `;
 
-exports[`generate (--rule-list-columns) consolidated fixableAndHasSuggestions column shows the right columns and legend 1`] = `
+exports[`generate (--rule-list-columns) > consolidated fixableAndHasSuggestions column > shows the right columns and legend 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -38,12 +40,13 @@ exports[`generate (--rule-list-columns) consolidated fixableAndHasSuggestions co
 | [no-bar](docs/rules/no-bar.md) | 🔧   |
 | [no-baz](docs/rules/no-baz.md) |      |
 | [no-foo](docs/rules/no-foo.md) | 🔧💡 |
+| [no-qux](docs/rules/no-qux.md) | 💡   |
 
 <!-- end auto-generated rules list -->
 "
 `;
 
-exports[`generate (--rule-list-columns) shows column and notice for requiresTypeChecking updates the documentation 1`] = `
+exports[`generate (--rule-list-columns) > shows column and notice for requiresTypeChecking > updates the documentation 1`] = `
 "<!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\\
@@ -58,8 +61,10 @@ exports[`generate (--rule-list-columns) shows column and notice for requiresType
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (--rule-list-columns) shows column and notice for requiresTypeChecking updates the documentation 2`] = `
-"# Description of no-foo (\`test/no-foo\`)
+exports[`generate (--rule-list-columns) > shows column and notice for requiresTypeChecking > updates the documentation 2`] = `
+"# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the 🌐 \`all\` config.
 
@@ -67,8 +72,10 @@ exports[`generate (--rule-list-columns) shows column and notice for requiresType
 "
 `;
 
-exports[`generate (--rule-list-columns) shows column and notice for requiresTypeChecking updates the documentation 3`] = `
-"# Description of no-bar (\`test/no-bar\`)
+exports[`generate (--rule-list-columns) > shows column and notice for requiresTypeChecking > updates the documentation 3`] = `
+"# test/no-bar
+
+📝 Description of no-bar.
 
 💭 This rule requires [type information](https://typescript-eslint.io/linting/typed-linting).
 

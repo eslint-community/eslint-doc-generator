@@ -1,4 +1,6 @@
-# Description of no-foo (`test/no-foo`)
+# test/no-foo
+
+📝 Description of no-foo.
 
 💼 This rule is enabled in the ✅ `recommended` config.
 

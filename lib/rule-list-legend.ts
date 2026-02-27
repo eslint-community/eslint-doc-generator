@@ -8,18 +8,10 @@ import {
   EMOJI_CONFIG_FROM_SEVERITY,
 } from './emojis.js';
 import { findConfigEmoji, getConfigsThatSetARule } from './plugin-configs.js';
-import {
-  COLUMN_TYPE,
-  ConfigEmojis,
-  Plugin,
-  ConfigsToRules,
-  SEVERITY_TYPE,
-} from './types.js';
+import { COLUMN_TYPE, SEVERITY_TYPE } from './types.js';
 import { RULE_TYPE_MESSAGES_LEGEND, RULE_TYPES } from './rule-type.js';
-import { ConfigFormat, configNameToDisplay } from './config-format.js';
-import { getEndOfLine } from './string.js';
-
-const EOL = getEndOfLine();
+import { configNameToDisplay } from './config-format.js';
+import type { Context } from './context.js';
 
 export const SEVERITY_TYPE_TO_WORD: {
   [key in SEVERITY_TYPE]: string;
@@ -40,73 +32,31 @@ const LEGENDS: {
   [key in COLUMN_TYPE]:
     | readonly string[]
     | undefined // For no legend.
-    | ((data: {
-        plugin: Plugin;
-        configsToRules: ConfigsToRules;
-        configEmojis: ConfigEmojis;
-        configFormat: ConfigFormat;
-        pluginPrefix: string;
-        ignoreConfig: readonly string[];
-        urlConfigs?: string;
-      }) => readonly string[]);
+    | ((data: { context: Context }) => readonly string[]);
 } = {
-  [COLUMN_TYPE.CONFIGS_ERROR]: ({
-    plugin,
-    configsToRules,
-    configEmojis,
-    pluginPrefix,
-    urlConfigs,
-    ignoreConfig,
-  }) => [
+  [COLUMN_TYPE.CONFIGS_ERROR]: ({ context }) => [
     getLegendForConfigColumnOfSeverity({
-      plugin,
-      configsToRules,
-      configEmojis,
-      pluginPrefix,
-      urlConfigs,
+      context,
       severityType: SEVERITY_TYPE.error,
-      ignoreConfig,
     }),
   ],
-  [COLUMN_TYPE.CONFIGS_OFF]: ({
-    plugin,
-    configsToRules,
-    configEmojis,
-    pluginPrefix,
-    urlConfigs,
-    ignoreConfig,
-  }) => [
+  [COLUMN_TYPE.CONFIGS_OFF]: ({ context }) => [
     getLegendForConfigColumnOfSeverity({
-      plugin,
-      configsToRules,
-      configEmojis,
-      pluginPrefix,
-      urlConfigs,
+      context,
       severityType: SEVERITY_TYPE.off,
-      ignoreConfig,
     }),
   ],
-  [COLUMN_TYPE.CONFIGS_WARN]: ({
-    plugin,
-    configsToRules,
-    configEmojis,
-    pluginPrefix,
-    urlConfigs,
-    ignoreConfig,
-  }) => [
+  [COLUMN_TYPE.CONFIGS_WARN]: ({ context }) => [
     getLegendForConfigColumnOfSeverity({
-      plugin,
-      configsToRules,
-      configEmojis,
-      pluginPrefix,
-      urlConfigs,
+      context,
       severityType: SEVERITY_TYPE.warn,
-      ignoreConfig,
     }),
   ],
 
   // Legends are included for each rule type present.
-  [COLUMN_TYPE.TYPE]: ({ plugin }) => {
+  [COLUMN_TYPE.TYPE]: ({ context }) => {
+    const { plugin } = context;
+
     /* istanbul ignore next -- this shouldn't happen */
     if (!plugin.rules) {
       throw new Error(
@@ -122,6 +72,7 @@ const LEGENDS: {
       const hasThisRuleType = Object.values(rules).some(
         (rule) => typeof rule === 'object' && rule.meta?.type === ruleType,
       );
+      /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
       if (hasThisRuleType) {
         if (!hasAnyRuleType) {
           hasAnyRuleType = true;
@@ -152,18 +103,15 @@ const LEGENDS: {
 };
 
 function getLegendForConfigColumnOfSeverity({
-  plugin,
-  urlConfigs,
+  context,
   severityType,
 }: {
-  plugin: Plugin;
-  configsToRules: ConfigsToRules;
-  configEmojis: ConfigEmojis;
-  pluginPrefix: string;
-  ignoreConfig: readonly string[];
+  context: Context;
   severityType: SEVERITY_TYPE;
-  urlConfigs?: string;
 }): string {
+  const { options, plugin } = context;
+  const { urlConfigs } = options;
+
   /* istanbul ignore next -- this shouldn't happen */
   if (!plugin.configs || !plugin.rules) {
     throw new Error(
@@ -180,22 +128,13 @@ function getLegendForConfigColumnOfSeverity({
 }
 
 function getLegendsForIndividualConfigs({
-  plugin,
-  configsToRules,
-  configEmojis,
-  configFormat,
-  pluginPrefix,
-  urlConfigs,
-  ignoreConfig,
+  context,
 }: {
-  plugin: Plugin;
-  configsToRules: ConfigsToRules;
-  configEmojis: ConfigEmojis;
-  configFormat: ConfigFormat;
-  pluginPrefix: string;
-  ignoreConfig: readonly string[];
-  urlConfigs?: string;
+  context: Context;
 }): readonly string[] {
+  const { options, plugin } = context;
+  const { urlConfigs } = options;
+
   /* istanbul ignore next -- this shouldn't happen */
   if (!plugin.configs || !plugin.rules) {
     throw new Error(
@@ -208,15 +147,10 @@ function getLegendsForIndividualConfigs({
     ? `[configuration](${urlConfigs})`
     : 'configuration';
 
-  const configNamesThatSetRuleToThisSeverity = getConfigsThatSetARule(
-    plugin,
-    configsToRules,
-    pluginPrefix,
-    ignoreConfig,
-  );
+  const configNamesThatSetRuleToThisSeverity = getConfigsThatSetARule(context);
 
   return configNamesThatSetRuleToThisSeverity.flatMap((configName) => {
-    const emoji = findConfigEmoji(configEmojis, configName);
+    const emoji = findConfigEmoji(context, configName);
     if (!emoji) {
       // No legend for this config as it has no emoji.
       return [];
@@ -224,24 +158,19 @@ function getLegendsForIndividualConfigs({
 
     return [
       `${emoji} Set in the \`${configNameToDisplay(
+        context,
         configName,
-        configFormat,
-        pluginPrefix,
       )}\` ${configLinkOrWord}.`,
     ];
   });
 }
 
 export function generateLegend(
+  context: Context,
   columns: Record<COLUMN_TYPE, boolean>,
-  plugin: Plugin,
-  configsToRules: ConfigsToRules,
-  configEmojis: ConfigEmojis,
-  configFormat: ConfigFormat,
-  pluginPrefix: string,
-  ignoreConfig: readonly string[],
-  urlConfigs?: string,
 ) {
+  const { endOfLine } = context;
+
   const legends = (
     Object.entries(columns) as readonly [COLUMN_TYPE, boolean][]
   ).flatMap(([columnType, enabled]) => {
@@ -256,13 +185,7 @@ export function generateLegend(
     }
     return typeof legendArrayOrFn === 'function'
       ? legendArrayOrFn({
-          plugin,
-          configsToRules,
-          configEmojis,
-          configFormat,
-          pluginPrefix,
-          urlConfigs,
-          ignoreConfig,
+          context,
         })
       : legendArrayOrFn;
   });
@@ -270,13 +193,7 @@ export function generateLegend(
   if (legends.some((legend) => legend.includes('Configurations'))) {
     // Add legends for individual configs after the config column legend(s).
     const legendsForIndividualConfigs = getLegendsForIndividualConfigs({
-      plugin,
-      configsToRules,
-      configEmojis,
-      configFormat,
-      pluginPrefix,
-      urlConfigs,
-      ignoreConfig,
+      context,
     });
     const finalConfigHeaderLegendPosition = Math.max(
       ...Object.values(SEVERITY_TYPE_TO_WORD).map((word) =>
@@ -290,5 +207,6 @@ export function generateLegend(
     );
   }
 
-  return legends.join(`\\${EOL}`); // Back slash ensures these end up displayed on separate lines.
+  // The backslashes ensure that they end up displayed on separate lines.
+  return legends.join(`\\${endOfLine}`);
 }

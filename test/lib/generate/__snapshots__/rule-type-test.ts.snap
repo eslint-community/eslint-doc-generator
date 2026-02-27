@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (rule type) rule with type, type column enabled displays the type 1`] = `
+exports[`generate (rule type) > rule with type, type column enabled > displays the type 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -21,42 +21,42 @@ exports[`generate (rule type) rule with type, type column enabled displays the t
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled displays the type 2`] = `
+exports[`generate (rule type) > rule with type, type column enabled > displays the type 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled displays the type 3`] = `
+exports[`generate (rule type) > rule with type, type column enabled > displays the type 3`] = `
 "# test/no-bar
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled displays the type 4`] = `
+exports[`generate (rule type) > rule with type, type column enabled > displays the type 4`] = `
 "# test/no-biz
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled displays the type 5`] = `
+exports[`generate (rule type) > rule with type, type column enabled > displays the type 5`] = `
 "# test/no-boz
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled displays the type 6`] = `
+exports[`generate (rule type) > rule with type, type column enabled > displays the type 6`] = `
 "# test/no-buz
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled, but only an unknown type hides the type column and notice 1`] = `
+exports[`generate (rule type) > rule with type, type column enabled, but only an unknown type > hides the type column and notice 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -68,14 +68,14 @@ exports[`generate (rule type) rule with type, type column enabled, but only an u
 "
 `;
 
-exports[`generate (rule type) rule with type, type column enabled, but only an unknown type hides the type column and notice 2`] = `
+exports[`generate (rule type) > rule with type, type column enabled, but only an unknown type > hides the type column and notice 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule type) rule with type, type column not enabled hides the type column 1`] = `
+exports[`generate (rule type) > rule with type, type column not enabled > hides the type column 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -87,7 +87,7 @@ exports[`generate (rule type) rule with type, type column not enabled hides the 
 "
 `;
 
-exports[`generate (rule type) rule with type, type column not enabled hides the type column 2`] = `
+exports[`generate (rule type) > rule with type, type column not enabled > hides the type column 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->

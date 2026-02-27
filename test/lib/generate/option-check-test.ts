@@ -1,49 +1,35 @@
 import { generate } from '../../../lib/generator.js';
-import mockFs from 'mock-fs';
-import { dirname, resolve, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
-import { jest } from '@jest/globals';
+import { join } from 'node:path';
+import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 import * as sinon from 'sinon';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const PATH_NODE_MODULES = resolve(__dirname, '..', '..', '..', 'node_modules');
 
 describe('generate (--check)', function () {
   describe('basic', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': { meta: { docs: { description: 'Description for no-foo.'} }, create(context) {} },
             },
           };`,
-
-        'README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '# test/no-foo',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '# test/no-foo',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('prints the issues, exits with failure, and does not write changes', async function () {
       const consoleErrorStub = sinon.stub(console, 'error');
-      await generate('.', { check: true });
+      await generate(fixture.path, { check: true });
       expect(consoleErrorStub.callCount).toBe(4);
       // Use join to handle both Windows and Unix paths.
       expect(consoleErrorStub.firstCall.args).toStrictEqual([
@@ -60,8 +46,8 @@ describe('generate (--check)', function () {
       expect(consoleErrorStub.getCall(3).args).toMatchSnapshot(); // Diff
       consoleErrorStub.restore();
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 });

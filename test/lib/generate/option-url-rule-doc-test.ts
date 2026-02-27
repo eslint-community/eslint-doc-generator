@@ -1,25 +1,15 @@
 import { generate } from '../../../lib/generator.js';
-import mockFs from 'mock-fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
-import { jest } from '@jest/globals';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const PATH_NODE_MODULES = resolve(__dirname, '..', '..', '..', 'node_modules');
+import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 
 describe('generate (--url-rule-doc)', function () {
   describe('basic', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -38,42 +28,35 @@ describe('generate (--url-rule-doc)', function () {
               },
             },
           };`,
-
-        'README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '',
-        'docs/rules/no-bar.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '',
+          'docs/rules/no-bar.md': '',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('uses the right URLs', async function () {
-      await generate('.', {
+      await generate(fixture.path, {
         urlRuleDoc: 'https://example.com/rule-docs/{name}/',
       });
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-bar.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-bar.md')).toMatchSnapshot();
     });
   });
 
   describe('function', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -92,47 +75,40 @@ describe('generate (--url-rule-doc)', function () {
               },
             },
           };`,
-
-        'README.md': '## Rules\n',
-        'nested/README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '',
-        'docs/rules/no-bar.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'nested/README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '',
+          'docs/rules/no-bar.md': '',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('uses the custom URL', async function () {
-      await generate('.', {
+      await generate(fixture.path, {
         pathRuleList: ['README.md', 'nested/README.md'],
         urlRuleDoc(name, path) {
           return `https://example.com/rule-docs/name:${name}/path:${path}`;
         },
       });
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('nested/README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-bar.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('nested/README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-bar.md')).toMatchSnapshot();
     });
   });
 
   describe('function returns undefined', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -151,34 +127,29 @@ describe('generate (--url-rule-doc)', function () {
               },
             },
           };`,
-
-        'README.md': '## Rules\n',
-        'nested/README.md': '## Rules\n',
-
-        'docs/rules/no-foo.md': '',
-        'docs/rules/no-bar.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md': '## Rules\n',
+          'nested/README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '',
+          'docs/rules/no-bar.md': '',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('should fallback to the normal URL', async function () {
-      await generate('.', {
+      await generate(fixture.path, {
         pathRuleList: ['README.md', 'nested/README.md'],
         urlRuleDoc() {
           return undefined;
         },
       });
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('nested/README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-bar.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('nested/README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-bar.md')).toMatchSnapshot();
     });
   });
 });

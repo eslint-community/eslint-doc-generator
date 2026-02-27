@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (postprocess option) basic calls the postprocessor 1`] = `
+exports[`generate (postprocess option) > basic > calls the postprocessor 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -14,7 +14,7 @@ exports[`generate (postprocess option) basic calls the postprocessor 1`] = `
 Located at README.md"
 `;
 
-exports[`generate (postprocess option) basic calls the postprocessor 2`] = `
+exports[`generate (postprocess option) > basic > calls the postprocessor 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->

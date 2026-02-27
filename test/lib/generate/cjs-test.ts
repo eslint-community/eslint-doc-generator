@@ -1,5 +1,4 @@
-// This file uses actual test fixtures on the file system instead of mock-fs due to
-// trouble with the combination of require() for loading CJS plugins, jest, and mock-fs.
+// This file uses actual test fixtures on the file system.
 
 import { generate } from '../../../lib/generator.js';
 import { join } from 'node:path';
@@ -24,8 +23,8 @@ describe('generate (cjs)', function () {
     });
   });
 
-  describe('Missing plugin package.json `main` field', function () {
-    it('defaults to correct entry point', async function () {
+  describe('plugin with minimal package.json', function () {
+    it('loads correctly', async function () {
       const FIXTURE_PATH = join(FIXTURE_ROOT, 'cjs-missing-main');
       await expect(generate(FIXTURE_PATH)).resolves.toBeUndefined();
     });

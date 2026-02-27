@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (rule metadata) deprecated function-style rule generates the documentation 1`] = `
+exports[`generate (rule metadata) > deprecated function-style rule > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -15,14 +15,14 @@ exports[`generate (rule metadata) deprecated function-style rule generates the d
 "
 `;
 
-exports[`generate (rule metadata) deprecated function-style rule generates the documentation 2`] = `
+exports[`generate (rule metadata) > deprecated function-style rule > generates the documentation 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (rule metadata) deprecated function-style rule with deprecated/schema properties generates the documentation 1`] = `
+exports[`generate (rule metadata) > deprecated function-style rule with deprecated/schema properties > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -37,7 +37,7 @@ exports[`generate (rule metadata) deprecated function-style rule with deprecated
 "
 `;
 
-exports[`generate (rule metadata) deprecated function-style rule with deprecated/schema properties generates the documentation 2`] = `
+exports[`generate (rule metadata) > deprecated function-style rule with deprecated/schema properties > generates the documentation 2`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -45,7 +45,7 @@ exports[`generate (rule metadata) deprecated function-style rule with deprecated
 optionToDoSomething"
 `;
 
-exports[`generate (rule metadata) rule with no meta object generates the documentation 1`] = `
+exports[`generate (rule metadata) > rule with no meta object > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -60,7 +60,7 @@ exports[`generate (rule metadata) rule with no meta object generates the documen
 "
 `;
 
-exports[`generate (rule metadata) rule with no meta object generates the documentation 2`] = `
+exports[`generate (rule metadata) > rule with no meta object > generates the documentation 2`] = `
 "# test/no-foo
 
 💼 This rule is enabled in the ✅ \`recommended\` config.

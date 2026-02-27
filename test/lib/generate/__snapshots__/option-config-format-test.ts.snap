@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (--config-format) name uses the right format 1`] = `
+exports[`generate (--config-format) > name > uses the right format 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -15,8 +15,10 @@ exports[`generate (--config-format) name uses the right format 1`] = `
 "
 `;
 
-exports[`generate (--config-format) name uses the right format 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--config-format) > name > uses the right format 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -24,7 +26,7 @@ exports[`generate (--config-format) name uses the right format 2`] = `
 "
 `;
 
-exports[`generate (--config-format) plugin-colon-prefix-name uses the right format 1`] = `
+exports[`generate (--config-format) > plugin-colon-prefix-name > uses the right format 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -39,8 +41,10 @@ exports[`generate (--config-format) plugin-colon-prefix-name uses the right form
 "
 `;
 
-exports[`generate (--config-format) plugin-colon-prefix-name uses the right format 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--config-format) > plugin-colon-prefix-name > uses the right format 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 💼 This rule is enabled in the ✅ \`plugin:test/recommended\` config.
 
@@ -48,7 +52,7 @@ exports[`generate (--config-format) plugin-colon-prefix-name uses the right form
 "
 `;
 
-exports[`generate (--config-format) prefix-name uses the right format 1`] = `
+exports[`generate (--config-format) > prefix-name > uses the right format 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -63,8 +67,10 @@ exports[`generate (--config-format) prefix-name uses the right format 1`] = `
 "
 `;
 
-exports[`generate (--config-format) prefix-name uses the right format 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--config-format) > prefix-name > uses the right format 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 💼 This rule is enabled in the ✅ \`test/recommended\` config.
 

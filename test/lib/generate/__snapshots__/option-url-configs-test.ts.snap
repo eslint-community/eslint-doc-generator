@@ -1,40 +1,45 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (--url-configs) basic includes the config link 1`] = `
+exports[`generate (--url-configs) > basic > includes the config link 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
 💼 [Configurations](https://example.com/configs) enabled in.\\
-✅ Set in the \`recommended\` [configuration](https://example.com/configs).
+⭐ Set in the \`customConfig\` [configuration](https://example.com/configs).\\
+🔥 Set in the \`recommended\` [configuration](https://example.com/configs).
 
-| Name                           | Description             | 💼                      |
-| :----------------------------- | :---------------------- | :---------------------- |
-| [no-bar](docs/rules/no-bar.md) | Description for no-bar. | ![badge-customConfig][] |
-| [no-foo](docs/rules/no-foo.md) | Description for no-foo. | ✅                       |
+| Name                           | Description             | 💼 |
+| :----------------------------- | :---------------------- | :- |
+| [no-bar](docs/rules/no-bar.md) | Description for no-bar. | ⭐  |
+| [no-foo](docs/rules/no-foo.md) | Description for no-foo. | 🔥 |
 
 <!-- end auto-generated rules list -->
 "
 `;
 
-exports[`generate (--url-configs) basic includes the config link 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--url-configs) > basic > includes the config link 2`] = `
+"# test/no-foo
 
-💼 This rule is enabled in the ✅ \`recommended\` [config](https://example.com/configs).
+📝 Description for no-foo.
 
-<!-- end auto-generated rule header -->
-"
-`;
-
-exports[`generate (--url-configs) basic includes the config link 3`] = `
-"# Description for no-bar (\`test/no-bar\`)
-
-💼 This rule is enabled in the \`customConfig\` [config](https://example.com/configs).
+💼 This rule is enabled in the 🔥 \`recommended\` [config](https://example.com/configs).
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (--url-configs) with only recommended config includes the config link 1`] = `
+exports[`generate (--url-configs) > basic > includes the config link 3`] = `
+"# test/no-bar
+
+📝 Description for no-bar.
+
+💼 This rule is enabled in the ⭐ \`customConfig\` [config](https://example.com/configs).
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--url-configs) > with only recommended config > includes the config link 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -49,8 +54,10 @@ exports[`generate (--url-configs) with only recommended config includes the conf
 "
 `;
 
-exports[`generate (--url-configs) with only recommended config includes the config link 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (--url-configs) > with only recommended config > includes the config link 2`] = `
+"# test/no-foo
+
+📝 Description for no-foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` [config](https://example.com/configs).
 

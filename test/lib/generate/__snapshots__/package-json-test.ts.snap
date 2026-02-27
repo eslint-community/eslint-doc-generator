@@ -1,10 +1,10 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (package.json) Missing plugin package.json \`name\` field throws an error 1`] = `"Could not find \`name\` field in ESLint plugin's package.json."`;
+exports[`generate (package.json) > Missing plugin package.json > throws an error 1`] = `[Error: Could not find package.json of ESLint plugin.]`;
 
-exports[`generate (package.json) Missing plugin package.json throws an error 1`] = `"Could not find package.json of ESLint plugin."`;
+exports[`generate (package.json) > Missing plugin package.json \`name\` field > throws an error 1`] = `[Error: Could not find \`name\` field in ESLint plugin's package.json.]`;
 
-exports[`generate (package.json) No configs found omits the config column 1`] = `
+exports[`generate (package.json) > No configs found > omits the config column 1`] = `
 "<!-- begin auto-generated rules list -->
 
 | Name                           | Description   |
@@ -14,17 +14,21 @@ exports[`generate (package.json) No configs found omits the config column 1`] = 
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (package.json) No configs found omits the config column 2`] = `
-"# Disallow foo (\`test/no-foo\`)
+exports[`generate (package.json) > No configs found > omits the config column 2`] = `
+"# test/no-foo
+
+📝 Disallow foo.
 
 <!-- end auto-generated rule header -->
 "
 `;
 
-exports[`generate (package.json) No exported rules object found throws an error 1`] = `"Could not find exported \`rules\` object in ESLint plugin."`;
+exports[`generate (package.json) > No exported rules object found > throws an error 1`] = `[Error: Could not find exported \`rules\` object in ESLint plugin.]`;
 
-exports[`generate (package.json) Scoped plugin name determines the correct plugin prefix 1`] = `
-"# Disallow foo (\`@my-scope/no-foo\`)
+exports[`generate (package.json) > Scoped plugin name > determines the correct plugin prefix 1`] = `
+"# @my-scope/no-foo
+
+📝 Disallow foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -32,7 +36,7 @@ exports[`generate (package.json) Scoped plugin name determines the correct plugi
 "
 `;
 
-exports[`generate (package.json) Scoped plugin with custom plugin name determines the correct plugin prefix 1`] = `
+exports[`generate (package.json) > Scoped plugin with custom plugin name > determines the correct plugin prefix 1`] = `
 "<!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\\
@@ -45,8 +49,10 @@ exports[`generate (package.json) Scoped plugin with custom plugin name determine
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (package.json) Scoped plugin with custom plugin name determines the correct plugin prefix 2`] = `
-"# Disallow foo (\`@my-scope/foo/no-foo\`)
+exports[`generate (package.json) > Scoped plugin with custom plugin name > determines the correct plugin prefix 2`] = `
+"# @my-scope/foo/no-foo
+
+📝 Disallow foo.
 
 💼 This rule is enabled in the ✅ \`recommended\` config.
 
@@ -54,23 +60,20 @@ exports[`generate (package.json) Scoped plugin with custom plugin name determine
 "
 `;
 
-exports[`generate (package.json) plugin entry point in JSON format generates the documentation 1`] = `
+exports[`generate (package.json) > plugin entry point in JSON format > generates the documentation 1`] = `
 "<!-- begin auto-generated rules list -->
 
-💼 Configurations enabled in.\\
-✅ Set in the \`recommended\` configuration.
-
-| Name                           | Description            | 💼 |
-| :----------------------------- | :--------------------- | :- |
-| [no-foo](docs/rules/no-foo.md) | Description for no-foo | ✅  |
+| Name                           | Description            |
+| :----------------------------- | :--------------------- |
+| [no-foo](docs/rules/no-foo.md) | Description of no-foo. |
 
 <!-- end auto-generated rules list -->"
 `;
 
-exports[`generate (package.json) plugin entry point in JSON format generates the documentation 2`] = `
-"# Description for no-foo (\`test/no-foo\`)
+exports[`generate (package.json) > plugin entry point in JSON format > generates the documentation 2`] = `
+"# test/no-foo
 
-💼 This rule is enabled in the ✅ \`recommended\` config.
+📝 Description of no-foo.
 
 <!-- end auto-generated rule header -->
 "

@@ -1,66 +1,74 @@
 import { generate } from '../../../lib/generator.js';
-import mockFs from 'mock-fs';
-import { dirname, resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { jest } from '@jest/globals';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const PATH_NODE_MODULES = resolve(__dirname, '..', '..', '..', 'node_modules');
+import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
+import { rm } from 'node:fs/promises';
+import { join } from 'node:path';
 
 describe('generate (package.json)', function () {
   describe('Missing plugin package.json', function () {
-    beforeEach(function () {
-      mockFs({
-        'index.js': '',
+    let fixture: FixtureContext;
 
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': '',
+        },
       });
+      // Remove package.json
+      await rm(join(fixture.path, 'package.json'));
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('throws an error', async function () {
-      await expect(generate('.')).rejects.toThrowErrorMatchingSnapshot();
+      await expect(
+        generate(fixture.path),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
 
   describe('Missing plugin package.json `name` field', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': 'export default { rules: {} }',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            exports: 'index.js',
+            type: 'module',
+          },
+          'index.js': 'export default { rules: {} }',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('throws an error', async function () {
-      await expect(generate('.')).rejects.toThrowErrorMatchingSnapshot();
+      await expect(
+        generate(fixture.path),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
 
   describe('Scoped plugin name', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: '@my-scope/eslint-plugin',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            name: '@my-scope/eslint-plugin',
+            exports: 'index.js',
+            type: 'module',
+          },
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -72,36 +80,36 @@ describe('generate (package.json)', function () {
               'recommended': { rules: { '@my-scope/no-foo': 'error', } }
             }
           };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('determines the correct plugin prefix', async function () {
-      await generate('.');
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      await generate(fixture.path);
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('Scoped plugin with custom plugin name', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: '@my-scope/eslint-plugin-foo',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            name: '@my-scope/eslint-plugin-foo',
+            exports: 'index.js',
+            type: 'module',
+          },
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -113,37 +121,32 @@ describe('generate (package.json)', function () {
               'recommended': { rules: { '@my-scope/foo/no-foo': 'error', } }
             }
           };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('determines the correct plugin prefix', async function () {
-      await generate('.');
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      await generate(fixture.path);
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('No configs found', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -152,66 +155,63 @@ describe('generate (package.json)', function () {
               },
             }
           };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('omits the config column', async function () {
-      await generate('.');
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      await generate(fixture.path);
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('No exported rules object found', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': 'export default {};',
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': 'export default {};',
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('throws an error', async function () {
-      await expect(generate('.')).rejects.toThrowErrorMatchingSnapshot();
+      await expect(
+        generate(fixture.path),
+      ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
 
   describe('package.json using exports, as string', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: './index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `export default {
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            name: 'eslint-plugin-test',
+            exports: './index.js',
+            type: 'module',
+          },
+          'index.js': `export default {
           rules: {
             'no-foo': {
               meta: { docs: { description: 'disallow foo.' }, },
@@ -219,35 +219,35 @@ describe('generate (package.json)', function () {
             },
           },
         };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('finds the entry point', async function () {
-      await expect(generate('.')).resolves.toBeUndefined();
+      await expect(generate(fixture.path)).resolves.toBeUndefined();
     });
   });
 
   describe('package.json using exports, object with dot', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: { '.': './index-foo.js' },
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index-foo.js': `export default {
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            name: 'eslint-plugin-test',
+            exports: { '.': './index-foo.js' },
+            type: 'module',
+          },
+          'index-foo.js': `export default {
           rules: {
             'no-foo': {
               meta: { docs: { description: 'disallow foo.' }, },
@@ -255,35 +255,35 @@ describe('generate (package.json)', function () {
             },
           },
         };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('finds the entry point', async function () {
-      await expect(generate('.')).resolves.toBeUndefined();
+      await expect(generate(fixture.path)).resolves.toBeUndefined();
     });
   });
 
   describe('plugin entry point in JSON format', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: './index.json',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.json': `
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            name: 'eslint-plugin-test',
+            exports: './index.json',
+            type: 'module',
+          },
+          'index.json': `
           {
             "rules": {
               "no-foo": {
@@ -303,68 +303,65 @@ describe('generate (package.json)', function () {
             }
           }
         `,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+
+    afterAll(async function () {
+      await fixture.cleanup();
     });
+
     it('generates the documentation', async function () {
-      await generate('.');
+      await generate(fixture.path);
 
-      expect(readFileSync('README.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
 
-      expect(readFileSync('docs/rules/no-foo.md', 'utf8')).toMatchSnapshot();
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
   });
 
   describe('plugin entry point specified but does not exist', function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+        },
       });
+      // Remove index.js
+      await rm(join(fixture.path, 'index.js'));
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('throws an error', async function () {
-      await expect(generate('.')).rejects.toThrow(
+      await expect(generate(fixture.path)).rejects.toThrow(
         'ESLint plugin entry point does not exist. Tried: index.js',
       );
     });
   });
 
   describe("plugin entry point with type: 'module' and main field specified", function () {
-    beforeEach(function () {
-      mockFs({
-        'package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          main: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        'index.js': `export default {
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'package.json': {
+            name: 'eslint-plugin-test',
+            main: 'index.js',
+            type: 'module',
+          },
+          'index.js': `export default {
           rules: {
             'no-foo': {
               meta: { docs: { description: 'disallow foo.' }, },
@@ -372,54 +369,42 @@ describe('generate (package.json)', function () {
             },
           },
         };`,
-
-        'README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        'docs/rules/no-foo.md': '',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('finds the entry point', async function () {
-      await expect(generate('.')).resolves.toBeUndefined();
+      await expect(generate(fixture.path)).resolves.toBeUndefined();
     });
   });
 
   describe('passing absolute path for plugin root', function () {
-    beforeEach(function () {
-      mockFs({
-        '/eslint-plugin-test/package.json': JSON.stringify({
-          name: 'eslint-plugin-test',
-          exports: 'index.js',
-          type: 'module',
-        }),
+    let fixture: FixtureContext;
 
-        '/eslint-plugin-test/index.js':
-          'export default { rules: {}, configs: {} };',
-
-        '/eslint-plugin-test/README.md':
-          '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
-
-        // Needed for some of the test infrastructure to work.
-        node_modules: mockFs.load(PATH_NODE_MODULES),
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': 'export default { rules: {}, configs: {} };',
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+        },
       });
     });
 
-    afterEach(function () {
-      mockFs.restore();
-      jest.resetModules();
+    afterAll(async function () {
+      await fixture.cleanup();
     });
 
     it('finds the entry point', async function () {
-      await expect(generate('/eslint-plugin-test/')).resolves.toBeUndefined();
+      await expect(generate(fixture.path)).resolves.toBeUndefined();
     });
   });
 });

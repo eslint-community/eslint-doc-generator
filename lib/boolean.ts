@@ -42,7 +42,7 @@ export function isBooleanable(value: unknown): boolean {
     }
 
     case 'number': {
-      return [0, 1].includes(Number(value).valueOf());
+      return [0, 1].includes(value);
     }
 
     case 'boolean': {

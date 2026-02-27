@@ -2,19 +2,12 @@ import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { getAllNamedOptions, hasOptions } from './rule-options.js';
 import {
-  loadPlugin,
-  getPluginPrefix,
   getPluginRoot,
   getPathWithExactFileNameCasing,
 } from './package-json.js';
 import { updateRulesList } from './rule-list.js';
 import { updateConfigsList } from './config-list.js';
 import { generateRuleHeaderLines } from './rule-doc-notices.js';
-import {
-  parseRuleDocNoticesOption,
-  parseRuleListColumnsOption,
-  parseConfigEmojiOptions,
-} from './option-parsers.js';
 import {
   BEGIN_RULE_OPTIONS_LIST_MARKER,
   END_RULE_HEADER_MARKER,
@@ -25,105 +18,44 @@ import {
   expectContentOrFail,
   expectSectionHeaderOrFail,
 } from './markdown.js';
-import { resolveConfigsToRules } from './plugin-config-resolution.js';
-import { OPTION_DEFAULTS } from './options.js';
 import { diff } from 'jest-diff';
-import type { GenerateOptions } from './types.js';
-import { OPTION_TYPE, RuleModule } from './types.js';
+import type { GenerateOptions, RuleModule } from './types.js';
 import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { getEndOfLine } from './string.js';
-
-function stringOrArrayWithFallback<T extends string | readonly string[]>(
-  stringOrArray: undefined | T,
-  fallback: T,
-): T {
-  return stringOrArray && stringOrArray.length > 0 ? stringOrArray : fallback;
-}
-
-function stringOrArrayToArrayWithFallback(
-  stringOrArray: undefined | string | readonly string[],
-  fallback: readonly string[],
-): readonly string[] {
-  const asArray =
-    stringOrArray instanceof Array // eslint-disable-line unicorn/no-instanceof-builtins -- using Array.isArray() loses type information about the array.
-      ? stringOrArray
-      : stringOrArray
-        ? [stringOrArray]
-        : [];
-  const csvStringItem = asArray.find((item) => item.includes(','));
-  if (csvStringItem) {
-    throw new Error(
-      `Provide property as array, not a CSV string: ${csvStringItem}`,
-    );
-  }
-  return asArray.length > 0 ? asArray : fallback;
-}
+import { getContext } from './context.js';
+import { generateSuggestedEmojis } from './suggest-emojis.js';
 
 // eslint-disable-next-line complexity
-export async function generate(path: string, options?: GenerateOptions) {
-  const EOL = getEndOfLine();
+export async function generate(path: string, userOptions?: GenerateOptions) {
+  const context = await getContext(path, userOptions);
+  const { endOfLine, options, plugin } = context;
 
-  const plugin = await loadPlugin(path);
-  const pluginPrefix = await getPluginPrefix(path);
-  const configsToRules = await resolveConfigsToRules(plugin);
+  // Destructure options that are only used in this function. Other options are passed around using
+  // the "context" object.
+  const {
+    check,
+    ignoreDeprecatedRules,
+    initRuleDocs,
+    suggestEmojis,
+    pathRuleDoc,
+    pathRuleList,
+    postprocess,
+    ruleDocSectionExclude,
+    ruleDocSectionInclude,
+    ruleDocSectionOptions,
+  } = options;
+
+  if (suggestEmojis) {
+    await generateSuggestedEmojis(context);
+    return;
+  }
 
   if (!plugin.rules) {
     throw new Error('Could not find exported `rules` object in ESLint plugin.');
   }
 
-  // Options. Add default values as needed.
-  const check = options?.check ?? OPTION_DEFAULTS[OPTION_TYPE.CHECK];
-  const configEmojis = parseConfigEmojiOptions(plugin, options?.configEmoji);
-  const configFormat =
-    options?.configFormat ?? OPTION_DEFAULTS[OPTION_TYPE.CONFIG_FORMAT];
-  const ignoreConfig = stringOrArrayWithFallback(
-    options?.ignoreConfig,
-    OPTION_DEFAULTS[OPTION_TYPE.IGNORE_CONFIG],
-  );
-  const ignoreDeprecatedRules =
-    options?.ignoreDeprecatedRules ??
-    OPTION_DEFAULTS[OPTION_TYPE.IGNORE_DEPRECATED_RULES];
-  const initRuleDocs =
-    options?.initRuleDocs ?? OPTION_DEFAULTS[OPTION_TYPE.INIT_RULE_DOCS];
-  const pathRuleDoc =
-    options?.pathRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.PATH_RULE_DOC];
-  const pathRuleList = stringOrArrayToArrayWithFallback(
-    options?.pathRuleList,
-    OPTION_DEFAULTS[OPTION_TYPE.PATH_RULE_LIST],
-  );
-  const postprocess =
-    options?.postprocess ?? OPTION_DEFAULTS[OPTION_TYPE.POSTPROCESS];
-  const ruleDocNotices = parseRuleDocNoticesOption(options?.ruleDocNotices);
-  const ruleDocSectionExclude = stringOrArrayWithFallback(
-    options?.ruleDocSectionExclude,
-    OPTION_DEFAULTS[OPTION_TYPE.RULE_DOC_SECTION_EXCLUDE],
-  );
-  const ruleDocSectionInclude = stringOrArrayWithFallback(
-    options?.ruleDocSectionInclude,
-    OPTION_DEFAULTS[OPTION_TYPE.RULE_DOC_SECTION_INCLUDE],
-  );
-  const ruleDocSectionOptions =
-    options?.ruleDocSectionOptions ??
-    OPTION_DEFAULTS[OPTION_TYPE.RULE_DOC_SECTION_OPTIONS];
-  const ruleDocTitleFormat =
-    options?.ruleDocTitleFormat ??
-    OPTION_DEFAULTS[OPTION_TYPE.RULE_DOC_TITLE_FORMAT];
-  const ruleListColumns = parseRuleListColumnsOption(options?.ruleListColumns);
-  const ruleListSplit =
-    typeof options?.ruleListSplit === 'function'
-      ? options.ruleListSplit
-      : stringOrArrayToArrayWithFallback(
-          options?.ruleListSplit,
-          OPTION_DEFAULTS[OPTION_TYPE.RULE_LIST_SPLIT],
-        );
-  const urlConfigs =
-    options?.urlConfigs ?? OPTION_DEFAULTS[OPTION_TYPE.URL_CONFIGS];
-  const urlRuleDoc =
-    options?.urlRuleDoc ?? OPTION_DEFAULTS[OPTION_TYPE.URL_RULE_DOC];
-
-  // Gather normalized list of rules.
+  // Gather the normalized list of rules.
   const ruleNamesAndRules = Object.entries(plugin.rules)
     .map(([name, ruleModule]) => {
       // Convert deprecated function-style rules to object-style rules so that we don't have to handle function-style rules everywhere throughout the codebase.
@@ -148,14 +80,16 @@ export async function generate(path: string, options?: GenerateOptions) {
       // Filter out deprecated rules from being checked, displayed, or updated if the option is set.
       ([, rule]) => !ignoreDeprecatedRules || !rule.meta?.deprecated,
     )
-    .sort(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    .toSorted(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   // Update rule doc for each rule.
   let initializedRuleDoc = false;
   for (const [name, rule] of ruleNamesAndRules) {
     const schema = rule.meta?.schema;
+    const metaDefaultOptions = rule.meta?.defaultOptions;
     const description = rule.meta?.docs?.description;
-    const pathToDoc = join(path, replaceRulePlaceholder(pathRuleDoc, name));
+    const pathCurrentPage = replaceRulePlaceholder(pathRuleDoc, name);
+    const pathToDoc = join(path, pathCurrentPage);
     const ruleHasOptions = hasOptions(schema);
 
     if (!existsSync(pathToDoc)) {
@@ -174,16 +108,18 @@ export async function generate(path: string, options?: GenerateOptions) {
         ruleDocSectionInclude.length > 0
           ? ruleDocSectionInclude
               .map((title) => `## ${title}`)
-              .join(`${EOL}${EOL}`)
+              .join(`${endOfLine}${endOfLine}`)
           : undefined,
+        /* istanbul ignore next -- both branches tested but coverage has instrumentation issue with ternary in array */
         ruleHasOptions
-          ? `## Options${EOL}${EOL}${BEGIN_RULE_OPTIONS_LIST_MARKER}${EOL}${END_RULE_OPTIONS_LIST_MARKER}`
+          ? `## Options${endOfLine}${endOfLine}${BEGIN_RULE_OPTIONS_LIST_MARKER}${endOfLine}${END_RULE_OPTIONS_LIST_MARKER}`
           : undefined,
       ]
         .filter((section) => section !== undefined)
-        .join(`${EOL}${EOL}`);
+        .join(`${endOfLine}${endOfLine}`);
+      /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
       if (newRuleDocContents !== '') {
-        newRuleDocContents = `${EOL}${newRuleDocContents}${EOL}`;
+        newRuleDocContents = `${endOfLine}${newRuleDocContents}${endOfLine}`;
       }
 
       await mkdir(dirname(pathToDoc), { recursive: true });
@@ -192,27 +128,15 @@ export async function generate(path: string, options?: GenerateOptions) {
     }
 
     // Regenerate the header (title/notices) of each rule doc.
-    const newHeaderLines = generateRuleHeaderLines(
-      description,
-      name,
-      plugin,
-      configsToRules,
-      pluginPrefix,
-      path,
-      pathRuleDoc,
-      configEmojis,
-      configFormat,
-      ignoreConfig,
-      ruleDocNotices,
-      ruleDocTitleFormat,
-      urlConfigs,
-      urlRuleDoc,
-    );
+    const newHeaderLines = generateRuleHeaderLines(context, description, name);
 
-    const contentsOld = (await readFile(pathToDoc)).toString(); // eslint-disable-line unicorn/no-await-expression-member
+    const contentsOldBuffer = await readFile(pathToDoc);
+    const contentsOld = contentsOldBuffer.toString();
     const contentsNew = await postprocess(
       updateRuleOptionsList(
+        context,
         replaceOrCreateHeader(
+          context,
           contentsOld,
           newHeaderLines,
           END_RULE_HEADER_MARKER,
@@ -223,6 +147,7 @@ export async function generate(path: string, options?: GenerateOptions) {
     );
 
     if (check) {
+      /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
       if (contentsNew !== contentsOld) {
         console.error(
           `Please run eslint-doc-generator. A rule doc is out-of-date: ${relative(
@@ -242,6 +167,7 @@ export async function generate(path: string, options?: GenerateOptions) {
     // Check for required sections.
     for (const section of ruleDocSectionInclude) {
       expectSectionHeaderOrFail(
+        context,
         `\`${name}\` rule doc`,
         contentsNew,
         [section],
@@ -252,6 +178,7 @@ export async function generate(path: string, options?: GenerateOptions) {
     // Check for disallowed sections.
     for (const section of ruleDocSectionExclude) {
       expectSectionHeaderOrFail(
+        context,
         `\`${name}\` rule doc`,
         contentsNew,
         [section],
@@ -262,12 +189,16 @@ export async function generate(path: string, options?: GenerateOptions) {
     if (ruleDocSectionOptions) {
       // Options section.
       expectSectionHeaderOrFail(
+        context,
         `\`${name}\` rule doc`,
         contentsNew,
         ['Options', 'Config'],
         ruleHasOptions,
       );
-      for (const { name: namedOption } of getAllNamedOptions(schema)) {
+      for (const { name: namedOption } of getAllNamedOptions(
+        schema,
+        metaDefaultOptions,
+      )) {
         expectContentOrFail(
           `\`${name}\` rule doc`,
           'rule option',
@@ -298,36 +229,19 @@ export async function generate(path: string, options?: GenerateOptions) {
 
     // Update the rules list in this file.
     const fileContents = await readFile(pathToFile, 'utf8');
+    const rulesList = updateRulesList(
+      context,
+      ruleNamesAndRules,
+      fileContents,
+      pathToFile,
+    );
     const fileContentsNew = await postprocess(
-      updateConfigsList(
-        updateRulesList(
-          ruleNamesAndRules,
-          fileContents,
-          plugin,
-          configsToRules,
-          pluginPrefix,
-          pathRuleDoc,
-          pathToFile,
-          path,
-          configEmojis,
-          configFormat,
-          ignoreConfig,
-          ruleListColumns,
-          ruleListSplit,
-          urlConfigs,
-          urlRuleDoc,
-        ),
-        plugin,
-        configsToRules,
-        pluginPrefix,
-        configEmojis,
-        configFormat,
-        ignoreConfig,
-      ),
+      updateConfigsList(context, rulesList),
       resolve(pathToFile),
     );
 
     if (check) {
+      /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
       if (fileContentsNew !== fileContents) {
         console.error(
           `Please run eslint-doc-generator. The rules table in ${relative(

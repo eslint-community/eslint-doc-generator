@@ -1,4 +1,6 @@
-# Require using baz (`test/require-baz`)
+# test/require-baz
+
+📝 Require using baz.
 
 ❌ This rule has been [deprecated](https://example.com) since v1.0.0 and will be available until v2.0.0. It was replaced by [`test/prefer-bar`](prefer-bar.md) (custom message about this replacement) ([read more](https://example.com)). Custom message about overall deprecation.
 
