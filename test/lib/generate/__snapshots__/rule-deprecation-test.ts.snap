@@ -1,5 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`generate (deprecated rules) > DeprecatedInfo with only deprecatedSince (no availableUntil) > displays deprecatedSince without availableUntil 1`] = `
+"# test/no-foo
+
+📝 Description.
+
+❌ This rule has been deprecated since v3.0.0.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
 exports[`generate (deprecated rules) > DeprecatedInfo with only invalid replacedBy entries preceding a valid one > does not produce an erroneous "and" prefix when only one valid replacement remains 1`] = `
 "# test/no-foo
 
