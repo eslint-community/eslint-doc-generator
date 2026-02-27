@@ -102,13 +102,7 @@ function replacedByToNoticeSentence(
 
     const replacementRule = info.rule.url
       ? getMarkdownLink(info.rule.name, true, info.rule.url)
-      : getLinkToRule(
-          context,
-          info.rule.name,
-          pathCurrentPage,
-          true,
-          true,
-        );
+      : getLinkToRule(context, info.rule.name, pathCurrentPage, true, true);
 
     const externalPlugin =
       info.plugin?.name && info.plugin.name !== 'eslint'
