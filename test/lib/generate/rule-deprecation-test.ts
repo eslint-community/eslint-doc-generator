@@ -642,6 +642,56 @@ describe('generate (deprecated rules)', function () {
     });
   });
 
+  describe('DeprecatedInfo with only invalid replacedBy entries preceding a valid one', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: {
+                  docs: { description: 'Description.' },
+                  deprecated: {
+                    replacedBy: [
+                      { rule: {} },
+                      { rule: { name: 'no-bar' } },
+                    ]
+                  },
+                },
+                create(context) {}
+              },
+              'no-bar': {
+                meta: {
+                  docs: { description: 'Description.' },
+                },
+                create(context) {}
+              },
+            },
+            configs: {}
+          };`,
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+          'docs/rules/no-bar.md': '',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('does not produce an erroneous "and" prefix when only one valid replacement remains', async function () {
+      await generate(fixture.path);
+
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
+    });
+  });
+
   describe('with the object type `DeprecatedInfo`', function () {
     let fixture: FixtureContext;
 

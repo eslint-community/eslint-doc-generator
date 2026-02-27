@@ -80,6 +80,10 @@ function configsToNoticeSentence(
   return sentence;
 }
 
+/**
+ * Build the "It was replaced by ..." sentence from DeprecatedInfo.replacedBy entries.
+ * Entries without a rule name are silently skipped.
+ */
 function replacedByToNoticeSentence(
   context: Context,
   deprecated: DeprecatedInfo,
@@ -89,35 +93,44 @@ function replacedByToNoticeSentence(
     return undefined;
   }
 
-  function replacedByIterator(
-    info: ReplacedByInfo,
-    idx: number,
-    arr: ReplacedByInfo[],
-  ): string | undefined {
+  function formatReplacedByEntry(info: ReplacedByInfo): string | undefined {
     if (!info.rule?.name) {
       return undefined;
     }
 
-    const conjunction = arr.length > 1 && idx === arr.length - 1 ? 'and ' : '';
-
+    // Prefer an explicit URL from the plugin maintainer; fall back to auto-generated link.
     const replacementRule = info.rule.url
       ? getMarkdownLink(info.rule.name, true, info.rule.url)
       : getLinkToRule(context, info.rule.name, pathCurrentPage, true, true);
 
+    // Only show "from <plugin>" for external plugins (not ESLint core).
     const externalPlugin =
       info.plugin?.name && info.plugin.name !== 'eslint'
         ? ` from ${getMarkdownLink(info.plugin.name, false, info.plugin.url)}`
         : '';
 
-    return `${conjunction}${replacementRule}${externalPlugin}${
+    return `${replacementRule}${externalPlugin}${
       info.message ? ` (${info.message})` : ''
     }${info.url ? ` (${getMarkdownLink('read more', false, info.url)})` : ''}`;
   }
 
-  return `It was replaced by ${deprecated.replacedBy
-    .map((item, index, array) => replacedByIterator(item, index, array))
-    .filter(Boolean)
-    .join(', ')}.`;
+  // Filter first, then apply conjunction, so "and" targets the correct item.
+  const parts = deprecated.replacedBy
+    .map((item) => formatReplacedByEntry(item))
+    .filter((part): part is string => part !== undefined);
+
+  if (parts.length === 0) {
+    return undefined;
+  }
+
+  if (parts.length > 1) {
+    const lastIndex = parts.length - 1;
+    // Safe: lastIndex is guaranteed valid since parts.length > 1.
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    parts[lastIndex] = `and ${parts[lastIndex]}`;
+  }
+
+  return `It was replaced by ${parts.join(', ')}.`;
 }
 
 // A few individual notices declared here just so they can be reused in multiple notices.
@@ -218,12 +231,14 @@ const RULE_NOTICES: {
   [NOTICE_TYPE.DEPRECATED]: ({ context, deprecated, replacedBy, ruleName }) => {
     const { options, path } = context;
     const { pathRuleDoc } = options;
-    // pathCurrentPage must be an absolute path for relative() to work correctly in getLinkToRule.
+    // Derive the path of the *deprecated* rule's doc page (not the replacement's) so that
+    // relative() in getLinkToRule produces correct links from this page to replacements.
     const pathCurrentPage = join(
       getPluginRoot(path),
       replaceRulePlaceholder(pathRuleDoc, ruleName),
     );
 
+    // New DeprecatedInfo object format (ESLint >=9.21.0) vs legacy boolean format.
     if (typeof deprecated === 'object') {
       const sentenceDeprecated = `${EMOJI_DEPRECATED} This rule ${
         deprecated.deprecatedSince ? 'has been' : 'is'

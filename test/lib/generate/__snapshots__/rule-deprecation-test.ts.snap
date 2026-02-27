@@ -1,5 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`generate (deprecated rules) > DeprecatedInfo with only invalid replacedBy entries preceding a valid one > does not produce an erroneous "and" prefix when only one valid replacement remains 1`] = `
+"# test/no-foo
+
+📝 Description.
+
+❌ This rule is deprecated. It was replaced by [\`test/no-bar\`](no-bar.md).
+
+<!-- end auto-generated rule header -->
+"
+`;
+
 exports[`generate (deprecated rules) > replaced by ESLint core rule > uses correct replacement rule link 1`] = `
 "<!-- begin auto-generated rules list -->
 
