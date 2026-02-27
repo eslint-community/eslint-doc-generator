@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.2.0...v3.3.0) (2026-02-27)
+
+
+### Features
+
+* Support new `DeprecatedInfo` format for rule `meta.deprecated` ([#730](https://github.com/eslint-community/eslint-doc-generator/issues/730)) ([780451d](https://github.com/eslint-community/eslint-doc-generator/commit/780451dcdf5e50ed967ec3792f2a7ebe630b4ac2))
+
 ## [3.2.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.1.0...v3.2.0) (2026-02-22)
 
 
