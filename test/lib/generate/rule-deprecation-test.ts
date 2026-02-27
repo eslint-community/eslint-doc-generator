@@ -692,6 +692,47 @@ describe('generate (deprecated rules)', function () {
     });
   });
 
+  describe('DeprecatedInfo with v-prefixed version strings', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: {
+                  docs: { description: 'Description.' },
+                  deprecated: {
+                    deprecatedSince: 'v7.0.0',
+                    availableUntil: 'v13.0.0',
+                  },
+                },
+                create(context) {}
+              },
+            },
+            configs: {}
+          };`,
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+          'docs/rules/no-foo.md': '',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('does not double the v prefix', async function () {
+      await generate(fixture.path);
+
+      expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
+    });
+  });
+
   describe('with the object type `DeprecatedInfo`', function () {
     let fixture: FixtureContext;
 

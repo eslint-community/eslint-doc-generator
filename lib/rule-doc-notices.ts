@@ -240,15 +240,19 @@ const RULE_NOTICES: {
 
     // New DeprecatedInfo object format (ESLint >=9.21.0) vs legacy boolean format.
     if (typeof deprecated === 'object') {
+      function formatVersion(version: string) {
+        return version.startsWith('v') ? version : `v${version}`;
+      }
+
       const sentenceDeprecated = `${EMOJI_DEPRECATED} This rule ${
         deprecated.deprecatedSince ? 'has been' : 'is'
       } ${deprecated.url ? `[deprecated](${deprecated.url})` : 'deprecated'}${
         deprecated.deprecatedSince
-          ? ` since v${deprecated.deprecatedSince}`
+          ? ` since ${formatVersion(deprecated.deprecatedSince)}`
           : ''
       }${
         deprecated.availableUntil
-          ? ` and will be available until v${deprecated.availableUntil}`
+          ? ` and will be available until ${formatVersion(deprecated.availableUntil)}`
           : ''
       }.`;
 
