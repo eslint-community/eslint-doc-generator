@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.1](https://github.com/eslint-community/eslint-doc-generator/compare/v3.3.0...v3.3.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* trigger new release ([#907](https://github.com/eslint-community/eslint-doc-generator/issues/907)) ([4750c89](https://github.com/eslint-community/eslint-doc-generator/commit/4750c89cf7a28df103542684d41c36ddae5a9f34))
+
 ## [3.3.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.2.0...v3.3.0) (2026-02-27)
 
 
