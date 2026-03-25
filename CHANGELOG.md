@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.2](https://github.com/eslint-community/eslint-doc-generator/compare/v3.3.1...v3.3.2) (2026-03-25)
+
+
+### Bug Fixes
+
+* downgrade the minimum supported Node.js 22 version from `22.13.1` to `22.13.0` ([#922](https://github.com/eslint-community/eslint-doc-generator/issues/922)) ([271a7b7](https://github.com/eslint-community/eslint-doc-generator/commit/271a7b7cfc71e0d74b1c69cefa855335d4dde316))
+
 ## [3.3.1](https://github.com/eslint-community/eslint-doc-generator/compare/v3.3.0...v3.3.1) (2026-03-04)
 
 
