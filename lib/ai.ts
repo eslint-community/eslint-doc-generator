@@ -103,9 +103,25 @@ export interface AiProviderConfig {
   protocol: REQUEST_PROTOCOL;
 }
 
-export interface AiJsonRequestPrompt {
+export interface AiRequestPrompt {
   readonly systemPrompt?: string;
   readonly userPrompt: string;
+}
+
+/** @deprecated Use AiRequestPrompt instead. */
+export type AiJsonRequestPrompt = AiRequestPrompt;
+
+export interface AiTextRequestOptions {
+  readonly maxTokens?: number;
+  readonly temperature?: number;
+  readonly timeoutMs?: number;
+}
+
+interface ProtocolRequestOptions {
+  readonly jsonMode: boolean;
+  readonly maxTokens: number;
+  readonly temperature: number;
+  readonly timeoutMs: number;
 }
 
 function getProviderLabel(provider: AI_PROVIDER): string {
@@ -359,28 +375,32 @@ function parseLlmResponseObject(content: string): Record<string, unknown> {
 
 function buildOpenAiCompatibleRequest(
   providerConfig: AiProviderConfig,
-  prompt: AiJsonRequestPrompt,
+  prompt: AiRequestPrompt,
+  options: ProtocolRequestOptions,
 ): ProtocolRequestData {
-  const responseFormatType: OpenAiCompatibleResponseFormatType =
-    providerConfig.provider === AI_PROVIDER.VERCEL_AI_GATEWAY
-      ? 'json'
-      : 'json_object';
-  const requestBody = {
-    model: providerConfig.model,
-    temperature: 0,
-    messages: [
-      ...(prompt.systemPrompt
-        ? [{ role: 'system' as const, content: prompt.systemPrompt }]
-        : []),
-      {
-        role: 'user' as const,
-        content: prompt.userPrompt,
-      },
-    ],
-    response_format: {
-      type: responseFormatType,
+  const messages = [
+    ...(prompt.systemPrompt
+      ? [{ role: 'system' as const, content: prompt.systemPrompt }]
+      : []),
+    {
+      role: 'user' as const,
+      content: prompt.userPrompt,
     },
+  ];
+
+  const requestBody: Record<string, unknown> = {
+    model: providerConfig.model,
+    temperature: options.temperature,
+    messages,
   };
+
+  if (options.jsonMode) {
+    const responseFormatType: OpenAiCompatibleResponseFormatType =
+      providerConfig.provider === AI_PROVIDER.VERCEL_AI_GATEWAY
+        ? 'json'
+        : 'json_object';
+    requestBody['response_format'] = { type: responseFormatType };
+  }
 
   return {
     headers: {
@@ -394,7 +414,8 @@ function buildOpenAiCompatibleRequest(
 
 function buildAnthropicRequest(
   providerConfig: AiProviderConfig,
-  prompt: AiJsonRequestPrompt,
+  prompt: AiRequestPrompt,
+  options: ProtocolRequestOptions,
 ): ProtocolRequestData {
   const requestBody: {
     model: string;
@@ -404,8 +425,8 @@ function buildAnthropicRequest(
     system?: string;
   } = {
     model: providerConfig.model,
-    max_tokens: 512,
-    temperature: 0,
+    max_tokens: options.maxTokens,
+    temperature: options.temperature,
     messages: [
       {
         role: 'user',
@@ -430,27 +451,30 @@ function buildAnthropicRequest(
 
 function buildProtocolRequest(
   providerConfig: AiProviderConfig,
-  prompt: AiJsonRequestPrompt,
+  prompt: AiRequestPrompt,
+  options: ProtocolRequestOptions,
 ): ProtocolRequestData {
   return providerConfig.protocol === 'openaiCompatible'
-    ? buildOpenAiCompatibleRequest(providerConfig, prompt)
-    : buildAnthropicRequest(providerConfig, prompt);
+    ? buildOpenAiCompatibleRequest(providerConfig, prompt, options)
+    : buildAnthropicRequest(providerConfig, prompt, options);
 }
 
-async function requestProviderObject(
+async function requestProviderContent(
   providerConfig: AiProviderConfig,
-  prompt: AiJsonRequestPrompt,
-): Promise<Record<string, unknown>> {
+  prompt: AiRequestPrompt,
+  options: ProtocolRequestOptions,
+): Promise<string> {
   const providerLabel = getProviderLabel(providerConfig.provider);
   const { headers, body, getContent } = buildProtocolRequest(
     providerConfig,
     prompt,
+    options,
   );
 
   const abortController = new AbortController();
   const timeoutId = setTimeout(() => {
     abortController.abort();
-  }, REQUEST_TIMEOUT_MS);
+  }, options.timeoutMs);
 
   let response: FetchResponse;
   try {
@@ -467,7 +491,7 @@ async function requestProviderObject(
       (error.name === 'AbortError' || error.name === 'TimeoutError');
     if (abortController.signal.aborted || isAbortError) {
       throw new Error(
-        `${providerLabel} request failed: timed out after ${String(REQUEST_TIMEOUT_MS)}ms.`,
+        `${providerLabel} request failed: timed out after ${String(options.timeoutMs)}ms.`,
         { cause: error },
       );
     }
@@ -491,12 +515,47 @@ async function requestProviderObject(
     );
   }
 
+  return content;
+}
+
+const JSON_REQUEST_DEFAULTS: ProtocolRequestOptions = {
+  jsonMode: true,
+  maxTokens: 512,
+  temperature: 0,
+  timeoutMs: REQUEST_TIMEOUT_MS,
+};
+
+const TEXT_REQUEST_DEFAULTS: ProtocolRequestOptions = {
+  jsonMode: false,
+  maxTokens: 4096,
+  temperature: 0.2,
+  timeoutMs: 60_000,
+};
+
+export async function requestAiJsonObject(
+  providerConfig: AiProviderConfig,
+  prompt: AiRequestPrompt,
+): Promise<Record<string, unknown>> {
+  const content = await requestProviderContent(
+    providerConfig,
+    prompt,
+    JSON_REQUEST_DEFAULTS,
+  );
   return parseLlmResponseObject(content);
 }
 
-export function requestAiJsonObject(
+export function requestAiText(
   providerConfig: AiProviderConfig,
-  prompt: AiJsonRequestPrompt,
-): Promise<Record<string, unknown>> {
-  return requestProviderObject(providerConfig, prompt);
+  prompt: AiRequestPrompt,
+  options?: AiTextRequestOptions,
+): Promise<string> {
+  const protocolOptions: ProtocolRequestOptions = {
+    ...TEXT_REQUEST_DEFAULTS,
+    ...(options?.maxTokens !== undefined && { maxTokens: options.maxTokens }),
+    ...(options?.temperature !== undefined && {
+      temperature: options.temperature,
+    }),
+    ...(options?.timeoutMs !== undefined && { timeoutMs: options.timeoutMs }),
+  };
+  return requestProviderContent(providerConfig, prompt, protocolOptions);
 }
