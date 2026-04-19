@@ -24,6 +24,7 @@ import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
+import { enhanceRuleDocWithAi } from './rule-doc-ai.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 
 // eslint-disable-next-line complexity
@@ -34,6 +35,9 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
   // Destructure options that are only used in this function. Other options are passed around using
   // the "context" object.
   const {
+    ai,
+    aiModel,
+    aiProvider,
     check,
     ignoreDeprecatedRules,
     initRuleDocs,
@@ -49,6 +53,12 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
   if (suggestEmojis) {
     await generateSuggestedEmojis(context);
     return;
+  }
+
+  if (ai && check) {
+    throw new Error(
+      '--check and --ai cannot be used together. AI output is non-deterministic, so --check would produce unreliable diffs. Remove --ai from your CI invocation.',
+    );
   }
 
   if (!plugin.rules) {
@@ -83,7 +93,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     .toSorted(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   // Update rule doc for each rule.
-  let initializedRuleDoc = false;
+  const initializedRuleDocs = new Set<string>();
   for (const [name, rule] of ruleNamesAndRules) {
     const schema = rule.meta?.schema;
     const metaDefaultOptions = rule.meta?.defaultOptions;
@@ -124,14 +134,30 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
 
       await mkdir(dirname(pathToDoc), { recursive: true });
       await writeFile(pathToDoc, newRuleDocContents);
-      initializedRuleDoc = true;
+      initializedRuleDocs.add(name);
     }
 
     // Regenerate the header (title/notices) of each rule doc.
     const newHeaderLines = generateRuleHeaderLines(context, description, name);
 
     const contentsOldBuffer = await readFile(pathToDoc);
-    const contentsOld = contentsOldBuffer.toString();
+    let contentsOld = contentsOldBuffer.toString();
+
+    const shouldAiEnhance =
+      ai && (!initRuleDocs || initializedRuleDocs.has(name));
+    if (shouldAiEnhance) {
+      contentsOld = await enhanceRuleDocWithAi(
+        context,
+        name,
+        rule,
+        contentsOld,
+        {
+          aiProvider,
+          aiModel,
+        },
+      );
+    }
+
     const contentsNew = await postprocess(
       updateRuleOptionsList(
         context,
@@ -210,7 +236,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     }
   }
 
-  if (initRuleDocs && !initializedRuleDoc) {
+  if (initRuleDocs && initializedRuleDocs.size === 0) {
     throw new Error(
       '--init-rule-docs was enabled, but no rule doc file needed to be created.',
     );
