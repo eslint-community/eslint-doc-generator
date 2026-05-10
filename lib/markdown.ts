@@ -6,8 +6,13 @@ export function extractFrontmatter(context: Context, markdown: string) {
   const { endOfLine } = context;
   const lines = markdown.split(endOfLine);
   const frontMatterStart = lines.indexOf('---');
+
+  // Frontmatter must start at the beginning of the file to be considered valid, so if we don't find '---' at the beginning, we want to ignore it.
+  if (frontMatterStart !== 0) {
+    return undefined;
+  }
   const frontMatterEnd = lines.indexOf('---', frontMatterStart + 1);
-  if (frontMatterStart !== -1 && frontMatterEnd !== -1) {
+  if (frontMatterEnd !== -1) {
     return lines.slice(frontMatterStart, frontMatterEnd + 1).join(endOfLine);
   }
   return undefined;
