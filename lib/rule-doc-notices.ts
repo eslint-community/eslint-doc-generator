@@ -565,6 +565,10 @@ function makeRuleDocTitle(
   }
 }
 
+function formatFrontmatterProperty(key: string, value: string): string {
+  return `${key}: "${value}"`;
+}
+
 function getFrontmatterLines(
   context: Context,
   title: string,
@@ -587,9 +591,11 @@ function getFrontmatterLines(
 
   // If there is currently no frontmatter, then create a new one with the title and description.
   if (oldFrontmatterLines.length === 0) {
-    const newFrontmatter = ['---', `title: ${title}`];
+    const newFrontmatter = ['---', formatFrontmatterProperty('title', title)];
     if (description) {
-      newFrontmatter.push(`description: ${description}`);
+      newFrontmatter.push(
+        formatFrontmatterProperty('description', description),
+      );
     }
     newFrontmatter.push('---');
     return newFrontmatter;
@@ -600,10 +606,12 @@ function getFrontmatterLines(
   let descriptionSeen = false;
   for (const line of oldFrontmatterLines) {
     if (line.startsWith('title:')) {
-      newFrontmatter.push(`title: ${title}`);
+      newFrontmatter.push(formatFrontmatterProperty('title', title));
       titleSeen = true;
     } else if (line.startsWith('description:') && description) {
-      newFrontmatter.push(`description: ${description}`);
+      newFrontmatter.push(
+        formatFrontmatterProperty('description', description),
+      );
       descriptionSeen = true;
     } else {
       newFrontmatter.push(line);
@@ -612,14 +620,18 @@ function getFrontmatterLines(
 
   // If the old frontmatter didn't have a 'title', then add it to the beginning of the frontmatter (after the opening ---).
   if (!titleSeen) {
-    newFrontmatter.splice(1, 0, `title: ${title}`);
+    newFrontmatter.splice(1, 0, formatFrontmatterProperty('title', title));
   }
   // If the old frontmatter didn't have a 'description' but we have one, then add it after the title.
   if (description && !descriptionSeen) {
     const titleIndex = newFrontmatter.findIndex((line) =>
       line.startsWith('title:'),
     );
-    newFrontmatter.splice(titleIndex + 1, 0, `description: ${description}`);
+    newFrontmatter.splice(
+      titleIndex + 1,
+      0,
+      formatFrontmatterProperty('description', description),
+    );
   }
   return newFrontmatter;
 }

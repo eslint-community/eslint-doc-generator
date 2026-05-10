@@ -42,8 +42,8 @@ description: Description for no-bar.
 
 exports[`generate (--format) > starlight > no existing frontmatter > creates frontmatter, when framework is starlight 1`] = `
 "---
-title: no-foo
-description: Description for no-foo.
+title: "no-foo"
+description: "Description for no-foo."
 ---
 
 📝 Description for no-foo.
@@ -54,7 +54,7 @@ description: Description for no-foo.
 
 exports[`generate (--format) > starlight > no existing frontmatter > creates frontmatter, when framework is starlight 2`] = `
 "---
-title: no-bar
+title: "no-bar"
 ---
 
 <!-- end auto-generated rule header -->
@@ -63,8 +63,8 @@ title: no-bar
 
 exports[`generate (--format) > starlight > with existing frontmatter > updates existing frontmatter, when both title and description are present 1`] = `
 "---
-title: no-foo
-description: Description for no-foo.
+title: "no-foo"
+description: "Description for no-foo."
 ---
 
 📝 Description for no-foo.
@@ -75,7 +75,7 @@ description: Description for no-foo.
 
 exports[`generate (--format) > starlight > with existing frontmatter > updates existing frontmatter, when both title and description are present 2`] = `
 "---
-title: no-bar
+title: "no-bar"
 description: Description for no-bar.
 ---
 
@@ -85,8 +85,8 @@ description: Description for no-bar.
 
 exports[`generate (--format) > starlight > with existing frontmatter > updates existing frontmatter, when neither title nor description is present 1`] = `
 "---
-title: no-foo
-description: Description for no-foo.
+title: "no-foo"
+description: "Description for no-foo."
 tableOfContents:
   minHeadingLevel: 2
   maxHeadingLevel: 2
@@ -100,7 +100,7 @@ tableOfContents:
 
 exports[`generate (--format) > starlight > with existing frontmatter > updates existing frontmatter, when neither title nor description is present 2`] = `
 "---
-title: no-bar
+title: "no-bar"
 template: splash
 editUrl: false
 hero:
@@ -114,11 +114,11 @@ hero:
 
 exports[`generate (--format) > starlight > with existing frontmatter > updates existing frontmatter, when only description is present 1`] = `
 "---
-title: no-foo
+title: "no-foo"
 tableOfContents:
   minHeadingLevel: 2
   maxHeadingLevel: 2
-description: Description for no-foo.
+description: "Description for no-foo."
 ---
 
 📝 Description for no-foo.
@@ -129,7 +129,7 @@ description: Description for no-foo.
 
 exports[`generate (--format) > starlight > with existing frontmatter > updates existing frontmatter, when only description is present 2`] = `
 "---
-title: no-bar
+title: "no-bar"
 template: splash
 editUrl: false
 hero:
@@ -147,8 +147,8 @@ exports[`generate (--format) > starlight > with existing frontmatter > updates e
 tableOfContents:
   minHeadingLevel: 2
   maxHeadingLevel: 2
-title: no-foo
-description: Description for no-foo.
+title: "no-foo"
+description: "Description for no-foo."
 ---
 
 📝 Description for no-foo.
@@ -164,7 +164,7 @@ editUrl: false
 hero:
   title: '404'
   tagline: Page not found. Check the URL or try using the search bar.
-title: no-bar
+title: "no-bar"
 ---
 
 <!-- end auto-generated rule header -->
