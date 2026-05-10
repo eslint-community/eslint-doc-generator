@@ -14,6 +14,7 @@ import {
   END_RULE_OPTIONS_LIST_MARKER,
 } from './comment-markers.js';
 import {
+  extractFrontmatter,
   replaceOrCreateHeader,
   expectContentOrFail,
   expectSectionHeaderOrFail,
@@ -127,11 +128,17 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       initializedRuleDoc = true;
     }
 
-    // Regenerate the header (title/notices) of each rule doc.
-    const newHeaderLines = generateRuleHeaderLines(context, description, name);
-
     const contentsOldBuffer = await readFile(pathToDoc);
     const contentsOld = contentsOldBuffer.toString();
+    const frontmatterOld = extractFrontmatter(context, contentsOld);
+
+    // Regenerate the header (title/notices) and content of each rule doc.
+    const newHeaderLines = generateRuleHeaderLines(
+      context,
+      description,
+      name,
+      frontmatterOld,
+    );
     const contentsNew = await postprocess(
       updateRuleOptionsList(
         context,

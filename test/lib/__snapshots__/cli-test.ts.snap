@@ -19,6 +19,7 @@ exports[`cli > all CLI options and all config files options > merges correctly, 
       ],
     ],
     "configFormat": "plugin-colon-prefix-name",
+    "framework": "starlight",
     "ignoreConfig": [
       "ignoredConfigFromConfigFile1",
       "ignoredConfigFromConfigFile2",
@@ -81,6 +82,7 @@ exports[`cli > all CLI options, no config file options > is called correctly 1`]
       ],
     ],
     "configFormat": "plugin-colon-prefix-name",
+    "framework": "starlight",
     "ignoreConfig": [
       "ignoredConfigFromCli1",
       "ignoredConfigFromCli2",
@@ -132,6 +134,7 @@ exports[`cli > all config files options, no CLI options > is called correctly 1`
       ],
     ],
     "configFormat": "name",
+    "framework": "none",
     "ignoreConfig": [
       "ignoredConfigFromConfigFile1",
       "ignoredConfigFromConfigFile2",

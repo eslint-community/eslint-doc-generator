@@ -2,6 +2,17 @@
 
 import type { Context } from './context.js';
 
+export function extractFrontmatter(context: Context, markdown: string) {
+  const { endOfLine } = context;
+  const lines = markdown.split(endOfLine);
+  const frontMatterStart = lines.indexOf('---');
+  const frontMatterEnd = lines.indexOf('---', frontMatterStart + 1);
+  if (frontMatterStart !== -1 && frontMatterEnd !== -1) {
+    return lines.slice(frontMatterStart, frontMatterEnd + 1).join(endOfLine);
+  }
+  return undefined;
+}
+
 /**
  * Replace the header of a doc up to and including the specified marker.
  * Insert at beginning if header doesn't exist.
@@ -24,11 +35,6 @@ export function replaceOrCreateHeader(
   const dashesLineIndex1 = lines.indexOf('---');
   const dashesLineIndex2 = lines.indexOf('---', dashesLineIndex1 + 1);
 
-  // Any YAML front matter or anything else above the title should be kept as-is ahead of the new header.
-  const preHeader = lines
-    .slice(0, Math.max(titleLineIndex, dashesLineIndex2 + 1))
-    .join(endOfLine);
-
   // Anything after the marker comment, title, or YAML front matter should be kept as-is after the new header.
   const postHeader = lines
     .slice(
@@ -36,9 +42,7 @@ export function replaceOrCreateHeader(
     )
     .join(endOfLine);
 
-  return `${
-    preHeader ? `${preHeader}${endOfLine}` : ''
-  }${newHeader}${endOfLine}${postHeader}`;
+  return `${newHeader}${endOfLine}${postHeader}`;
 }
 
 /**

@@ -523,7 +523,7 @@ function makeRuleDocTitle(
           'Attempting to display non-existent description in rule doc title.',
         );
       }
-      return `# ${descriptionFormatted}`;
+      return descriptionFormatted;
     }
 
     case 'desc-parens-name': {
@@ -533,7 +533,7 @@ function makeRuleDocTitle(
           'Attempting to display non-existent description in rule doc title.',
         );
       }
-      return `# ${descriptionFormatted} (\`${name}\`)`;
+      return `${descriptionFormatted} (\`${name}\`)`;
     }
 
     case 'desc-parens-prefix-name': {
@@ -543,15 +543,15 @@ function makeRuleDocTitle(
           'Attempting to display non-existent description in rule doc title.',
         );
       }
-      return `# ${descriptionFormatted} (\`${pluginPrefix}/${name}\`)`;
+      return `${descriptionFormatted} (\`${pluginPrefix}/${name}\`)`;
     }
 
     case 'name': {
-      return `# ${name}`;
+      return name;
     }
 
     case 'prefix-name': {
-      return `# ${pluginPrefix}/${name}`;
+      return `${pluginPrefix}/${name}`;
     }
 
     /* istanbul ignore next -- this shouldn't happen */
@@ -565,19 +565,85 @@ function makeRuleDocTitle(
   }
 }
 
+function getFrontmatterLines(
+  context: Context,
+  title: string,
+  description: string | undefined,
+  frontmatterOld: string | undefined,
+) {
+  const {
+    endOfLine,
+    options: { framework },
+  } = context;
+  const oldFrontmatterLines = frontmatterOld
+    ? frontmatterOld.split(endOfLine)
+    : [];
+
+  // If the framework is 'none', then just bail out and return the old frontmatter.
+  // We don't want to change anything.
+  if (framework === 'none') {
+    return oldFrontmatterLines;
+  }
+
+  // If there is currently no frontmatter, then create a new one with the title and description.
+  if (oldFrontmatterLines.length === 0) {
+    const newFrontmatter = ['---', `title: ${title}`];
+    if (description) {
+      newFrontmatter.push(`description: ${description}`);
+    }
+    newFrontmatter.push('---');
+    return newFrontmatter;
+  }
+
+  const newFrontmatter = [];
+  let titleSeen = false;
+  let descriptionSeen = false;
+  for (const line of oldFrontmatterLines) {
+    if (line.startsWith('title:')) {
+      newFrontmatter.push(`title: ${title}`);
+      titleSeen = true;
+    } else if (line.startsWith('description:') && description) {
+      newFrontmatter.push(`description: ${description}`);
+      descriptionSeen = true;
+    } else {
+      newFrontmatter.push(line);
+    }
+  }
+
+  // If the old frontmatter didn't have a 'title', then add it to the beginning of the frontmatter (after the opening ---).
+  if (!titleSeen) {
+    newFrontmatter.splice(1, 0, `title: ${title}`);
+  }
+  // If the old frontmatter didn't have a 'description' but we have one, then add it after the title.
+  if (description && !descriptionSeen) {
+    const titleIndex = newFrontmatter.findIndex((line) =>
+      line.startsWith('title:'),
+    );
+    newFrontmatter.splice(titleIndex + 1, 0, `description: ${description}`);
+  }
+  return newFrontmatter;
+}
+
 /**
  * Generate a rule doc header for a particular rule.
- * @returns {string} - new header including marker
+ * @returns new header including marker
  */
 export function generateRuleHeaderLines(
   context: Context,
   description: string | undefined,
   name: string,
+  frontmatterOld: string | undefined,
 ): string {
-  const { endOfLine } = context;
+  const {
+    endOfLine,
+    options: { framework },
+  } = context;
+
+  const title = makeRuleDocTitle(context, name, description);
 
   return [
-    makeRuleDocTitle(context, name, description),
+    ...getFrontmatterLines(context, title, description, frontmatterOld),
+    ...(framework === 'starlight' ? [] : [`# ${title}`]),
     ...getRuleNoticeLines(context, name),
     '',
     END_RULE_HEADER_MARKER,

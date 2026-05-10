@@ -4,7 +4,14 @@ import { OPTION_DEFAULTS } from './options.js';
 import { cosmiconfig } from 'cosmiconfig';
 import Ajv from 'ajv';
 import merge from 'deepmerge';
-import { AI_PROVIDER, COLUMN_TYPE, NOTICE_TYPE, OPTION_TYPE } from './types.js';
+import {
+  AI_PROVIDER,
+  COLUMN_TYPE,
+  FRAMEWORK_TYPE,
+  FRAMEWORK_TYPES,
+  NOTICE_TYPE,
+  OPTION_TYPE,
+} from './types.js';
 import type { GenerateOptions } from './types.js';
 import { getCurrentPackageVersion } from './package-json.js';
 import { boolean, isBooleanable } from './boolean.js';
@@ -95,6 +102,10 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
       check: { type: 'boolean' },
       configEmoji: schemaConfigEmoji,
       configFormat: { type: 'string' },
+      framework: {
+        type: 'string',
+        enum: Object.values(FRAMEWORK_TYPE),
+      },
       ignoreConfig: schemaStringArray,
       ignoreDeprecatedRules: { type: 'boolean' },
       initRuleDocs: { type: 'boolean' },
@@ -232,6 +243,12 @@ export async function run(
           OPTION_DEFAULTS[OPTION_TYPE.CONFIG_FORMAT]
         })`,
       ).choices(CONFIG_FORMATS),
+    )
+    .addOption(
+      new Option(
+        '--framework <framework>',
+        `(optional) The framework to use for the documentation. (default: ${OPTION_DEFAULTS[OPTION_TYPE.FRAMEWORK]})`,
+      ).choices(FRAMEWORK_TYPES),
     )
     .option(
       '--ignore-config <config>',

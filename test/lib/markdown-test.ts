@@ -6,7 +6,7 @@ const cwd = process.cwd();
 const context = await getContext(cwd, undefined, true);
 
 describe('markdown', function () {
-  describe('#findSectionHeader', function () {
+  describe('findSectionHeader', function () {
     it('handles standard section title', function () {
       const title = '## Rules\n';
       expect(findSectionHeader(context, title, 'rules')).toBe(title);

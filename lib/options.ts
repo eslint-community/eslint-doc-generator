@@ -1,7 +1,12 @@
 import { join } from 'node:path';
 import type { ConfigFormat } from './config-format.js';
 import type { RuleDocTitleFormat } from './rule-doc-title-format.js';
-import { COLUMN_TYPE, NOTICE_TYPE, OPTION_TYPE } from './types.js';
+import {
+  COLUMN_TYPE,
+  FRAMEWORK_TYPE,
+  NOTICE_TYPE,
+  OPTION_TYPE,
+} from './types.js';
 import type { GenerateOptions, Plugin } from './types.js';
 import {
   parseConfigEmojiOptions,
@@ -55,6 +60,7 @@ export const OPTION_DEFAULTS = {
   [OPTION_TYPE.CHECK]: false,
   [OPTION_TYPE.CONFIG_EMOJI]: [],
   [OPTION_TYPE.CONFIG_FORMAT]: DEFAULT_CONFIG_FORMAT,
+  [OPTION_TYPE.FRAMEWORK]: FRAMEWORK_TYPE.NONE,
   [OPTION_TYPE.IGNORE_CONFIG]: [],
   [OPTION_TYPE.IGNORE_DEPRECATED_RULES]: false,
   [OPTION_TYPE.INIT_RULE_DOCS]: false,
@@ -99,6 +105,8 @@ export function getResolvedOptions(
   const configEmojis = parseConfigEmojiOptions(plugin, configEmoji);
   const configFormat =
     userOptions.configFormat ?? OPTION_DEFAULTS[OPTION_TYPE.CONFIG_FORMAT];
+  const framework =
+    userOptions.framework ?? OPTION_DEFAULTS[OPTION_TYPE.FRAMEWORK];
   const ignoreConfig = stringOrArrayWithFallback(
     userOptions.ignoreConfig,
     OPTION_DEFAULTS[OPTION_TYPE.IGNORE_CONFIG],
@@ -155,6 +163,7 @@ export function getResolvedOptions(
     check,
     configEmojis,
     configFormat,
+    framework,
     ignoreConfig,
     ignoreDeprecatedRules,
     initRuleDocs,
