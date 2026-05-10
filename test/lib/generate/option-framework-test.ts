@@ -88,6 +88,57 @@ description: Description for no-bar.
         ).toMatchSnapshot();
       });
     });
+
+    describe('with additional content above the header', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+              export default {
+                rules: {
+                  'no-foo': { meta: { docs: { description: 'Description for no-foo.'} }, create(context) {} },
+                  'no-bar': { meta: { docs: {} }, create(context) {} }, // No description.
+                },
+              };`,
+            'README.md': '## Rules\n',
+            'docs/rules/no-foo.md': `<!-- editor banner that should be preserved -->
+# Some pre-existing title.
+## Rule details
+Details.
+`,
+            'docs/rules/no-bar.md': `---
+title: No Bar
+description: Description for no-bar.
+---
+> 📌 A blockquote that should be preserved.
+# Some pre-existing title.
+## Rule details
+Details.
+`,
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('preserves additional content above the header, when framework is none', async function () {
+        await generate(fixture.path, {
+          framework: 'none',
+          ruleDocTitleFormat: 'name',
+        });
+        expect(
+          await fixture.readFile('docs/rules/no-foo.md'),
+        ).toMatchSnapshot();
+        expect(
+          await fixture.readFile('docs/rules/no-bar.md'),
+        ).toMatchSnapshot();
+      });
+    });
   });
 
   describe('starlight', function () {
@@ -132,6 +183,10 @@ description: Description for no-bar.
 
     describe('with existing frontmatter', function () {
       let fixture: FixtureContext;
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
 
       it('updates existing frontmatter, when both title and description are present', async function () {
         fixture = await setupFixture({
@@ -281,6 +336,57 @@ description: A description for no-bar that will be ignored, because the rule has
 `,
           },
         });
+        await generate(fixture.path, {
+          framework: 'starlight',
+          ruleDocTitleFormat: 'name',
+        });
+        expect(
+          await fixture.readFile('docs/rules/no-foo.md'),
+        ).toMatchSnapshot();
+        expect(
+          await fixture.readFile('docs/rules/no-bar.md'),
+        ).toMatchSnapshot();
+      });
+    });
+
+    describe('with additional content above the header', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+              export default {
+                rules: {
+                  'no-foo': { meta: { docs: { description: 'Description for no-foo.'} }, create(context) {} },
+                  'no-bar': { meta: { docs: {} }, create(context) {} }, // No description.
+                },
+              };`,
+            'README.md': '## Rules\n',
+            'docs/rules/no-foo.md': `<!-- editor banner that should be preserved -->
+# Some pre-existing title.
+## Rule details
+Details.
+`,
+            'docs/rules/no-bar.md': `---
+title: No Bar
+description: Description for no-bar.
+---
+> 📌 A blockquote that should be preserved.
+# Some pre-existing title.
+## Rule details
+Details.
+`,
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('preserves additional content above the header, when framework is none', async function () {
         await generate(fixture.path, {
           framework: 'starlight',
           ruleDocTitleFormat: 'name',

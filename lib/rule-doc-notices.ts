@@ -569,16 +569,22 @@ function formatFrontmatterProperty(key: string, value: string): string {
   return `${key}: "${value}"`;
 }
 
-function getFrontmatterLines(
+/**
+ * Generate yml frontmatter for a particular rule.
+ * @returns new frontmatter lines (including ---)
+ */
+export function generateFrontmatterLines(
   context: Context,
-  title: string,
+  name: string,
   description: string | undefined,
   frontmatterOld: string | undefined,
-) {
+): string {
   const {
     endOfLine,
     options: { framework },
   } = context;
+  const title = makeRuleDocTitle(context, name, description);
+
   const oldFrontmatterLines = frontmatterOld
     ? frontmatterOld.split(endOfLine)
     : [];
@@ -586,7 +592,7 @@ function getFrontmatterLines(
   // If the framework is 'none', then just bail out and return the old frontmatter.
   // We don't want to change anything.
   if (framework === 'none') {
-    return oldFrontmatterLines;
+    return oldFrontmatterLines.join(endOfLine);
   }
 
   // If there is currently no frontmatter, then create a new one with the title and description.
@@ -598,7 +604,7 @@ function getFrontmatterLines(
       );
     }
     newFrontmatter.push('---');
-    return newFrontmatter;
+    return newFrontmatter.join(endOfLine);
   }
 
   const newFrontmatter = [];
@@ -633,7 +639,7 @@ function getFrontmatterLines(
       formatFrontmatterProperty('description', description),
     );
   }
-  return newFrontmatter;
+  return newFrontmatter.join(endOfLine);
 }
 
 /**
@@ -644,7 +650,6 @@ export function generateRuleHeaderLines(
   context: Context,
   description: string | undefined,
   name: string,
-  frontmatterOld: string | undefined,
 ): string {
   const {
     endOfLine,
@@ -654,7 +659,6 @@ export function generateRuleHeaderLines(
   const title = makeRuleDocTitle(context, name, description);
 
   return [
-    ...getFrontmatterLines(context, title, description, frontmatterOld),
     ...(framework === 'starlight' ? [] : [`# ${title}`]),
     ...getRuleNoticeLines(context, name),
     '',

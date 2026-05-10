@@ -16,6 +16,32 @@ exports[`generate (--format) > none > no existing frontmatter > creates the righ
 "
 `;
 
+exports[`generate (--format) > none > with additional content above the header > preserves additional content above the header, when framework is none 1`] = `
+"<!-- editor banner that should be preserved -->
+# no-foo
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
+exports[`generate (--format) > none > with additional content above the header > preserves additional content above the header, when framework is none 2`] = `
+"---
+title: No Bar
+description: Description for no-bar.
+---
+> 📌 A blockquote that should be preserved.
+# no-bar
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
 exports[`generate (--format) > none > with existing frontmatter > ignores existing frontmatter, when framework is none 1`] = `
 "---
 title: No Foo
@@ -58,6 +84,34 @@ title: "no-bar"
 ---
 
 <!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--format) > starlight > with additional content above the header > preserves additional content above the header, when framework is none 1`] = `
+"---
+title: "no-foo"
+description: "Description for no-foo."
+---
+<!-- editor banner that should be preserved -->
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
+exports[`generate (--format) > starlight > with additional content above the header > preserves additional content above the header, when framework is none 2`] = `
+"---
+title: "no-bar"
+description: Description for no-bar.
+---
+> 📌 A blockquote that should be preserved.
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
 "
 `;
 

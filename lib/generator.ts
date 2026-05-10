@@ -7,7 +7,10 @@ import {
 } from './package-json.js';
 import { updateRulesList } from './rule-list.js';
 import { updateConfigsList } from './config-list.js';
-import { generateRuleHeaderLines } from './rule-doc-notices.js';
+import {
+  generateFrontmatterLines,
+  generateRuleHeaderLines,
+} from './rule-doc-notices.js';
 import {
   BEGIN_RULE_OPTIONS_LIST_MARKER,
   END_RULE_HEADER_MARKER,
@@ -132,13 +135,16 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const contentsOld = contentsOldBuffer.toString();
     const frontmatterOld = extractFrontmatter(context, contentsOld);
 
-    // Regenerate the header (title/notices) and content of each rule doc.
-    const newHeaderLines = generateRuleHeaderLines(
+    // Regenerate the header (title/notices) and frontmatter of each rule doc.
+    const newHeaderLines = generateRuleHeaderLines(context, description, name);
+    const newFrontmatterLines = generateFrontmatterLines(
       context,
-      description,
       name,
+      description,
       frontmatterOld,
     );
+
+    // Generate the new content for the rule doc by replacing the header and frontmatter, and updating the rule options list if necessary.
     const contentsNew = await postprocess(
       updateRuleOptionsList(
         context,
@@ -147,6 +153,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
           contentsOld,
           newHeaderLines,
           END_RULE_HEADER_MARKER,
+          newFrontmatterLines,
         ),
         rule,
       ),
