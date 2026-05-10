@@ -189,7 +189,7 @@ editUrl: false
 hero:
   title: '404'
   tagline: Page not found. Check the URL or try using the search bar.
-description: A description for no-bar that will be ignored, because the rule has a new description in its meta.docs.description field.
+description: A description for no-bar that will not be ignored, because the rule doesn't have a description of its own.
 ---
 
 <!-- end auto-generated rule header -->
