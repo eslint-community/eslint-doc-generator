@@ -15,20 +15,16 @@ import { SEVERITY_TYPE, NOTICE_TYPE } from './types.js';
 import type { RuleModule, DeprecatedInfo, ReplacedByInfo } from './types.js';
 import type { RULE_TYPE } from './rule-type.js';
 import { RULE_TYPE_MESSAGES_NOTICES } from './rule-type.js';
-import type { RuleDocTitleFormat } from './rule-doc-title-format.js';
 import { hasOptions } from './rule-options.js';
 import {
   getLinkToRule,
   getMarkdownLink,
   replaceRulePlaceholder,
 } from './rule-link.js';
-import {
-  toSentenceCase,
-  removeTrailingPeriod,
-  addTrailingPeriod,
-} from './string.js';
+import { toSentenceCase, addTrailingPeriod } from './string.js';
 import { configNameToDisplay } from './config-format.js';
 import type { Context } from './context.js';
+import { makeRuleDocTitle } from './rule-doc-title.js';
 
 function severityToTerminology(severity: SEVERITY_TYPE) {
   switch (severity) {
@@ -472,174 +468,6 @@ function getRuleNoticeLines(context: Context, ruleName: string) {
   }
 
   return lines;
-}
-
-function makeRuleDocTitle(
-  context: Context,
-  name: string,
-  description: string | undefined,
-) {
-  const { options, pluginPrefix } = context;
-  const { ruleDocTitleFormat } = options;
-
-  const descriptionFormatted = description
-    ? removeTrailingPeriod(toSentenceCase(description))
-    : undefined;
-
-  let ruleDocTitleFormatWithFallback: RuleDocTitleFormat = ruleDocTitleFormat;
-
-  if (ruleDocTitleFormatWithFallback.includes('desc') && !description) {
-    // If format includes the description but the rule is missing a description,
-    // fallback to the corresponding format without the description.
-    switch (ruleDocTitleFormatWithFallback) {
-      case 'desc':
-      case 'desc-parens-prefix-name': {
-        ruleDocTitleFormatWithFallback = 'prefix-name';
-        break;
-      }
-
-      case 'desc-parens-name': {
-        ruleDocTitleFormatWithFallback = 'name';
-        break;
-      }
-
-      /* istanbul ignore next -- this shouldn't happen */
-      default: {
-        throw new Error(
-          `Unhandled rule doc title format fallback: ${
-            ruleDocTitleFormatWithFallback
-          }`,
-        );
-      }
-    }
-  }
-
-  switch (ruleDocTitleFormatWithFallback) {
-    // Backticks (code-style) only used around rule name to differentiate it when the rule description is also present.
-    case 'desc': {
-      /* istanbul ignore next -- this shouldn't happen */
-      if (!descriptionFormatted) {
-        throw new Error(
-          'Attempting to display non-existent description in rule doc title.',
-        );
-      }
-      return descriptionFormatted;
-    }
-
-    case 'desc-parens-name': {
-      /* istanbul ignore next -- this shouldn't happen */
-      if (!descriptionFormatted) {
-        throw new Error(
-          'Attempting to display non-existent description in rule doc title.',
-        );
-      }
-      return `${descriptionFormatted} (\`${name}\`)`;
-    }
-
-    case 'desc-parens-prefix-name': {
-      /* istanbul ignore next -- this shouldn't happen */
-      if (!descriptionFormatted) {
-        throw new Error(
-          'Attempting to display non-existent description in rule doc title.',
-        );
-      }
-      return `${descriptionFormatted} (\`${pluginPrefix}/${name}\`)`;
-    }
-
-    case 'name': {
-      return name;
-    }
-
-    case 'prefix-name': {
-      return `${pluginPrefix}/${name}`;
-    }
-
-    /* istanbul ignore next -- this shouldn't happen */
-    default: {
-      throw new Error(
-        `Unhandled rule doc title format: ${String(
-          ruleDocTitleFormatWithFallback,
-        )}`,
-      );
-    }
-  }
-}
-
-function formatFrontmatterProperty(key: string, value: string): string {
-  return `${key}: "${value}"`;
-}
-
-/**
- * Generate yml frontmatter for a particular rule.
- * @returns new frontmatter lines (including ---)
- */
-export function generateFrontmatterLines(
-  context: Context,
-  name: string,
-  description: string | undefined,
-  frontmatterOld: string | undefined,
-): string {
-  const {
-    endOfLine,
-    options: { framework },
-  } = context;
-  const title = makeRuleDocTitle(context, name, description);
-
-  const oldFrontmatterLines = frontmatterOld
-    ? frontmatterOld.split(endOfLine)
-    : [];
-
-  // If the framework is 'none', then just bail out and return the old frontmatter.
-  // We don't want to change anything.
-  if (framework === 'none') {
-    return oldFrontmatterLines.join(endOfLine);
-  }
-
-  // If there is currently no frontmatter, then create a new one with the title and description.
-  if (oldFrontmatterLines.length === 0) {
-    const newFrontmatter = ['---', formatFrontmatterProperty('title', title)];
-    if (description) {
-      newFrontmatter.push(
-        formatFrontmatterProperty('description', description),
-      );
-    }
-    newFrontmatter.push('---');
-    return newFrontmatter.join(endOfLine);
-  }
-
-  const newFrontmatter = [];
-  let titleSeen = false;
-  let descriptionSeen = false;
-  for (const line of oldFrontmatterLines) {
-    if (line.startsWith('title:')) {
-      newFrontmatter.push(formatFrontmatterProperty('title', title));
-      titleSeen = true;
-    } else if (line.startsWith('description:') && description) {
-      newFrontmatter.push(
-        formatFrontmatterProperty('description', description),
-      );
-      descriptionSeen = true;
-    } else {
-      newFrontmatter.push(line);
-    }
-  }
-
-  // If the old frontmatter didn't have a 'title', then add it to the beginning of the frontmatter (after the opening ---).
-  if (!titleSeen) {
-    newFrontmatter.splice(1, 0, formatFrontmatterProperty('title', title));
-  }
-  // If the old frontmatter didn't have a 'description' but we have one, then add it after the title.
-  if (description && !descriptionSeen) {
-    const titleIndex = newFrontmatter.findIndex((line) =>
-      line.startsWith('title:'),
-    );
-    newFrontmatter.splice(
-      titleIndex + 1,
-      0,
-      formatFrontmatterProperty('description', description),
-    );
-  }
-  return newFrontmatter.join(endOfLine);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Command, Argument, Option } from 'commander';
-import { RULE_DOC_TITLE_FORMATS } from './rule-doc-title-format.js';
+import { RULE_DOC_TITLE_FORMATS } from './rule-doc-title.js';
 import { OPTION_DEFAULTS } from './options.js';
 import { cosmiconfig } from 'cosmiconfig';
 import Ajv from 'ajv';

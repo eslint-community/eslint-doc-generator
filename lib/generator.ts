@@ -7,10 +7,7 @@ import {
 } from './package-json.js';
 import { updateRulesList } from './rule-list.js';
 import { updateConfigsList } from './config-list.js';
-import {
-  generateFrontmatterLines,
-  generateRuleHeaderLines,
-} from './rule-doc-notices.js';
+import { generateRuleHeaderLines } from './rule-doc-notices.js';
 import {
   BEGIN_RULE_OPTIONS_LIST_MARKER,
   END_RULE_HEADER_MARKER,
@@ -21,6 +18,7 @@ import {
   replaceOrCreateHeader,
   expectContentOrFail,
   expectSectionHeaderOrFail,
+  replaceOrCreateFrontmatter,
 } from './markdown.js';
 import { diff } from 'jest-diff';
 import type { GenerateOptions, RuleModule } from './types.js';
@@ -29,6 +27,7 @@ import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
+import { generateFrontmatterLines } from './frontmatter.js';
 
 // eslint-disable-next-line complexity
 export async function generate(path: string, userOptions?: GenerateOptions) {
@@ -145,20 +144,19 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     );
 
     // Generate the new content for the rule doc by replacing the header and frontmatter, and updating the rule options list if necessary.
-    const contentsNew = await postprocess(
-      updateRuleOptionsList(
-        context,
-        replaceOrCreateHeader(
-          context,
-          contentsOld,
-          newHeaderLines,
-          END_RULE_HEADER_MARKER,
-          newFrontmatterLines,
-        ),
-        rule,
-      ),
-      resolve(pathToDoc),
+    let contentsNew = replaceOrCreateFrontmatter(
+      context,
+      contentsOld,
+      newFrontmatterLines,
     );
+    contentsNew = replaceOrCreateHeader(
+      context,
+      contentsNew,
+      newHeaderLines,
+      END_RULE_HEADER_MARKER,
+    );
+    contentsNew = updateRuleOptionsList(context, contentsNew, rule);
+    contentsNew = await postprocess(contentsNew, resolve(pathToDoc));
 
     if (check) {
       /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */

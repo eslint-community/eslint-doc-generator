@@ -1,4 +1,4 @@
-import type { RuleDocTitleFormat } from './rule-doc-title-format.js';
+import type { RuleDocTitleFormat } from './rule-doc-title.js';
 import type { TSESLint } from '@typescript-eslint/utils';
 import type { ConfigFormat } from './config-format.js';
 

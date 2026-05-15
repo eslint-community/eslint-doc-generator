@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import type { ConfigFormat } from './config-format.js';
-import type { RuleDocTitleFormat } from './rule-doc-title-format.js';
+import type { RuleDocTitleFormat } from './rule-doc-title.js';
 import {
   COLUMN_TYPE,
   FRAMEWORK_TYPE,

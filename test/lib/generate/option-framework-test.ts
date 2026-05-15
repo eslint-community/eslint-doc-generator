@@ -1,7 +1,7 @@
 import { generate } from '../../../lib/generator.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 
-describe('generate (--format)', function () {
+describe('generate (--framework)', function () {
   describe('none', function () {
     describe('no existing frontmatter', function () {
       let fixture: FixtureContext;

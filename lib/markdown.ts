@@ -19,8 +19,41 @@ export function extractFrontmatter(context: Context, markdown: string) {
 }
 
 /**
+ * Replace the frontmatter, if present.  If not and we have newFrontmatter to add, then add it at the beginning.
+ * @param context - execution context
+ * @param markdown - doc content
+ * @param newFrontmatter - new frontmatter
+ */
+export function replaceOrCreateFrontmatter(
+  context: Context,
+  markdown: string,
+  newFrontmatter: string | undefined,
+): string {
+  // If we don't have any frontmatter coming in, then just return the original markdown
+  if (!newFrontmatter) {
+    return markdown;
+  }
+
+  const { endOfLine } = context;
+
+  const lines = markdown.split(endOfLine);
+
+  const frontmatterStartIndex = lines.indexOf('---');
+
+  // If there's no existing frontmatter, just add it to the top.
+  if (frontmatterStartIndex !== 0) {
+    return [newFrontmatter, markdown].join(endOfLine);
+  }
+
+  const frontmatterEndIndex = lines.indexOf('---', frontmatterStartIndex + 1);
+  const postFrontmatter = lines.slice(frontmatterEndIndex + 1).join(endOfLine);
+  return [newFrontmatter, postFrontmatter].join(endOfLine);
+}
+
+/**
  * Replace the header of a doc up to and including the specified marker.
  * Insert at beginning if header doesn't exist.
+ * @param context - execution context
  * @param markdown - doc content
  * @param newHeader - new header including marker
  * @param marker - marker to indicate end of header
@@ -30,8 +63,7 @@ export function replaceOrCreateHeader(
   markdown: string,
   newHeader: string,
   marker: string,
-  newFrontmatter: string = '',
-): string {
+) {
   const { endOfLine } = context;
 
   const lines = markdown.split(endOfLine);
@@ -41,26 +73,10 @@ export function replaceOrCreateHeader(
   const dashesLineIndex1 = lines.indexOf('---');
   const dashesLineIndex2 = lines.indexOf('---', dashesLineIndex1 + 1);
 
-  const frontmatterStartIndex = dashesLineIndex1 === 0 ? dashesLineIndex1 : -1;
-  const frontmatterEndIndex = dashesLineIndex2 === -1 ? -1 : dashesLineIndex2;
-
-  // Start from the end of the frontmatter if it exists, otherwise start from the beginning of the file.
-  // We're replacing the frontmatter with the new one passed in.
-  let sliceStartIndex = 0;
-  if (frontmatterStartIndex !== -1 && frontmatterEndIndex !== -1) {
-    sliceStartIndex = frontmatterEndIndex + 1;
-  }
-
-  // Anything before the title and / or marker should be kept as-is before the new header.
-  let sliceEndIndex = 0;
-  if (titleLineIndex !== -1 && markerLineIndex !== -1) {
-    sliceEndIndex = Math.min(titleLineIndex, markerLineIndex);
-  } else if (titleLineIndex !== -1) {
-    sliceEndIndex = titleLineIndex;
-  } else if (markerLineIndex !== -1) {
-    sliceEndIndex = markerLineIndex;
-  }
-  const preHeader = lines.slice(sliceStartIndex, sliceEndIndex).join(endOfLine);
+  // Any YAML front matter or anything else above the title should be kept as-is ahead of the new header.
+  const preHeader = lines
+    .slice(0, Math.max(titleLineIndex, dashesLineIndex2 + 1))
+    .join(endOfLine);
 
   // Anything after the marker comment, title, or YAML front matter should be kept as-is after the new header.
   const postHeader = lines
@@ -69,10 +85,9 @@ export function replaceOrCreateHeader(
     )
     .join(endOfLine);
 
-  return [
-    ...[newFrontmatter, preHeader, newHeader].filter(Boolean),
-    postHeader,
-  ].join(endOfLine);
+  return `${
+    preHeader ? `${preHeader}${endOfLine}` : ''
+  }${newHeader}${endOfLine}${postHeader}`;
 }
 
 /**

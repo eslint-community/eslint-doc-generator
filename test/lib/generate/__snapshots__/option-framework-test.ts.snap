@@ -224,3 +224,228 @@ title: "no-bar"
 <!-- end auto-generated rule header -->
 "
 `;
+
+exports[`generate (--framework) > none > no existing frontmatter > creates the right title, when framework is none 1`] = `
+"# no-foo
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > none > no existing frontmatter > creates the right title, when framework is none 2`] = `
+"# no-bar
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > none > with additional content above the header > preserves additional content above the header, when framework is none 1`] = `
+"<!-- editor banner that should be preserved -->
+# no-foo
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
+exports[`generate (--framework) > none > with additional content above the header > preserves additional content above the header, when framework is none 2`] = `
+"---
+title: No Bar
+description: Description for no-bar.
+---
+> 📌 A blockquote that should be preserved.
+# no-bar
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
+exports[`generate (--framework) > none > with existing frontmatter > ignores existing frontmatter, when framework is none 1`] = `
+"---
+title: No Foo
+description: Description for no-foo.
+---
+# no-foo
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > none > with existing frontmatter > ignores existing frontmatter, when framework is none 2`] = `
+"---
+title: No Bar
+description: Description for no-bar.
+---
+# no-bar
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > no existing frontmatter > creates frontmatter, when framework is starlight 1`] = `
+"---
+title: "no-foo"
+description: "Description for no-foo."
+---
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > no existing frontmatter > creates frontmatter, when framework is starlight 2`] = `
+"---
+title: "no-bar"
+---
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with additional content above the header > preserves additional content above the header, when framework is none 1`] = `
+"---
+title: "no-foo"
+description: "Description for no-foo."
+---
+<!-- editor banner that should be preserved -->
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
+exports[`generate (--framework) > starlight > with additional content above the header > preserves additional content above the header, when framework is none 2`] = `
+"---
+title: "no-bar"
+description: Description for no-bar.
+---
+> 📌 A blockquote that should be preserved.
+
+<!-- end auto-generated rule header -->
+## Rule details
+Details.
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when both title and description are present 1`] = `
+"---
+title: "no-foo"
+description: "Description for no-foo."
+---
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when both title and description are present 2`] = `
+"---
+title: "no-bar"
+description: Description for no-bar.
+---
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when neither title nor description is present 1`] = `
+"---
+title: "no-foo"
+description: "Description for no-foo."
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 2
+---
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when neither title nor description is present 2`] = `
+"---
+title: "no-bar"
+template: splash
+editUrl: false
+hero:
+  title: '404'
+  tagline: Page not found. Check the URL or try using the search bar.
+---
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when only description is present 1`] = `
+"---
+title: "no-foo"
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 2
+description: "Description for no-foo."
+---
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when only description is present 2`] = `
+"---
+title: "no-bar"
+template: splash
+editUrl: false
+hero:
+  title: '404'
+  tagline: Page not found. Check the URL or try using the search bar.
+description: A description for no-bar that will not be ignored, because the rule doesn't have a description of its own.
+---
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when only title is present 1`] = `
+"---
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 2
+title: "no-foo"
+description: "Description for no-foo."
+---
+
+📝 Description for no-foo.
+
+<!-- end auto-generated rule header -->
+"
+`;
+
+exports[`generate (--framework) > starlight > with existing frontmatter > updates existing frontmatter, when only title is present 2`] = `
+"---
+template: splash
+editUrl: false
+hero:
+  title: '404'
+  tagline: Page not found. Check the URL or try using the search bar.
+title: "no-bar"
+---
+
+<!-- end auto-generated rule header -->
+"
+`;
