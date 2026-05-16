@@ -1,163 +1,10 @@
 import { generate } from '../../../lib/generator.js';
+import type { GenerateOptions } from '../../../lib/types.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 
 describe('generate (configs list)', function () {
-  describe('basic', function () {
-    let fixture: FixtureContext;
-
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
-          export default {
-            rules: {
-              'no-foo': {
-                meta: { docs: { description: 'Description of no-foo.' }, },
-                create(context) {}
-              },
-            },
-            configs: {
-              recommended: {},
-            }
-          };`,
-          'README.md': `## Rules
-## Configs
-<!-- begin auto-generated configs list -->
-<!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
-      });
-    });
-
-    afterAll(async function () {
-      await fixture.cleanup();
-    });
-
-    it('generates the documentation', async function () {
-      await generate(fixture.path);
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
-    });
-  });
-
-  describe('with --ignore-config', function () {
-    let fixture: FixtureContext;
-
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
-          export default {
-            rules: {
-              'no-foo': {
-                meta: { docs: { description: 'Description of no-foo.' }, },
-                create(context) {}
-              },
-            },
-            configs: {
-              foo: {},
-              recommended: {},
-            }
-          };`,
-          'README.md': `## Rules
-## Configs
-<!-- begin auto-generated configs list -->
-<!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
-      });
-    });
-
-    afterAll(async function () {
-      await fixture.cleanup();
-    });
-
-    it('generates the documentation', async function () {
-      await generate(fixture.path, { ignoreConfig: ['foo'] });
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
-    });
-  });
-
-  describe('with --config-format', function () {
-    let fixture: FixtureContext;
-
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
-          export default {
-            rules: {
-              'no-foo': {
-                meta: { docs: { description: 'Description of no-foo.' }, },
-                create(context) {}
-              },
-            },
-            configs: {
-              recommended: {},
-            }
-          };`,
-          'README.md': `## Rules
-## Configs
-<!-- begin auto-generated configs list -->
-<!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
-      });
-    });
-
-    afterAll(async function () {
-      await fixture.cleanup();
-    });
-
-    it('generates the documentation', async function () {
-      await generate(fixture.path, { configFormat: 'prefix-name' });
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
-    });
-  });
-
-  describe('with configs not defined in alphabetical order', function () {
-    let fixture: FixtureContext;
-
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
-          export default {
-            rules: {
-              'no-foo': {
-                meta: { docs: { description: 'Description of no-foo.' }, },
-                create(context) {}
-              },
-            },
-            configs: {
-              recommended: {},
-              foo: {},
-            }
-          };`,
-          'README.md': `## Rules
-## Configs
-<!-- begin auto-generated configs list -->
-<!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
-      });
-    });
-
-    afterAll(async function () {
-      await fixture.cleanup();
-    });
-
-    it('generates the documentation', async function () {
-      await generate(fixture.path);
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
-    });
-  });
-
-  describe('when a config exports a description', function () {
-    describe('property=description', function () {
+  describe('for md files', () => {
+    describe('basic', function () {
       let fixture: FixtureContext;
 
       beforeAll(async function () {
@@ -165,6 +12,161 @@ describe('generate (configs list)', function () {
           fixture: 'esm-base',
           overrides: {
             'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+            }
+          };`,
+            'README.md': `## Rules
+## Configs
+<!-- begin auto-generated configs list -->
+<!-- end auto-generated configs list -->`,
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path);
+        expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      });
+    });
+
+    describe('with --ignore-config', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              foo: {},
+              recommended: {},
+            }
+          };`,
+            'README.md': `## Rules
+## Configs
+<!-- begin auto-generated configs list -->
+<!-- end auto-generated configs list -->`,
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, { ignoreConfig: ['foo'] });
+        expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      });
+    });
+
+    describe('with --config-format', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+            }
+          };`,
+            'README.md': `## Rules
+## Configs
+<!-- begin auto-generated configs list -->
+<!-- end auto-generated configs list -->`,
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, { configFormat: 'prefix-name' });
+        expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      });
+    });
+
+    describe('with configs not defined in alphabetical order', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+              foo: {},
+            }
+          };`,
+            'README.md': `## Rules
+## Configs
+<!-- begin auto-generated configs list -->
+<!-- end auto-generated configs list -->`,
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path);
+        expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      });
+    });
+
+    describe('when a config exports a description', function () {
+      describe('property=description', function () {
+        let fixture: FixtureContext;
+
+        beforeAll(async function () {
+          fixture = await setupFixture({
+            fixture: 'esm-base',
+            overrides: {
+              'index.js': `
             export default {
               rules: {
                 'no-foo': {
@@ -177,33 +179,33 @@ describe('generate (configs list)', function () {
                 recommended: { description: 'This config has the recommended rules...' },
               }
             };`,
-            'README.md': `## Rules
+              'README.md': `## Rules
   ## Configs
   <!-- begin auto-generated configs list -->
   <!-- end auto-generated configs list -->`,
-            'docs/rules/no-foo.md': '',
-          },
+              'docs/rules/no-foo.md': '',
+            },
+          });
+        });
+
+        afterAll(async function () {
+          await fixture.cleanup();
+        });
+
+        it('generates the documentation', async function () {
+          await generate(fixture.path);
+          expect(await fixture.readFile('README.md')).toMatchSnapshot();
         });
       });
 
-      afterAll(async function () {
-        await fixture.cleanup();
-      });
+      describe('property=meta.description', function () {
+        let fixture: FixtureContext;
 
-      it('generates the documentation', async function () {
-        await generate(fixture.path);
-        expect(await fixture.readFile('README.md')).toMatchSnapshot();
-      });
-    });
-
-    describe('property=meta.description', function () {
-      let fixture: FixtureContext;
-
-      beforeAll(async function () {
-        fixture = await setupFixture({
-          fixture: 'esm-base',
-          overrides: {
-            'index.js': `
+        beforeAll(async function () {
+          fixture = await setupFixture({
+            fixture: 'esm-base',
+            overrides: {
+              'index.js': `
             export default {
               rules: {
                 'no-foo': {
@@ -216,33 +218,33 @@ describe('generate (configs list)', function () {
                 recommended: { meta: { description: 'This config has the recommended rules...' } },
               }
             };`,
-            'README.md': `## Rules
+              'README.md': `## Rules
   ## Configs
   <!-- begin auto-generated configs list -->
   <!-- end auto-generated configs list -->`,
-            'docs/rules/no-foo.md': '',
-          },
+              'docs/rules/no-foo.md': '',
+            },
+          });
+        });
+
+        afterAll(async function () {
+          await fixture.cleanup();
+        });
+
+        it('generates the documentation', async function () {
+          await generate(fixture.path);
+          expect(await fixture.readFile('README.md')).toMatchSnapshot();
         });
       });
 
-      afterAll(async function () {
-        await fixture.cleanup();
-      });
+      describe('property=meta.docs.description', function () {
+        let fixture: FixtureContext;
 
-      it('generates the documentation', async function () {
-        await generate(fixture.path);
-        expect(await fixture.readFile('README.md')).toMatchSnapshot();
-      });
-    });
-
-    describe('property=meta.docs.description', function () {
-      let fixture: FixtureContext;
-
-      beforeAll(async function () {
-        fixture = await setupFixture({
-          fixture: 'esm-base',
-          overrides: {
-            'index.js': `
+        beforeAll(async function () {
+          fixture = await setupFixture({
+            fixture: 'esm-base',
+            overrides: {
+              'index.js': `
             export default {
               rules: {
                 'no-foo': {
@@ -255,10 +257,49 @@ describe('generate (configs list)', function () {
                 recommended: { meta: { docs: { description: 'This config has the recommended rules...' } } },
               }
             };`,
-            'README.md': `## Rules
+              'README.md': `## Rules
   ## Configs
   <!-- begin auto-generated configs list -->
   <!-- end auto-generated configs list -->`,
+              'docs/rules/no-foo.md': '',
+            },
+          });
+        });
+
+        afterAll(async function () {
+          await fixture.cleanup();
+        });
+
+        it('generates the documentation', async function () {
+          await generate(fixture.path);
+          expect(await fixture.readFile('README.md')).toMatchSnapshot();
+        });
+      });
+    });
+
+    describe('when a config description needs to be escaped in table', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: { description: 'Foo|Bar' },
+            }
+          };`,
+            'README.md': `## Rules
+## Configs
+<!-- begin auto-generated configs list -->
+<!-- end auto-generated configs list -->`,
             'docs/rules/no-foo.md': '',
           },
         });
@@ -273,54 +314,15 @@ describe('generate (configs list)', function () {
         expect(await fixture.readFile('README.md')).toMatchSnapshot();
       });
     });
-  });
 
-  describe('when a config description needs to be escaped in table', function () {
-    let fixture: FixtureContext;
+    describe('when there are no configs', function () {
+      let fixture: FixtureContext;
 
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
-          export default {
-            rules: {
-              'no-foo': {
-                meta: { docs: { description: 'Description no-foo.' }, },
-                create(context) {}
-              },
-            },
-            configs: {
-              recommended: { description: 'Foo|Bar' },
-            }
-          };`,
-          'README.md': `## Rules
-## Configs
-<!-- begin auto-generated configs list -->
-<!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
-      });
-    });
-
-    afterAll(async function () {
-      await fixture.cleanup();
-    });
-
-    it('generates the documentation', async function () {
-      await generate(fixture.path);
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
-    });
-  });
-
-  describe('when there are no configs', function () {
-    let fixture: FixtureContext;
-
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -329,33 +331,33 @@ describe('generate (configs list)', function () {
               },
             },
          };`,
-          'README.md': `## Rules
+            'README.md': `## Rules
 ## Configs
 <!-- begin auto-generated configs list -->
 <!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path);
+        expect(await fixture.readFile('README.md')).toMatchSnapshot();
       });
     });
 
-    afterAll(async function () {
-      await fixture.cleanup();
-    });
+    describe('when all configs are ignored', function () {
+      let fixture: FixtureContext;
 
-    it('generates the documentation', async function () {
-      await generate(fixture.path);
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
-    });
-  });
-
-  describe('when all configs are ignored', function () {
-    let fixture: FixtureContext;
-
-    beforeAll(async function () {
-      fixture = await setupFixture({
-        fixture: 'esm-base',
-        overrides: {
-          'index.js': `
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
           export default {
             rules: {
               'no-foo': {
@@ -367,22 +369,426 @@ describe('generate (configs list)', function () {
               recommended: {},
             }
          };`,
-          'README.md': `## Rules
+            'README.md': `## Rules
 ## Configs
 <!-- begin auto-generated configs list -->
 <!-- end auto-generated configs list -->`,
-          'docs/rules/no-foo.md': '',
-        },
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, { ignoreConfig: ['recommended'] });
+        expect(await fixture.readFile('README.md')).toMatchSnapshot();
+      });
+    });
+  });
+
+  describe('for mdx files', () => {
+    const options: GenerateOptions = {
+      pathRuleDoc: 'docs/rules/{name}.mdx',
+      pathRuleList: 'docs/rule-list.mdx',
+    };
+
+    describe('basic', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+            }
+          };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, options);
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
       });
     });
 
-    afterAll(async function () {
-      await fixture.cleanup();
+    describe('with --ignore-config', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              foo: {},
+              recommended: {},
+            }
+          };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, { ...options, ignoreConfig: ['foo'] });
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
+      });
     });
 
-    it('generates the documentation', async function () {
-      await generate(fixture.path, { ignoreConfig: ['recommended'] });
-      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+    describe('with --config-format', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+            }
+          };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, {
+          ...options,
+          configFormat: 'prefix-name',
+        });
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
+      });
+    });
+
+    describe('with configs not defined in alphabetical order', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+              foo: {},
+            }
+          };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, options);
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
+      });
+    });
+
+    describe('when a config exports a description', function () {
+      describe('property=description', function () {
+        let fixture: FixtureContext;
+
+        beforeAll(async function () {
+          fixture = await setupFixture({
+            fixture: 'esm-base-mdx',
+            overrides: {
+              'index.js': `
+            export default {
+              rules: {
+                'no-foo': {
+                  meta: { docs: { description: 'Description of no-foo.' }, },
+                  create(context) {}
+                },
+              },
+              configs: {
+                foo: {},
+                recommended: { description: 'This config has the recommended rules...' },
+              }
+            };`,
+              'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+              'docs/rules/no-foo.mdx': '',
+            },
+          });
+        });
+
+        afterAll(async function () {
+          await fixture.cleanup();
+        });
+
+        it('generates the documentation', async function () {
+          await generate(fixture.path, options);
+          expect(
+            await fixture.readFile('docs/rule-list.mdx'),
+          ).toMatchSnapshot();
+        });
+      });
+
+      describe('property=meta.description', function () {
+        let fixture: FixtureContext;
+
+        beforeAll(async function () {
+          fixture = await setupFixture({
+            fixture: 'esm-base-mdx',
+            overrides: {
+              'index.js': `
+            export default {
+              rules: {
+                'no-foo': {
+                  meta: { docs: { description: 'Description of no-foo.' }, },
+                  create(context) {}
+                },
+              },
+              configs: {
+                foo: {},
+                recommended: { meta: { description: 'This config has the recommended rules...' } },
+              }
+            };`,
+              'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+              'docs/rules/no-foo.md': '',
+            },
+          });
+        });
+
+        afterAll(async function () {
+          await fixture.cleanup();
+        });
+
+        it('generates the documentation', async function () {
+          await generate(fixture.path, options);
+          expect(
+            await fixture.readFile('docs/rule-list.mdx'),
+          ).toMatchSnapshot();
+        });
+      });
+
+      describe('property=meta.docs.description', function () {
+        let fixture: FixtureContext;
+
+        beforeAll(async function () {
+          fixture = await setupFixture({
+            fixture: 'esm-base-mdx',
+            overrides: {
+              'index.js': `
+            export default {
+              rules: {
+                'no-foo': {
+                  meta: { docs: { description: 'Description of no-foo.' }, },
+                  create(context) {}
+                },
+              },
+              configs: {
+                foo: {},
+                recommended: { meta: { docs: { description: 'This config has the recommended rules...' } } },
+              }
+            };`,
+              'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+              'docs/rules/no-foo.mdx': '',
+            },
+          });
+        });
+
+        afterAll(async function () {
+          await fixture.cleanup();
+        });
+
+        it('generates the documentation', async function () {
+          await generate(fixture.path, options);
+          expect(
+            await fixture.readFile('docs/rule-list.mdx'),
+          ).toMatchSnapshot();
+        });
+      });
+    });
+
+    describe('when a config description needs to be escaped in table', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: { description: 'Foo|Bar' },
+            }
+          };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, options);
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
+      });
+    });
+
+    describe('when there are no configs', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+         };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, options);
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
+      });
+    });
+
+    describe('when all configs are ignored', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: { docs: { description: 'Description of no-foo.' }, },
+                create(context) {}
+              },
+            },
+            configs: {
+              recommended: {},
+            }
+         };`,
+            'docs/rule-list.mdx': `## Rules
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('generates the documentation', async function () {
+        await generate(fixture.path, {
+          ...options,
+          ignoreConfig: ['recommended'],
+        });
+        expect(await fixture.readFile('docs/rule-list.mdx')).toMatchSnapshot();
+      });
     });
   });
 });

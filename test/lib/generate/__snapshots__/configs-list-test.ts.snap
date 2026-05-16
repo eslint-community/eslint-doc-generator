@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (configs list) > basic > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > basic > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -19,7 +19,7 @@ exports[`generate (configs list) > basic > generates the documentation 1`] = `
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > when a config description needs to be escaped in table > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > when a config description needs to be escaped in table > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -38,7 +38,7 @@ exports[`generate (configs list) > when a config description needs to be escaped
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > when a config exports a description > property=description > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > when a config exports a description > property=description > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -58,7 +58,7 @@ exports[`generate (configs list) > when a config exports a description > propert
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > when a config exports a description > property=meta.description > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > when a config exports a description > property=meta.description > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -78,7 +78,7 @@ exports[`generate (configs list) > when a config exports a description > propert
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > when a config exports a description > property=meta.docs.description > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > when a config exports a description > property=meta.docs.description > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -98,7 +98,7 @@ exports[`generate (configs list) > when a config exports a description > propert
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > when all configs are ignored > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > when all configs are ignored > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -112,7 +112,7 @@ exports[`generate (configs list) > when all configs are ignored > generates the 
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > when there are no configs > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > when there are no configs > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -126,7 +126,7 @@ exports[`generate (configs list) > when there are no configs > generates the doc
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > with --config-format > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > with --config-format > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -145,7 +145,7 @@ exports[`generate (configs list) > with --config-format > generates the document
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > with --ignore-config > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > with --ignore-config > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -164,7 +164,7 @@ exports[`generate (configs list) > with --ignore-config > generates the document
 <!-- end auto-generated configs list -->"
 `;
 
-exports[`generate (configs list) > with configs not defined in alphabetical order > generates the documentation 1`] = `
+exports[`generate (configs list) > for md files > with configs not defined in alphabetical order > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->
 
@@ -182,4 +182,188 @@ exports[`generate (configs list) > with configs not defined in alphabetical orde
 | ✅  | \`recommended\` |
 
 <!-- end auto-generated configs list -->"
+`;
+
+exports[`generate (configs list) > for mdx files > basic > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          |
+| :- | :------------ |
+| ✅  | \`recommended\` |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > when a config description needs to be escaped in table > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description         |
+| :------------------------- | :------------------ |
+| [no-foo](rules/no-foo.mdx) | Description no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          | Description |
+| :- | :------------ | :---------- |
+| ✅  | \`recommended\` | Foo\\|Bar    |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > when a config exports a description > property=description > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          | Description                              |
+| :- | :------------ | :--------------------------------------- |
+|    | \`foo\`         |                                          |
+| ✅  | \`recommended\` | This config has the recommended rules... |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > when a config exports a description > property=meta.description > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          | Description                              |
+| :- | :------------ | :--------------------------------------- |
+|    | \`foo\`         |                                          |
+| ✅  | \`recommended\` | This config has the recommended rules... |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > when a config exports a description > property=meta.docs.description > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          | Description                              |
+| :- | :------------ | :--------------------------------------- |
+|    | \`foo\`         |                                          |
+| ✅  | \`recommended\` | This config has the recommended rules... |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > when all configs are ignored > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > when there are no configs > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > with --config-format > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name               |
+| :- | :----------------- |
+| ✅  | \`test/recommended\` |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > with --ignore-config > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          |
+| :- | :------------ |
+| ✅  | \`recommended\` |
+
+{/* end auto-generated configs list */}"
+`;
+
+exports[`generate (configs list) > for mdx files > with configs not defined in alphabetical order > generates the documentation 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                       | Description            |
+| :------------------------- | :--------------------- |
+| [no-foo](rules/no-foo.mdx) | Description of no-foo. |
+
+{/* end auto-generated rules list */}
+## Configs
+{/* begin auto-generated configs list */}
+
+|    | Name          |
+| :- | :------------ |
+|    | \`foo\`         |
+| ✅  | \`recommended\` |
+
+{/* end auto-generated configs list */}"
 `;

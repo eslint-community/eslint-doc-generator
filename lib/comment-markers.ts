@@ -1,19 +1,26 @@
 // Markers so that the rules table list can be automatically updated.
-export const BEGIN_RULE_LIST_MARKER =
-  '<!-- begin auto-generated rules list -->';
-export const END_RULE_LIST_MARKER = '<!-- end auto-generated rules list -->';
+export const BEGIN_RULE_LIST_MARKER = 'begin auto-generated rules list';
+export const END_RULE_LIST_MARKER = 'end auto-generated rules list';
 
 // Marker so that rule doc header (title/notices) can be automatically updated.
-export const END_RULE_HEADER_MARKER = '<!-- end auto-generated rule header -->';
+export const END_RULE_HEADER_MARKER = 'end auto-generated rule header';
 
 // Markers so that the configs table list can be automatically updated.
-export const BEGIN_CONFIG_LIST_MARKER =
-  '<!-- begin auto-generated configs list -->';
-export const END_CONFIG_LIST_MARKER =
-  '<!-- end auto-generated configs list -->';
+export const BEGIN_CONFIG_LIST_MARKER = 'begin auto-generated configs list';
+export const END_CONFIG_LIST_MARKER = 'end auto-generated configs list';
 
 // Markers so that the rule options table list can be automatically updated.
 export const BEGIN_RULE_OPTIONS_LIST_MARKER =
-  '<!-- begin auto-generated rule options list -->';
+  'begin auto-generated rule options list';
 export const END_RULE_OPTIONS_LIST_MARKER =
-  '<!-- end auto-generated rule options list -->';
+  'end auto-generated rule options list';
+
+/**
+ * Format a comment string for the appropriate comment syntax based on whether the file is MDX or not.
+ * @param comment - the comment content, without comment syntax
+ * @param isMdx - whether the comment is for an MDX file (true) or a plain markdown file (false)
+ * @returns the formatted comment string
+ */
+export function formatComment(comment: string, isMdx: boolean): string {
+  return isMdx ? `{/* ${comment} */}` : `<!-- ${comment} -->`;
+}

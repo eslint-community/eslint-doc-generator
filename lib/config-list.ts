@@ -1,6 +1,7 @@
 import {
   BEGIN_CONFIG_LIST_MARKER,
   END_CONFIG_LIST_MARKER,
+  formatComment,
 } from './comment-markers.js';
 import { markdownTable } from 'markdown-table';
 import type { Config } from './types.js';
@@ -64,12 +65,25 @@ function generateConfigListMarkdown(context: Context): string {
   );
 }
 
-export function updateConfigsList(context: Context, markdown: string): string {
+export function updateConfigsList(
+  context: Context,
+  markdown: string,
+  isMdx: boolean,
+): string {
   const { configsToRules, endOfLine, options } = context;
   const { ignoreConfig } = options;
 
-  const listStartIndex = markdown.indexOf(BEGIN_CONFIG_LIST_MARKER);
-  let listEndIndex = markdown.indexOf(END_CONFIG_LIST_MARKER);
+  const formattedConfigListMarkerBegin = formatComment(
+    BEGIN_CONFIG_LIST_MARKER,
+    isMdx,
+  );
+  const formattedConfigListMarkerEnd = formatComment(
+    END_CONFIG_LIST_MARKER,
+    isMdx,
+  );
+
+  const listStartIndex = markdown.indexOf(formattedConfigListMarkerBegin);
+  let listEndIndex = markdown.indexOf(formattedConfigListMarkerEnd);
 
   if (listStartIndex === -1 || listEndIndex === -1) {
     // No config list found.
@@ -86,7 +100,7 @@ export function updateConfigsList(context: Context, markdown: string): string {
   }
 
   // Account for length of pre-existing marker.
-  listEndIndex += END_CONFIG_LIST_MARKER.length;
+  listEndIndex += formattedConfigListMarkerEnd.length;
 
   const preList = markdown.slice(0, Math.max(0, listStartIndex));
   const postList = markdown.slice(Math.max(0, listEndIndex));
@@ -94,5 +108,5 @@ export function updateConfigsList(context: Context, markdown: string): string {
   // New config list.
   const list = generateConfigListMarkdown(context);
 
-  return `${preList}${BEGIN_CONFIG_LIST_MARKER}${endOfLine}${endOfLine}${list}${endOfLine}${endOfLine}${END_CONFIG_LIST_MARKER}${postList}`;
+  return `${preList}${formattedConfigListMarkerBegin}${endOfLine}${endOfLine}${list}${endOfLine}${endOfLine}${formattedConfigListMarkerEnd}${postList}`;
 }

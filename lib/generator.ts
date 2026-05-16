@@ -10,8 +10,8 @@ import { updateConfigsList } from './config-list.js';
 import { generateRuleHeaderLines } from './rule-doc-notices.js';
 import {
   BEGIN_RULE_OPTIONS_LIST_MARKER,
-  END_RULE_HEADER_MARKER,
   END_RULE_OPTIONS_LIST_MARKER,
+  formatComment,
 } from './comment-markers.js';
 import {
   extractFrontmatter,
@@ -28,6 +28,10 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
+
+function isMdx(path: string): boolean {
+  return path.toLowerCase().endsWith('.mdx');
+}
 
 // eslint-disable-next-line complexity
 export async function generate(path: string, userOptions?: GenerateOptions) {
@@ -92,50 +96,63 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const metaDefaultOptions = rule.meta?.defaultOptions;
     const description = rule.meta?.docs?.description;
     const pathCurrentPage = replaceRulePlaceholder(pathRuleDoc, name);
-    const pathToDoc = join(path, pathCurrentPage);
+    let pathToDoc = join(path, pathCurrentPage);
     const ruleHasOptions = hasOptions(schema);
 
     if (!existsSync(pathToDoc)) {
-      if (!initRuleDocs) {
-        throw new Error(
-          `Could not find rule doc (run with --init-rule-docs to create): ${relative(
-            getPluginRoot(path),
-            pathToDoc,
-          )}`,
-        );
-      }
+      // Check if an `mdx` file exists with the same name, in case the rule doc was created with an `mdx` extension for starlight compatibility.
+      const pathToDocMdx = pathToDoc.replace(/\.md$/iu, '.mdx');
+      if (existsSync(pathToDocMdx)) {
+        pathToDoc = pathToDocMdx;
+      } else {
+        if (!initRuleDocs) {
+          throw new Error(
+            `Could not find rule doc (run with --init-rule-docs to create): ${relative(
+              getPluginRoot(path),
+              pathToDoc,
+            )}`,
+          );
+        }
 
-      // Determine content for fresh rule doc, including any mandatory sections.
-      // The rule doc header will be added later.
-      let newRuleDocContents = [
-        ruleDocSectionInclude.length > 0
-          ? ruleDocSectionInclude
-              .map((title) => `## ${title}`)
-              .join(`${endOfLine}${endOfLine}`)
-          : undefined,
-        /* istanbul ignore next -- both branches tested but coverage has instrumentation issue with ternary in array */
-        ruleHasOptions
-          ? `## Options${endOfLine}${endOfLine}${BEGIN_RULE_OPTIONS_LIST_MARKER}${endOfLine}${END_RULE_OPTIONS_LIST_MARKER}`
-          : undefined,
-      ]
-        .filter((section) => section !== undefined)
-        .join(`${endOfLine}${endOfLine}`);
-      /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
-      if (newRuleDocContents !== '') {
-        newRuleDocContents = `${endOfLine}${newRuleDocContents}${endOfLine}`;
-      }
+        // Determine content for fresh rule doc, including any mandatory sections.
+        // The rule doc header will be added later.
+        const isRuleDocMdx = isMdx(pathToDoc);
+        let newRuleDocContents = [
+          ruleDocSectionInclude.length > 0
+            ? ruleDocSectionInclude
+                .map((title) => `## ${title}`)
+                .join(`${endOfLine}${endOfLine}`)
+            : undefined,
+          /* istanbul ignore next -- both branches tested but coverage has instrumentation issue with ternary in array */
+          ruleHasOptions
+            ? `## Options${endOfLine}${endOfLine}${formatComment(BEGIN_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}${endOfLine}${formatComment(END_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}`
+            : undefined,
+        ]
+          .filter((section) => section !== undefined)
+          .join(`${endOfLine}${endOfLine}`);
+        /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
+        if (newRuleDocContents !== '') {
+          newRuleDocContents = `${endOfLine}${newRuleDocContents}${endOfLine}`;
+        }
 
-      await mkdir(dirname(pathToDoc), { recursive: true });
-      await writeFile(pathToDoc, newRuleDocContents);
-      initializedRuleDoc = true;
+        await mkdir(dirname(pathToDoc), { recursive: true });
+        await writeFile(pathToDoc, newRuleDocContents);
+        initializedRuleDoc = true;
+      }
     }
 
+    const isRuleDocMdx = isMdx(pathToDoc);
     const contentsOldBuffer = await readFile(pathToDoc);
     const contentsOld = contentsOldBuffer.toString();
     const frontmatterOld = extractFrontmatter(context, contentsOld);
 
     // Regenerate the header (title/notices) and frontmatter of each rule doc.
-    const newHeaderLines = generateRuleHeaderLines(context, description, name);
+    const newHeaderLines = generateRuleHeaderLines(
+      context,
+      description,
+      name,
+      isRuleDocMdx,
+    );
     const newFrontmatterLines = generateFrontmatterLines(
       context,
       name,
@@ -153,9 +170,14 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       context,
       contentsNew,
       newHeaderLines,
-      END_RULE_HEADER_MARKER,
+      isRuleDocMdx,
     );
-    contentsNew = updateRuleOptionsList(context, contentsNew, rule);
+    contentsNew = updateRuleOptionsList(
+      context,
+      contentsNew,
+      rule,
+      isRuleDocMdx,
+    );
     contentsNew = await postprocess(contentsNew, resolve(pathToDoc));
 
     if (check) {
@@ -239,6 +261,8 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       );
     }
 
+    const isRuleListMdx = isMdx(pathToFile);
+
     // Update the rules list in this file.
     const fileContents = await readFile(pathToFile, 'utf8');
     const rulesList = updateRulesList(
@@ -248,7 +272,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       pathToFile,
     );
     const fileContentsNew = await postprocess(
-      updateConfigsList(context, rulesList),
+      updateConfigsList(context, rulesList, isRuleListMdx),
       resolve(pathToFile),
     );
 

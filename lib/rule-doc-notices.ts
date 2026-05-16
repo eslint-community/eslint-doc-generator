@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { END_RULE_HEADER_MARKER } from './comment-markers.js';
+import { END_RULE_HEADER_MARKER, formatComment } from './comment-markers.js';
 import {
   EMOJI_DEPRECATED,
   EMOJI_DESCRIPTION,
@@ -478,6 +478,7 @@ export function generateRuleHeaderLines(
   context: Context,
   description: string | undefined,
   name: string,
+  isMdx: boolean,
 ): string {
   const {
     endOfLine,
@@ -490,6 +491,6 @@ export function generateRuleHeaderLines(
     ...(framework === 'starlight' ? [] : [`# ${title}`]),
     ...getRuleNoticeLines(context, name),
     '',
-    END_RULE_HEADER_MARKER,
+    formatComment(END_RULE_HEADER_MARKER, isMdx),
   ].join(endOfLine);
 }

@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate (rule options list) > basic > generates the documentation 1`] = `
+exports[`generate (rule options list) > for md files > basic > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -24,7 +24,7 @@ exports[`generate (rule options list) > basic > generates the documentation 1`] 
 <!-- end auto-generated rule options list -->"
 `;
 
-exports[`generate (rule options list) > displays default column even when only falsy value, hiding deprecated/required cols with only falsy value > generates the documentation 1`] = `
+exports[`generate (rule options list) > for md files > displays default column even when only falsy value, hiding deprecated/required cols with only falsy value > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -38,7 +38,7 @@ exports[`generate (rule options list) > displays default column even when only f
 <!-- end auto-generated rule options list -->"
 `;
 
-exports[`generate (rule options list) > with no marker comments > generates the documentation 1`] = `
+exports[`generate (rule options list) > for md files > with no marker comments > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -46,7 +46,7 @@ exports[`generate (rule options list) > with no marker comments > generates the 
 foo"
 `;
 
-exports[`generate (rule options list) > with no options > generates the documentation 1`] = `
+exports[`generate (rule options list) > for md files > with no options > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -58,7 +58,7 @@ exports[`generate (rule options list) > with no options > generates the document
 <!-- end auto-generated rule options list -->"
 `;
 
-exports[`generate (rule options list) > with string that needs to be escaped in table > generates the documentation 1`] = `
+exports[`generate (rule options list) > for md files > with string that needs to be escaped in table > generates the documentation 1`] = `
 "# test/no-foo
 
 <!-- end auto-generated rule header -->
@@ -70,4 +70,76 @@ exports[`generate (rule options list) > with string that needs to be escaped in 
 | \`foo\` | test<br/>                  desc | String\\|number |
 
 <!-- end auto-generated rule options list -->"
+`;
+
+exports[`generate (rule options list) > for mdx files > basic > generates the documentation 1`] = `
+"# test/no-foo
+
+{/* end auto-generated rule header */}
+## Options
+{/* begin auto-generated rule options list */}
+
+| Name                       | Description                   | Type                | Choices           | Default                                | Required | Deprecated |
+| :------------------------- | :---------------------------- | :------------------ | :---------------- | :------------------------------------- | :------- | :--------- |
+| \`arr1\`                     |                               | Array               |                   |                                        |          |            |
+| \`arrWithArrType\`           |                               | String, Boolean     |                   |                                        |          |            |
+| \`arrWithArrTypeSingleItem\` |                               | String              |                   |                                        |          |            |
+| \`arrWithDefault\`           |                               | Array               |                   | [\`hello world\`, \`1\`, \`2\`, \`3\`, \`true\`] |          |            |
+| \`arrWithDefaultEmpty\`      |                               | Array               |                   | \`[]\`                                   |          |            |
+| \`arrWithItemsArrayType\`    |                               | (String, Boolean)[] |                   |                                        |          |            |
+| \`arrWithItemsType\`         |                               | String[]            |                   |                                        |          |            |
+| \`bar\`                      | Choose how to use the rule.   | String              | \`always\`, \`never\` | \`always\`                               | Yes      |            |
+| \`baz\`                      |                               |                     |                   | \`true\`                                 | Yes      |            |
+| \`biz\`                      |                               |                     |                   |                                        |          |            |
+| \`foo\`                      | Enable some kind of behavior. | Boolean             |                   | \`false\`                                |          | Yes        |
+
+{/* end auto-generated rule options list */}"
+`;
+
+exports[`generate (rule options list) > for mdx files > displays default column even when only falsy value, hiding deprecated/required cols with only falsy value > generates the documentation 1`] = `
+"# test/no-foo
+
+{/* end auto-generated rule header */}
+## Options
+{/* begin auto-generated rule options list */}
+
+| Name  | Default |
+| :---- | :------ |
+| \`foo\` | \`false\` |
+
+{/* end auto-generated rule options list */}"
+`;
+
+exports[`generate (rule options list) > for mdx files > with no marker comments > generates the documentation 1`] = `
+"# test/no-foo
+
+{/* end auto-generated rule header */}
+## Options
+foo"
+`;
+
+exports[`generate (rule options list) > for mdx files > with no options > generates the documentation 1`] = `
+"# test/no-foo
+
+{/* end auto-generated rule header */}
+
+{/* begin auto-generated rule options list */}
+
+
+
+{/* end auto-generated rule options list */}"
+`;
+
+exports[`generate (rule options list) > for mdx files > with string that needs to be escaped in table > generates the documentation 1`] = `
+"# test/no-foo
+
+{/* end auto-generated rule header */}
+## Options
+{/* begin auto-generated rule options list */}
+
+| Name  | Description                     | Type           |
+| :---- | :------------------------------ | :------------- |
+| \`foo\` | test<br/>                  desc | String\\|number |
+
+{/* end auto-generated rule options list */}"
 `;
