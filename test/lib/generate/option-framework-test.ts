@@ -115,6 +115,7 @@ description: Description for no-bar.
 ---
 > 📌 A blockquote that should be preserved.
 # Some pre-existing title.
+<!-- end auto-generated rule header -->
 ## Rule details
 Details.
 `,
@@ -366,6 +367,7 @@ description: A description for no-bar that will not be ignored, because the rule
             'README.md': '## Rules\n',
             'docs/rules/no-foo.md': `<!-- editor banner that should be preserved -->
 # Some pre-existing title.
+<!-- end auto-generated rule header -->
 ## Rule details
 Details.
 `,
@@ -375,6 +377,7 @@ description: Description for no-bar.
 ---
 > 📌 A blockquote that should be preserved.
 # Some pre-existing title.
+<!-- end auto-generated rule header -->
 ## Rule details
 Details.
 `,
