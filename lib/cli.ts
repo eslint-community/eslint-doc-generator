@@ -247,7 +247,7 @@ export async function run(
     .addOption(
       new Option(
         '--framework <framework>',
-        `(optional) The framework to use for the documentation. (default: ${OPTION_DEFAULTS[OPTION_TYPE.FRAMEWORK]})`,
+        `(optional) The doc site framework you're using. (default: ${OPTION_DEFAULTS[OPTION_TYPE.FRAMEWORK]})`,
       ).choices(FRAMEWORK_TYPES),
     )
     .option(

@@ -221,7 +221,7 @@ export type GenerateOptions = {
   /** The format to use for config names. Default: `name`. */
   readonly configFormat?: ConfigFormat;
 
-  /** The framework to use for config names. Default: `none`. */
+  /** The doc site framework you're using. Informs how rule doc headers are formatted (e.g. title placement, frontmatter). Default: `none`. */
   readonly framework?: FRAMEWORK_TYPE;
 
   /** Configs to ignore from being displayed. Often used for an `all` config. */
