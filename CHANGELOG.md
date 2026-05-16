@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.3.2...v3.4.0) (2026-05-16)
+
+
+### Features
+
+* add new `framework` option with support for Starlight ([#946](https://github.com/eslint-community/eslint-doc-generator/issues/946)) ([ef11b22](https://github.com/eslint-community/eslint-doc-generator/commit/ef11b22987203db1afbe30b41b4a59223bf15e20))
+
 ## [3.3.2](https://github.com/eslint-community/eslint-doc-generator/compare/v3.3.1...v3.3.2) (2026-03-25)
 
 
