@@ -2,7 +2,10 @@ import type { Context } from './context.js';
 import { makeRuleDocTitle } from './rule-doc-title.js';
 
 function formatFrontmatterProperty(key: string, value: string): string {
-  return `${key}: "${value}"`;
+  const escaped = value
+    .replaceAll('\\', '\\\\')
+    .replaceAll('"', String.raw`\"`);
+  return `${key}: "${escaped}"`;
 }
 
 /**
