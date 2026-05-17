@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve } from 'node:path';
 import { getAllNamedOptions, hasOptions } from './rule-options.js';
 import {
   getPluginRoot,
@@ -30,7 +30,32 @@ import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
 
 function isMdx(path: string): boolean {
-  return path.toLowerCase().endsWith('.mdx');
+  return extname(path).toLowerCase() === '.mdx';
+}
+
+function resolveDocPath(configuredPath: string): string | undefined {
+  if (existsSync(configuredPath)) {
+    return configuredPath;
+  }
+
+  // If the configured path ends in .md, see if an .mdx version exists
+  if (configuredPath.endsWith('.md')) {
+    const mdxPath = configuredPath.replace(/\.md$/i, '.mdx');
+    if (existsSync(mdxPath)) {
+      return mdxPath;
+    }
+  }
+
+  // If the configured path ends in .mdx, see if an .md version exists
+  if (configuredPath.endsWith('.mdx')) {
+    const mdPath = configuredPath.replace(/\.mdx$/i, '.md');
+    if (existsSync(mdPath)) {
+      return mdPath;
+    }
+  }
+
+  // If neither exist, return nothing.  The configured path will be created if `--init-rule-docs` is enabled.
+  return undefined;
 }
 
 // eslint-disable-next-line complexity
@@ -96,49 +121,46 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const metaDefaultOptions = rule.meta?.defaultOptions;
     const description = rule.meta?.docs?.description;
     const pathCurrentPage = replaceRulePlaceholder(pathRuleDoc, name);
-    let pathToDoc = join(path, pathCurrentPage);
+    const configuredPathToDoc = join(path, pathCurrentPage);
+    let pathToDoc = resolveDocPath(configuredPathToDoc);
     const ruleHasOptions = hasOptions(schema);
 
-    if (!existsSync(pathToDoc)) {
-      // Check if an `mdx` file exists with the same name, in case the rule doc was created with an `mdx` extension for starlight compatibility.
-      const pathToDocMdx = pathToDoc.replace(/\.md$/iu, '.mdx');
-      if (existsSync(pathToDocMdx)) {
-        pathToDoc = pathToDocMdx;
-      } else {
-        if (!initRuleDocs) {
-          throw new Error(
-            `Could not find rule doc (run with --init-rule-docs to create): ${relative(
-              getPluginRoot(path),
-              pathToDoc,
-            )}`,
-          );
-        }
-
-        // Determine content for fresh rule doc, including any mandatory sections.
-        // The rule doc header will be added later.
-        const isRuleDocMdx = isMdx(pathToDoc);
-        let newRuleDocContents = [
-          ruleDocSectionInclude.length > 0
-            ? ruleDocSectionInclude
-                .map((title) => `## ${title}`)
-                .join(`${endOfLine}${endOfLine}`)
-            : undefined,
-          /* istanbul ignore next -- both branches tested but coverage has instrumentation issue with ternary in array */
-          ruleHasOptions
-            ? `## Options${endOfLine}${endOfLine}${formatComment(BEGIN_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}${endOfLine}${formatComment(END_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}`
-            : undefined,
-        ]
-          .filter((section) => section !== undefined)
-          .join(`${endOfLine}${endOfLine}`);
-        /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
-        if (newRuleDocContents !== '') {
-          newRuleDocContents = `${endOfLine}${newRuleDocContents}${endOfLine}`;
-        }
-
-        await mkdir(dirname(pathToDoc), { recursive: true });
-        await writeFile(pathToDoc, newRuleDocContents);
-        initializedRuleDoc = true;
+    if (!pathToDoc) {
+      if (!initRuleDocs) {
+        throw new Error(
+          `Could not find rule doc (run with --init-rule-docs to create): ${relative(
+            getPluginRoot(path),
+            configuredPathToDoc,
+          )}`,
+        );
       }
+
+      pathToDoc = configuredPathToDoc;
+
+      // Determine content for fresh rule doc, including any mandatory sections.
+      // The rule doc header will be added later.
+      const isRuleDocMdx = isMdx(pathToDoc);
+      let newRuleDocContents = [
+        ruleDocSectionInclude.length > 0
+          ? ruleDocSectionInclude
+              .map((title) => `## ${title}`)
+              .join(`${endOfLine}${endOfLine}`)
+          : undefined,
+        /* istanbul ignore next -- both branches tested but coverage has instrumentation issue with ternary in array */
+        ruleHasOptions
+          ? `## Options${endOfLine}${endOfLine}${formatComment(BEGIN_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}${endOfLine}${formatComment(END_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}`
+          : undefined,
+      ]
+        .filter((section) => section !== undefined)
+        .join(`${endOfLine}${endOfLine}`);
+      /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
+      if (newRuleDocContents !== '') {
+        newRuleDocContents = `${endOfLine}${newRuleDocContents}${endOfLine}`;
+      }
+
+      await mkdir(dirname(pathToDoc), { recursive: true });
+      await writeFile(pathToDoc, newRuleDocContents);
+      initializedRuleDoc = true;
     }
 
     const isRuleDocMdx = isMdx(pathToDoc);
