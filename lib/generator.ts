@@ -40,7 +40,7 @@ function resolveDocPath(configuredPath: string): string | undefined {
 
   // If the configured path ends in .md, see if an .mdx version exists
   if (configuredPath.endsWith('.md')) {
-    const mdxPath = configuredPath.replace(/\.md$/i, '.mdx');
+    const mdxPath = configuredPath.replace(/\.md$/iu, '.mdx');
     if (existsSync(mdxPath)) {
       return mdxPath;
     }
@@ -48,7 +48,7 @@ function resolveDocPath(configuredPath: string): string | undefined {
 
   // If the configured path ends in .mdx, see if an .md version exists
   if (configuredPath.endsWith('.mdx')) {
-    const mdPath = configuredPath.replace(/\.mdx$/i, '.md');
+    const mdPath = configuredPath.replace(/\.mdx$/iu, '.md');
     if (existsSync(mdPath)) {
       return mdPath;
     }
