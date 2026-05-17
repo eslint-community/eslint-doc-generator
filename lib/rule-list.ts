@@ -305,7 +305,7 @@ export function updateRulesList(
   pathToFile: string,
 ): string {
   const { endOfLine, path, options } = context;
-  const { ruleListSplit } = options;
+  const { framework, ruleListSplit } = options;
 
   let listStartIndex = markdown.indexOf(BEGIN_RULE_LIST_MARKER);
   let listEndIndex = markdown.indexOf(END_RULE_LIST_MARKER);
@@ -343,7 +343,11 @@ export function updateRulesList(
   const postList = markdown.slice(Math.max(0, listEndIndex));
 
   // Determine what header level to use for sub-lists based on the last seen header level.
-  const preListFinalHeaderLevel = findFinalHeaderLevel(context, preList);
+  const preListFinalHeaderLevel = findFinalHeaderLevel(
+    context,
+    preList,
+    framework,
+  );
   const ruleListSplitHeaderLevel = preListFinalHeaderLevel
     ? preListFinalHeaderLevel + 1
     : 1;

@@ -1,6 +1,7 @@
 import { outdent } from 'outdent';
 import {
   extractFrontmatter,
+  findFinalHeaderLevel,
   findSectionHeader,
   replaceOrCreateFrontmatter,
   replaceOrCreateHeader,
@@ -68,6 +69,140 @@ describe('markdown', function () {
 
       expect(context).toBeDefined();
       expect(extractFrontmatter(context, markdown)).toBeUndefined();
+    });
+  });
+
+  describe('findFinalHeaderLevel', function () {
+    describe("framework='none'", () => {
+      it('should detect top header', function () {
+        const markdown = normalize(outdent`
+          # Header
+          Some description
+        `);
+        expect(findFinalHeaderLevel(context, markdown)).toBe(1);
+      });
+
+      it('should detect sub-header', function () {
+        const markdown = outdent`
+          # Header
+          Some description
+          ## Rules
+        `;
+        expect(findFinalHeaderLevel(context, markdown)).toBe(2);
+      });
+
+      it('should detect last sub-header', function () {
+        expect(
+          findFinalHeaderLevel(
+            context,
+            normalize(outdent`
+              # eslint-plugin-test
+              Description.
+              ## Configs
+              Configs
+              ### Some config
+              Description
+              ## Rules
+              Rules
+            `),
+          ),
+        ).toBe(2);
+      });
+
+      it('should return undefined when no header found', function () {
+        expect(findFinalHeaderLevel(context, 'Description')).toBeUndefined();
+      });
+
+      it('should ignore frontmatter', function () {
+        expect(
+          findFinalHeaderLevel(
+            context,
+            normalize(outdent`
+              ---
+              title: Test Rule
+              description: This is a test rule.
+              ---
+              Rules
+            `),
+          ),
+        ).toBeUndefined();
+      });
+    });
+
+    describe("framework='starlight'", () => {
+      it('should detect top header', function () {
+        const markdown = normalize(outdent`
+          # Header
+          Some description
+        `);
+        expect(findFinalHeaderLevel(context, markdown, 'starlight')).toBe(1);
+      });
+
+      it('should detect sub-header', function () {
+        const markdown = normalize(outdent`
+          # Header
+          Some description
+          ## Rules
+        `);
+        expect(findFinalHeaderLevel(context, markdown, 'starlight')).toBe(2);
+      });
+
+      it('should detect last sub-header', function () {
+        expect(
+          findFinalHeaderLevel(
+            context,
+            normalize(outdent`
+              # eslint-plugin-test
+              Description.
+              ## Configs
+              Configs
+              ### Some config
+              Description
+              ## Rules
+              Rules
+            `),
+            'starlight',
+          ),
+        ).toBe(2);
+      });
+
+      it('should return undefined when no header found', function () {
+        expect(
+          findFinalHeaderLevel(context, 'Description', 'starlight'),
+        ).toBeUndefined();
+      });
+
+      it('should treat frontmatter as H1 when no other header found', function () {
+        expect(
+          findFinalHeaderLevel(
+            context,
+            normalize(outdent`
+              ---
+              title: Test Rule
+              description: This is a test rule.
+              ---
+              Rules
+            `),
+            'starlight',
+          ),
+        ).toBe(1);
+      });
+
+      it('should still return last header even when frontmatter is present', function () {
+        expect(
+          findFinalHeaderLevel(
+            context,
+            normalize(outdent`
+              ---
+              title: Test Rule
+              description: This is a test rule.
+              ---
+              ## Rules
+            `),
+            'starlight',
+          ),
+        ).toBe(2);
+      });
     });
   });
 

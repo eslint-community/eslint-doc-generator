@@ -1,6 +1,7 @@
 // General helpers for dealing with markdown files / content.
 
 import type { Context } from './context.js';
+import type { FRAMEWORK_TYPE } from './types.js';
 
 export function extractFrontmatter(context: Context, markdown: string) {
   const { endOfLine } = context;
@@ -122,14 +123,27 @@ export function findSectionHeader(
   )[0];
 }
 
-export function findFinalHeaderLevel(context: Context, str: string) {
+export function findFinalHeaderLevel(
+  context: Context,
+  str: string,
+  framework: FRAMEWORK_TYPE = 'none',
+): number | undefined {
   const { endOfLine } = context;
 
   const lines = str.split(endOfLine);
   const finalHeader = lines
     .toReversed()
     .find((line) => line.match('^(#+) .+$'));
-  return finalHeader ? finalHeader.indexOf(' ') : undefined;
+
+  if (finalHeader) {
+    return finalHeader.indexOf(' ');
+  }
+  // If the framework is `starlight` and there's frontmatter at the top, treat that as an H1
+  else if (framework === 'starlight' && extractFrontmatter(context, str)) {
+    return 1;
+  }
+
+  return undefined;
 }
 
 /**
