@@ -6,16 +6,21 @@ import {
   replaceOrCreateFrontmatter,
   replaceOrCreateHeader,
 } from '../../lib/markdown.js';
-import { getContext } from '../../lib/context.js';
+import { getContext, type Context } from '../../lib/context.js';
 
 const cwd = process.cwd();
-const context = await getContext(cwd, undefined, true);
 
-function normalize(markdown: string) {
+function normalize(markdown: string, context: Context) {
   return markdown.split('\n').join(context.endOfLine);
 }
 
 describe('markdown', function () {
+  let context: Context;
+
+  beforeEach(async function () {
+    context = await getContext(cwd, undefined, true);
+  });
+
   describe('extractFrontmatter', function () {
     it('should extract frontmatter when it is present at the beginning of the file', function () {
       const markdown = outdent`
@@ -75,10 +80,13 @@ describe('markdown', function () {
   describe('findFinalHeaderLevel', function () {
     describe("framework='none'", () => {
       it('should detect top header', function () {
-        const markdown = normalize(outdent`
-          # Header
-          Some description
-        `);
+        const markdown = normalize(
+          outdent`
+            # Header
+            Some description
+          `,
+          context,
+        );
         expect(findFinalHeaderLevel(context, markdown)).toBe(1);
       });
 
@@ -95,16 +103,19 @@ describe('markdown', function () {
         expect(
           findFinalHeaderLevel(
             context,
-            normalize(outdent`
-              # eslint-plugin-test
-              Description.
-              ## Configs
-              Configs
-              ### Some config
-              Description
-              ## Rules
-              Rules
-            `),
+            normalize(
+              outdent`
+                # eslint-plugin-test
+                Description.
+                ## Configs
+                Configs
+                ### Some config
+                Description
+                ## Rules
+                Rules
+              `,
+              context,
+            ),
           ),
         ).toBe(2);
       });
@@ -117,73 +128,88 @@ describe('markdown', function () {
         expect(
           findFinalHeaderLevel(
             context,
-            normalize(outdent`
-              ---
-              title: Test Rule
-              description: This is a test rule.
-              ---
-              Rules
-            `),
+            normalize(
+              outdent`
+                ---
+                title: Test Rule
+                description: This is a test rule.
+                ---
+                Rules
+              `,
+              context,
+            ),
           ),
         ).toBeUndefined();
       });
     });
 
     describe("framework='starlight'", () => {
+      beforeEach(async function () {
+        context = await getContext(cwd, { framework: 'starlight' }, true);
+      });
+
       it('should detect top header', function () {
-        const markdown = normalize(outdent`
-          # Header
-          Some description
-        `);
-        expect(findFinalHeaderLevel(context, markdown, 'starlight')).toBe(1);
+        const markdown = normalize(
+          outdent`
+            # Header
+            Some description
+          `,
+          context,
+        );
+        expect(findFinalHeaderLevel(context, markdown)).toBe(1);
       });
 
       it('should detect sub-header', function () {
-        const markdown = normalize(outdent`
-          # Header
-          Some description
-          ## Rules
-        `);
-        expect(findFinalHeaderLevel(context, markdown, 'starlight')).toBe(2);
+        const markdown = normalize(
+          outdent`
+            # Header
+            Some description
+            ## Rules
+          `,
+          context,
+        );
+        expect(findFinalHeaderLevel(context, markdown)).toBe(2);
       });
 
       it('should detect last sub-header', function () {
         expect(
           findFinalHeaderLevel(
             context,
-            normalize(outdent`
-              # eslint-plugin-test
-              Description.
-              ## Configs
-              Configs
-              ### Some config
-              Description
-              ## Rules
-              Rules
-            `),
-            'starlight',
+            normalize(
+              outdent`
+                # eslint-plugin-test
+                Description.
+                ## Configs
+                Configs
+                ### Some config
+                Description
+                ## Rules
+                Rules
+              `,
+              context,
+            ),
           ),
         ).toBe(2);
       });
 
       it('should return undefined when no header found', function () {
-        expect(
-          findFinalHeaderLevel(context, 'Description', 'starlight'),
-        ).toBeUndefined();
+        expect(findFinalHeaderLevel(context, 'Description')).toBeUndefined();
       });
 
       it('should treat frontmatter as H1 when no other header found', function () {
         expect(
           findFinalHeaderLevel(
             context,
-            normalize(outdent`
-              ---
-              title: Test Rule
-              description: This is a test rule.
-              ---
-              Rules
-            `),
-            'starlight',
+            normalize(
+              outdent`
+                ---
+                title: Test Rule
+                description: This is a test rule.
+                ---
+                Rules
+              `,
+              context,
+            ),
           ),
         ).toBe(1);
       });
@@ -192,14 +218,16 @@ describe('markdown', function () {
         expect(
           findFinalHeaderLevel(
             context,
-            normalize(outdent`
-              ---
-              title: Test Rule
-              description: This is a test rule.
-              ---
-              ## Rules
-            `),
-            'starlight',
+            normalize(
+              outdent`
+                ---
+                title: Test Rule
+                description: This is a test rule.
+                ---
+                ## Rules
+              `,
+              context,
+            ),
           ),
         ).toBe(2);
       });
@@ -273,6 +301,7 @@ describe('markdown', function () {
           <!-- end auto-generated rule header -->
           Rule description.
         `,
+        context,
       );
 
       expect(replaceOrCreateFrontmatter(context, markdown, undefined)).toBe(
@@ -292,6 +321,7 @@ describe('markdown', function () {
           <!-- end auto-generated rule header -->
           Rule description.
         `,
+        context,
       );
 
       expect(replaceOrCreateFrontmatter(context, markdown, undefined)).toBe(
@@ -304,6 +334,7 @@ describe('markdown', function () {
         outdent`
           Rule description.
         `,
+        context,
       );
       const newFrontmatter = normalize(
         outdent`
@@ -311,6 +342,7 @@ describe('markdown', function () {
           title: New Rule
           ---
         `,
+        context,
       );
 
       expect(
@@ -326,6 +358,7 @@ describe('markdown', function () {
           ---
           Rule description.
         `,
+        context,
       );
       const newFrontmatter = normalize(
         outdent`
@@ -333,6 +366,7 @@ describe('markdown', function () {
           title: New Rule
           ---
         `,
+        context,
       );
 
       expect(
@@ -348,12 +382,14 @@ describe('markdown', function () {
           outdent`
             This is the content of the rule doc.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             <!-- end auto-generated rule header -->
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
@@ -367,12 +403,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             <!-- end auto-generated rule header -->
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
@@ -388,12 +426,14 @@ describe('markdown', function () {
             <!-- end auto-generated rule header -->
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             <!-- end auto-generated rule header -->
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
@@ -408,6 +448,7 @@ describe('markdown', function () {
             title: Old Rule
             ---
           `,
+          context,
         );
         const markdown = normalize(
           outdent`
@@ -415,12 +456,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             <!-- end auto-generated rule header -->
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
@@ -435,6 +478,7 @@ describe('markdown', function () {
             title: Old Rule
             ---
           `,
+          context,
         );
         const markdown = normalize(
           outdent`
@@ -443,12 +487,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             <!-- end auto-generated rule header -->
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
@@ -463,12 +509,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             <!-- end auto-generated rule header -->
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
@@ -483,12 +531,14 @@ describe('markdown', function () {
           outdent`
             This is the content of the rule doc.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             {/* end auto-generated rule header */}
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
@@ -502,12 +552,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             {/* end auto-generated rule header */}
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
@@ -523,12 +575,14 @@ describe('markdown', function () {
             {/* end auto-generated rule header */}
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             {/* end auto-generated rule header */}
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
@@ -543,6 +597,7 @@ describe('markdown', function () {
             title: Old Rule
             ---
           `,
+          context,
         );
         const markdown = normalize(
           outdent`
@@ -550,12 +605,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             {/* end auto-generated rule header */}
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
@@ -570,6 +627,7 @@ describe('markdown', function () {
             title: Old Rule
             ---
           `,
+          context,
         );
         const markdown = normalize(
           outdent`
@@ -578,12 +636,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             {/* end auto-generated rule header */}
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
@@ -598,12 +658,14 @@ describe('markdown', function () {
             # Old Rule
             Rule description.
           `,
+          context,
         );
         const newHeader = normalize(
           outdent`
             # New Rule
             {/* end auto-generated rule header */}
           `,
+          context,
         );
 
         expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
