@@ -126,9 +126,11 @@ export function findSectionHeader(
 export function findFinalHeaderLevel(
   context: Context,
   str: string,
-  framework: FRAMEWORK_TYPE = 'none',
 ): number | undefined {
-  const { endOfLine } = context;
+  const {
+    endOfLine,
+    options: { framework },
+  } = context;
 
   const lines = str.split(endOfLine);
   const finalHeader = lines
