@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.5.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.4.0...v3.5.0) (2026-05-18)
+
+
+### Features
+
+* add support for mdx files ([#949](https://github.com/eslint-community/eslint-doc-generator/issues/949)) ([5bf4df4](https://github.com/eslint-community/eslint-doc-generator/commit/5bf4df480d3c65024ccff75ccf52e6e55a912379))
+
+
+### Bug Fixes
+
+* treat frontmatter as H1 in rule-list when framework is "starlight" ([#950](https://github.com/eslint-community/eslint-doc-generator/issues/950)) ([36fbf0e](https://github.com/eslint-community/eslint-doc-generator/commit/36fbf0ea920736ab2852dd6245c244127c369dda))
+
 ## [3.4.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.3.2...v3.4.0) (2026-05-16)
 
 
