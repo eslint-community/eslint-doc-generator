@@ -2,7 +2,6 @@
 
 import { END_RULE_HEADER_MARKER, formatComment } from './comment-markers.js';
 import type { Context } from './context.js';
-import type { FRAMEWORK_TYPE } from './types.js';
 
 export function extractFrontmatter(context: Context, markdown: string) {
   const { endOfLine } = context;
