@@ -1,6 +1,7 @@
 import {
   BEGIN_RULE_LIST_MARKER,
   END_RULE_LIST_MARKER,
+  formatComment,
 } from './comment-markers.js';
 import {
   EMOJI_DEPRECATED,
@@ -307,8 +308,15 @@ export function updateRulesList(
   const { endOfLine, path, options } = context;
   const { ruleListSplit } = options;
 
-  let listStartIndex = markdown.indexOf(BEGIN_RULE_LIST_MARKER);
-  let listEndIndex = markdown.indexOf(END_RULE_LIST_MARKER);
+  const isMdx = pathToFile.endsWith('.mdx');
+  const formattedRuleListMarkerBegin = formatComment(
+    BEGIN_RULE_LIST_MARKER,
+    isMdx,
+  );
+  const formattedRuleListMarkerEnd = formatComment(END_RULE_LIST_MARKER, isMdx);
+
+  let listStartIndex = markdown.indexOf(formattedRuleListMarkerBegin);
+  let listEndIndex = markdown.indexOf(formattedRuleListMarkerEnd);
 
   // Find the best possible section to insert the rules list into if the markers are missing.
   const rulesSectionHeader = findSectionHeader(context, markdown, 'rules');
@@ -327,7 +335,7 @@ export function updateRulesList(
     listEndIndex = rulesSectionIndex + rulesSectionHeader.length - 1;
   } else {
     // Account for length of pre-existing marker.
-    listEndIndex += END_RULE_LIST_MARKER.length;
+    listEndIndex += formattedRuleListMarkerEnd.length;
   }
 
   if (listStartIndex === -1 || listEndIndex === -1) {
@@ -335,7 +343,7 @@ export function updateRulesList(
       `${relative(
         getPluginRoot(path),
         pathToFile,
-      )} is missing rules list markers: ${BEGIN_RULE_LIST_MARKER}${END_RULE_LIST_MARKER}`,
+      )} is missing rules list markers: ${formattedRuleListMarkerBegin}${formattedRuleListMarkerEnd}`,
     );
   }
 
@@ -424,5 +432,5 @@ export function updateRulesList(
 
   const newContent = `${legend ? `${legend}${endOfLine}${endOfLine}` : ''}${list}`;
 
-  return `${preList}${BEGIN_RULE_LIST_MARKER}${endOfLine}${endOfLine}${newContent}${endOfLine}${endOfLine}${END_RULE_LIST_MARKER}${postList}`;
+  return `${preList}${formattedRuleListMarkerBegin}${endOfLine}${endOfLine}${newContent}${endOfLine}${endOfLine}${formattedRuleListMarkerEnd}${postList}`;
 }

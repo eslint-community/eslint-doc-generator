@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve } from 'node:path';
 import { getAllNamedOptions, hasOptions } from './rule-options.js';
 import {
   getPluginRoot,
@@ -10,8 +10,8 @@ import { updateConfigsList } from './config-list.js';
 import { generateRuleHeaderLines } from './rule-doc-notices.js';
 import {
   BEGIN_RULE_OPTIONS_LIST_MARKER,
-  END_RULE_HEADER_MARKER,
   END_RULE_OPTIONS_LIST_MARKER,
+  formatComment,
 } from './comment-markers.js';
 import {
   extractFrontmatter,
@@ -28,6 +28,35 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
+
+function isMdx(path: string): boolean {
+  return extname(path).toLowerCase() === '.mdx';
+}
+
+function resolveDocPath(configuredPath: string): string | undefined {
+  if (existsSync(configuredPath)) {
+    return configuredPath;
+  }
+
+  // If the configured path ends in .md, see if an .mdx version exists
+  if (configuredPath.endsWith('.md')) {
+    const mdxPath = configuredPath.replace(/\.md$/iu, '.mdx');
+    if (existsSync(mdxPath)) {
+      return mdxPath;
+    }
+  }
+
+  // If the configured path ends in .mdx, see if an .md version exists
+  if (configuredPath.endsWith('.mdx')) {
+    const mdPath = configuredPath.replace(/\.mdx$/iu, '.md');
+    if (existsSync(mdPath)) {
+      return mdPath;
+    }
+  }
+
+  // If neither exist, return nothing.  The configured path will be created if `--init-rule-docs` is enabled.
+  return undefined;
+}
 
 // eslint-disable-next-line complexity
 export async function generate(path: string, userOptions?: GenerateOptions) {
@@ -92,21 +121,25 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const metaDefaultOptions = rule.meta?.defaultOptions;
     const description = rule.meta?.docs?.description;
     const pathCurrentPage = replaceRulePlaceholder(pathRuleDoc, name);
-    const pathToDoc = join(path, pathCurrentPage);
+    const configuredPathToDoc = join(path, pathCurrentPage);
+    let pathToDoc = resolveDocPath(configuredPathToDoc);
     const ruleHasOptions = hasOptions(schema);
 
-    if (!existsSync(pathToDoc)) {
+    if (!pathToDoc) {
       if (!initRuleDocs) {
         throw new Error(
           `Could not find rule doc (run with --init-rule-docs to create): ${relative(
             getPluginRoot(path),
-            pathToDoc,
+            configuredPathToDoc,
           )}`,
         );
       }
 
+      pathToDoc = configuredPathToDoc;
+
       // Determine content for fresh rule doc, including any mandatory sections.
       // The rule doc header will be added later.
+      const isRuleDocMdx = isMdx(pathToDoc);
       let newRuleDocContents = [
         ruleDocSectionInclude.length > 0
           ? ruleDocSectionInclude
@@ -115,7 +148,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
           : undefined,
         /* istanbul ignore next -- both branches tested but coverage has instrumentation issue with ternary in array */
         ruleHasOptions
-          ? `## Options${endOfLine}${endOfLine}${BEGIN_RULE_OPTIONS_LIST_MARKER}${endOfLine}${END_RULE_OPTIONS_LIST_MARKER}`
+          ? `## Options${endOfLine}${endOfLine}${formatComment(BEGIN_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}${endOfLine}${formatComment(END_RULE_OPTIONS_LIST_MARKER, isRuleDocMdx)}`
           : undefined,
       ]
         .filter((section) => section !== undefined)
@@ -130,12 +163,18 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       initializedRuleDoc = true;
     }
 
+    const isRuleDocMdx = isMdx(pathToDoc);
     const contentsOldBuffer = await readFile(pathToDoc);
     const contentsOld = contentsOldBuffer.toString();
     const frontmatterOld = extractFrontmatter(context, contentsOld);
 
     // Regenerate the header (title/notices) and frontmatter of each rule doc.
-    const newHeaderLines = generateRuleHeaderLines(context, description, name);
+    const newHeaderLines = generateRuleHeaderLines(
+      context,
+      description,
+      name,
+      isRuleDocMdx,
+    );
     const newFrontmatterLines = generateFrontmatterLines(
       context,
       name,
@@ -153,9 +192,14 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       context,
       contentsNew,
       newHeaderLines,
-      END_RULE_HEADER_MARKER,
+      isRuleDocMdx,
     );
-    contentsNew = updateRuleOptionsList(context, contentsNew, rule);
+    contentsNew = updateRuleOptionsList(
+      context,
+      contentsNew,
+      rule,
+      isRuleDocMdx,
+    );
     contentsNew = await postprocess(contentsNew, resolve(pathToDoc));
 
     if (check) {
@@ -239,6 +283,8 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       );
     }
 
+    const isRuleListMdx = isMdx(pathToFile);
+
     // Update the rules list in this file.
     const fileContents = await readFile(pathToFile, 'utf8');
     const rulesList = updateRulesList(
@@ -248,7 +294,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       pathToFile,
     );
     const fileContentsNew = await postprocess(
-      updateConfigsList(context, rulesList),
+      updateConfigsList(context, rulesList, isRuleListMdx),
       resolve(pathToFile),
     );
 

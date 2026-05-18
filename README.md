@@ -42,6 +42,7 @@ Also performs [configurable](#configuration-options) section consistency checks 
   - [Build tools](#build-tools)
   - [markdownlint](#markdownlint)
   - [prettier](#prettier)
+  - [File Types](#file-types)
 - [Semantic versioning policy](#semantic-versioning-policy)
 - [Related](#related)
 
@@ -441,6 +442,12 @@ Alternatively, you can configure your scripts to run `prettier` after this tool:
   "update:eslint-docs": "eslint-doc-generator && npm run format"
 }
 ```
+
+### File Types
+
+ESLint Doc Generator supports both regular Markdown (`md`) and Extended Markdown (`mdx`) file types.
+In both the rule doc path option and rule list path option, you can use either.
+And in the case of the rule doc path, if the path for a specific rule isn't found at generation time with the configured file type, but the other file type is present in the same place, it will fallback to that automatically.
 
 ## Semantic versioning policy
 

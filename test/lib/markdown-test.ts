@@ -135,7 +135,7 @@ describe('markdown', function () {
         outdent`
           # Rule
           Intro sentence.
-          <!-- marker -->
+          <!-- end auto-generated rule header -->
           Rule description.
         `,
       );
@@ -154,7 +154,7 @@ describe('markdown', function () {
           ---
           # Rule
           Intro sentence.
-          <!-- marker -->
+          <!-- end auto-generated rule header -->
           Rule description.
         `,
       );
@@ -207,143 +207,274 @@ describe('markdown', function () {
   });
 
   describe('replaceOrCreateHeader', function () {
-    it('should create a new header when no existing header or marker exists', function () {
-      const markdown = normalize(
-        outdent`
-          This is the content of the rule doc.
-        `,
-      );
-      const newHeader = normalize(
-        outdent`
-          # New Rule
-          <!-- marker -->
-        `,
-      );
+    describe('for md files', function () {
+      it('should create a new header when no existing header or marker exists', function () {
+        const markdown = normalize(
+          outdent`
+            This is the content of the rule doc.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            <!-- end auto-generated rule header -->
+          `,
+        );
 
-      expect(
-        replaceOrCreateHeader(context, markdown, newHeader, '<!-- marker -->'),
-      ).toBe(`${newHeader}${context.endOfLine}${markdown}`);
+        expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
+          `${newHeader}${context.endOfLine}${markdown}`,
+        );
+      });
+
+      it('should replace an existing title header and preserve the original body', function () {
+        const markdown = normalize(
+          outdent`
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            <!-- end auto-generated rule header -->
+          `,
+        );
+
+        expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
+          `${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
+
+      it('should replace everything up to the marker and keep content after the marker', function () {
+        const markdown = normalize(
+          outdent`
+            # Old Rule
+            Intro sentence.
+            <!-- end auto-generated rule header -->
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            <!-- end auto-generated rule header -->
+          `,
+        );
+
+        expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
+          `${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
+
+      it('should preserve frontmatter and doc body when replacing header', function () {
+        const frontmatter = normalize(
+          outdent`
+            ---
+            title: Old Rule
+            ---
+          `,
+        );
+        const markdown = normalize(
+          outdent`
+            ${frontmatter}
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            <!-- end auto-generated rule header -->
+          `,
+        );
+
+        expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
+          `${frontmatter}${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
+
+      it('should should preserve additional content between frontmatter and header', function () {
+        const frontmatter = normalize(
+          outdent`
+            ---
+            title: Old Rule
+            ---
+          `,
+        );
+        const markdown = normalize(
+          outdent`
+            ${frontmatter}
+            > 📌 A blockquote that should be preserved.
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            <!-- end auto-generated rule header -->
+          `,
+        );
+
+        expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
+          `${frontmatter}${context.endOfLine}> 📌 A blockquote that should be preserved.${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
+
+      it('should should preserve additional content above header when no frontmatter exists', function () {
+        const markdown = normalize(
+          outdent`
+            > 📌 A blockquote that should be preserved.
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            <!-- end auto-generated rule header -->
+          `,
+        );
+
+        expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
+          `> 📌 A blockquote that should be preserved.${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
     });
 
-    it('should replace an existing title header and preserve the original body', function () {
-      const markdown = normalize(
-        outdent`
-          # Old Rule
-          Rule description.
-        `,
-      );
-      const newHeader = normalize(
-        outdent`
-          # New Rule
-          <!-- marker -->
-        `,
-      );
+    describe('for mdx files', function () {
+      it('should create a new header when no existing header or marker exists', function () {
+        const markdown = normalize(
+          outdent`
+            This is the content of the rule doc.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            {/* end auto-generated rule header */}
+          `,
+        );
 
-      expect(
-        replaceOrCreateHeader(context, markdown, newHeader, '<!-- marker -->'),
-      ).toBe(`${newHeader}${context.endOfLine}Rule description.`);
-    });
+        expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
+          `${newHeader}${context.endOfLine}${markdown}`,
+        );
+      });
 
-    it('should replace everything up to the marker and keep content after the marker', function () {
-      const markdown = normalize(
-        outdent`
-          # Old Rule
-          Intro sentence.
-          <!-- marker -->
-          Rule description.
-        `,
-      );
-      const newHeader = normalize(
-        outdent`
-          # New Rule
-          <!-- marker -->
-        `,
-      );
+      it('should replace an existing title header and preserve the original body', function () {
+        const markdown = normalize(
+          outdent`
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            {/* end auto-generated rule header */}
+          `,
+        );
 
-      expect(
-        replaceOrCreateHeader(context, markdown, newHeader, '<!-- marker -->'),
-      ).toBe(`${newHeader}${context.endOfLine}Rule description.`);
-    });
+        expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
+          `${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
 
-    it('should preserve frontmatter and doc body when replacing header', function () {
-      const frontmatter = normalize(
-        outdent`
-          ---
-          title: Old Rule
-          ---
-        `,
-      );
-      const markdown = normalize(
-        outdent`
-          ${frontmatter}
-          # Old Rule
-          Rule description.
-        `,
-      );
-      const newHeader = normalize(
-        outdent`
-          # New Rule
-          <!-- marker -->
-        `,
-      );
+      it('should replace everything up to the marker and keep content after the marker', function () {
+        const markdown = normalize(
+          outdent`
+            # Old Rule
+            Intro sentence.
+            {/* end auto-generated rule header */}
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            {/* end auto-generated rule header */}
+          `,
+        );
 
-      expect(
-        replaceOrCreateHeader(context, markdown, newHeader, '<!-- marker -->'),
-      ).toBe(
-        `${frontmatter}${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
-      );
-    });
+        expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
+          `${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
 
-    it('should should preserve additional content between frontmatter and header', function () {
-      const frontmatter = normalize(
-        outdent`
-          ---
-          title: Old Rule
-          ---
-        `,
-      );
-      const markdown = normalize(
-        outdent`
-          ${frontmatter}
-          > 📌 A blockquote that should be preserved.
-          # Old Rule
-          Rule description.
-        `,
-      );
-      const newHeader = normalize(
-        outdent`
-          # New Rule
-          <!-- marker -->
-        `,
-      );
+      it('should preserve frontmatter and doc body when replacing header', function () {
+        const frontmatter = normalize(
+          outdent`
+            ---
+            title: Old Rule
+            ---
+          `,
+        );
+        const markdown = normalize(
+          outdent`
+            ${frontmatter}
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            {/* end auto-generated rule header */}
+          `,
+        );
 
-      expect(
-        replaceOrCreateHeader(context, markdown, newHeader, '<!-- marker -->'),
-      ).toBe(
-        `${frontmatter}${context.endOfLine}> 📌 A blockquote that should be preserved.${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
-      );
-    });
+        expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
+          `${frontmatter}${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
 
-    it('should should preserve additional content above header when no frontmatter exists', function () {
-      const markdown = normalize(
-        outdent`
-          > 📌 A blockquote that should be preserved.
-          # Old Rule
-          Rule description.
-        `,
-      );
-      const newHeader = normalize(
-        outdent`
-          # New Rule
-          <!-- marker -->
-        `,
-      );
+      it('should should preserve additional content between frontmatter and header', function () {
+        const frontmatter = normalize(
+          outdent`
+            ---
+            title: Old Rule
+            ---
+          `,
+        );
+        const markdown = normalize(
+          outdent`
+            ${frontmatter}
+            > 📌 A blockquote that should be preserved.
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            {/* end auto-generated rule header */}
+          `,
+        );
 
-      expect(
-        replaceOrCreateHeader(context, markdown, newHeader, '<!-- marker -->'),
-      ).toBe(
-        `> 📌 A blockquote that should be preserved.${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
-      );
+        expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
+          `${frontmatter}${context.endOfLine}> 📌 A blockquote that should be preserved.${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
+
+      it('should should preserve additional content above header when no frontmatter exists', function () {
+        const markdown = normalize(
+          outdent`
+            > 📌 A blockquote that should be preserved.
+            # Old Rule
+            Rule description.
+          `,
+        );
+        const newHeader = normalize(
+          outdent`
+            # New Rule
+            {/* end auto-generated rule header */}
+          `,
+        );
+
+        expect(replaceOrCreateHeader(context, markdown, newHeader, true)).toBe(
+          `> 📌 A blockquote that should be preserved.${context.endOfLine}${newHeader}${context.endOfLine}Rule description.`,
+        );
+      });
     });
   });
 });

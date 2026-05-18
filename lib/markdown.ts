@@ -1,5 +1,6 @@
 // General helpers for dealing with markdown files / content.
 
+import { END_RULE_HEADER_MARKER, formatComment } from './comment-markers.js';
 import type { Context } from './context.js';
 
 export function extractFrontmatter(context: Context, markdown: string) {
@@ -56,20 +57,22 @@ export function replaceOrCreateFrontmatter(
  * @param context - execution context
  * @param markdown - doc content
  * @param newHeader - new header including marker
- * @param marker - marker to indicate end of header
+ * @param isMdx - is the file we're working on mdx or just regular md
  */
 export function replaceOrCreateHeader(
   context: Context,
   markdown: string,
   newHeader: string,
-  marker: string,
+  isMdx: boolean,
 ) {
   const { endOfLine } = context;
 
   const lines = markdown.split(endOfLine);
 
   const titleLineIndex = lines.findIndex((line) => line.startsWith('# '));
-  const markerLineIndex = lines.indexOf(marker);
+  const markerLineIndex = lines.indexOf(
+    formatComment(END_RULE_HEADER_MARKER, isMdx),
+  );
   const dashesLineIndex1 = lines.indexOf('---');
   const dashesLineIndex2 = lines.indexOf('---', dashesLineIndex1 + 1);
 

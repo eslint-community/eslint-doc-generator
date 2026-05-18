@@ -1,6 +1,7 @@
 import {
   BEGIN_RULE_OPTIONS_LIST_MARKER,
   END_RULE_OPTIONS_LIST_MARKER,
+  formatComment,
 } from './comment-markers.js';
 import { markdownTable } from 'markdown-table';
 import type { RuleModule } from './types.js';
@@ -153,11 +154,21 @@ export function updateRuleOptionsList(
   context: Context,
   markdown: string,
   rule: RuleModule,
+  isMdx: boolean,
 ): string {
   const { endOfLine } = context;
 
-  const listStartIndex = markdown.indexOf(BEGIN_RULE_OPTIONS_LIST_MARKER);
-  let listEndIndex = markdown.indexOf(END_RULE_OPTIONS_LIST_MARKER);
+  const formattedRuleOptionsListMarkerBegin = formatComment(
+    BEGIN_RULE_OPTIONS_LIST_MARKER,
+    isMdx,
+  );
+  const formattedRuleOptionsListMarkerEnd = formatComment(
+    END_RULE_OPTIONS_LIST_MARKER,
+    isMdx,
+  );
+
+  const listStartIndex = markdown.indexOf(formattedRuleOptionsListMarkerBegin);
+  let listEndIndex = markdown.indexOf(formattedRuleOptionsListMarkerEnd);
 
   if (listStartIndex === -1 || listEndIndex === -1) {
     // No rule options list found.
@@ -165,7 +176,7 @@ export function updateRuleOptionsList(
   }
 
   // Account for length of pre-existing marker.
-  listEndIndex += END_RULE_OPTIONS_LIST_MARKER.length;
+  listEndIndex += formattedRuleOptionsListMarkerEnd.length;
 
   const preList = markdown.slice(0, Math.max(0, listStartIndex));
   const postList = markdown.slice(Math.max(0, listEndIndex));
@@ -173,5 +184,5 @@ export function updateRuleOptionsList(
   // New rule options list.
   const list = generateRuleOptionsListMarkdown(context, rule);
 
-  return `${preList}${BEGIN_RULE_OPTIONS_LIST_MARKER}${endOfLine}${endOfLine}${list}${endOfLine}${endOfLine}${END_RULE_OPTIONS_LIST_MARKER}${postList}`;
+  return `${preList}${formattedRuleOptionsListMarkerBegin}${endOfLine}${endOfLine}${list}${endOfLine}${endOfLine}${formattedRuleOptionsListMarkerEnd}${postList}`;
 }
