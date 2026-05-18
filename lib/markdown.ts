@@ -1,7 +1,6 @@
 // General helpers for dealing with markdown files / content.
 
 import type { Context } from './context.js';
-import type { FRAMEWORK_TYPE } from './types.js';
 
 export function extractFrontmatter(context: Context, markdown: string) {
   const { endOfLine } = context;
