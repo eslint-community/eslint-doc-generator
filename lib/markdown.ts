@@ -122,14 +122,29 @@ export function findSectionHeader(
   )[0];
 }
 
-export function findFinalHeaderLevel(context: Context, str: string) {
-  const { endOfLine } = context;
+export function findFinalHeaderLevel(
+  context: Context,
+  str: string,
+): number | undefined {
+  const {
+    endOfLine,
+    options: { framework },
+  } = context;
 
   const lines = str.split(endOfLine);
   const finalHeader = lines
     .toReversed()
     .find((line) => line.match('^(#+) .+$'));
-  return finalHeader ? finalHeader.indexOf(' ') : undefined;
+
+  if (finalHeader) {
+    return finalHeader.indexOf(' ');
+  }
+  // If the framework is `starlight` and there's frontmatter at the top, treat that as an H1
+  else if (framework === 'starlight' && extractFrontmatter(context, str)) {
+    return 1;
+  }
+
+  return undefined;
 }
 
 /**
