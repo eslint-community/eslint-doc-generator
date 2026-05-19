@@ -344,10 +344,12 @@ const config = {
       {
         title: 'Foo',
         rules: rules.filter(([name, rule]) => rule.meta.someProp === 'foo'),
+        description: 'A set of Foo rules.',
       },
       {
         title: 'Bar',
         rules: rules.filter(([name, rule]) => rule.meta.someProp === 'bar'),
+        description: 'A set of Bar rules.',
       },
     ];
   },

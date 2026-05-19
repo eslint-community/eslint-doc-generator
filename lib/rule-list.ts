@@ -172,12 +172,16 @@ function generateRulesListMarkdown(
   );
 }
 
-type RulesAndHeaders = { title?: string; rules: RuleNamesAndRules }[];
-type RulesAndHeadersReadOnly = Readonly<RulesAndHeaders>;
+type RuleListSplitData = {
+  title?: string;
+  rules: RuleNamesAndRules;
+  description?: string;
+}[];
+type RuleListSplitDataReadOnly = Readonly<RuleListSplitData>;
 
 function generateRuleListMarkdownForRulesAndHeaders(
   context: Context,
-  rulesAndHeaders: RulesAndHeadersReadOnly,
+  rulesAndHeaders: RuleListSplitDataReadOnly,
   headerLevel: number,
   columns: Record<COLUMN_TYPE, boolean>,
   pathToFile: string,
@@ -185,9 +189,12 @@ function generateRuleListMarkdownForRulesAndHeaders(
   const { endOfLine } = context;
   const parts: string[] = [];
 
-  for (const { title, rules } of rulesAndHeaders) {
+  for (const { title, rules, description } of rulesAndHeaders) {
     if (title) {
       parts.push(`${'#'.repeat(headerLevel)} ${title}`);
+    }
+    if (description) {
+      parts.push(description);
     }
     parts.push(generateRulesListMarkdown(context, rules, columns, pathToFile));
   }
@@ -202,8 +209,8 @@ function getRulesAndHeadersForSplit(
   context: Context,
   ruleNamesAndRules: RuleNamesAndRules,
   ruleListSplit: readonly string[],
-): RulesAndHeadersReadOnly {
-  const rulesAndHeaders: RulesAndHeaders = [];
+): RuleListSplitDataReadOnly {
+  const rulesAndHeaders: RuleListSplitData = [];
 
   // Initially, all rules are unused.
   let unusedRules: RuleNamesAndRules = ruleNamesAndRules;
@@ -211,7 +218,7 @@ function getRulesAndHeadersForSplit(
   // Loop through each split property.
   for (const ruleListSplitItem of ruleListSplit) {
     // Store the rules and headers for this split property.
-    const rulesAndHeadersForThisSplit: RulesAndHeaders = [];
+    const rulesAndHeadersForThisSplit: RuleListSplitData = [];
 
     // Check what possible values this split property can have.
     const valuesForThisPropertyFromUnusedRules = [
@@ -363,7 +370,7 @@ export function updateRulesList(
   const legend = generateLegend(context, columns);
 
   // Determine the pairs of rules and headers based on any split property.
-  const rulesAndHeaders: RulesAndHeaders = [];
+  const ruleListSplitData: RuleListSplitData = [];
   if (typeof ruleListSplit === 'function') {
     const userDefinedLists = ruleListSplit(ruleNamesAndRules);
 
@@ -389,6 +396,7 @@ export function updateRulesList(
             minItems: 1,
             uniqueItems: true,
           },
+          description: { type: 'string' },
         },
         required: ['rules'],
         additionalProperties: false,
@@ -412,19 +420,19 @@ export function updateRulesList(
       );
     }
 
-    rulesAndHeaders.push(...userDefinedLists);
+    ruleListSplitData.push(...userDefinedLists);
   } else if (ruleListSplit.length > 0) {
-    rulesAndHeaders.push(
+    ruleListSplitData.push(
       ...getRulesAndHeadersForSplit(context, ruleNamesAndRules, ruleListSplit),
     );
   } else {
-    rulesAndHeaders.push({ rules: ruleNamesAndRules });
+    ruleListSplitData.push({ rules: ruleNamesAndRules });
   }
 
   // New rule list.
   const list = generateRuleListMarkdownForRulesAndHeaders(
     context,
-    rulesAndHeaders,
+    ruleListSplitData,
     ruleListSplitHeaderLevel,
     columns,
     pathToFile,

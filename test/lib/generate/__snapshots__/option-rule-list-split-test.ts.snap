@@ -34,6 +34,46 @@ exports[`generate (--rule-list-split) > as a function > generates the documentat
 "
 `;
 
+exports[`generate (--rule-list-split) > as a function with description > generates the documentation 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+❌ Deprecated.
+
+| Name                           | ❌  |
+| :----------------------------- | :- |
+| [no-biz](docs/rules/no-biz.md) |    |
+
+### Not Deprecated
+
+These rules are not deprecated.
+
+| Name                           | ❌  |
+| :----------------------------- | :- |
+| [no-bar](docs/rules/no-bar.md) |    |
+| [no-baz](docs/rules/no-baz.md) |    |
+| [no-biz](docs/rules/no-biz.md) |    |
+
+### Deprecated
+
+These rules are deprecated.
+
+| Name                           | ❌  |
+| :----------------------------- | :- |
+| [no-foo](docs/rules/no-foo.md) | ❌  |
+
+### Name = "no-baz"
+
+This is the "no-baz" rule.
+
+| Name                           | ❌  |
+| :----------------------------- | :- |
+| [no-baz](docs/rules/no-baz.md) |    |
+
+<!-- end auto-generated rules list -->
+"
+`;
+
 exports[`generate (--rule-list-split) > by nested property meta.docs.category > splits the list 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->

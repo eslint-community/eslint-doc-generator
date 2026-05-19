@@ -634,6 +634,63 @@ describe('generate (--rule-list-split)', function () {
     });
   });
 
+  describe('as a function with description', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+          export default {
+            rules: {
+              'no-foo': { meta: { deprecated: true, }, create(context) {} },
+              'no-bar': { meta: { deprecated: false, }, create(context) {} },
+              'no-baz': { meta: { deprecated: false, }, create(context) {} },
+              'no-biz': { meta: { type: 'suggestion' }, create(context) {} },
+            },
+          };`,
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '',
+          'docs/rules/no-bar.md': '',
+          'docs/rules/no-baz.md': '',
+          'docs/rules/no-biz.md': '',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('generates the documentation', async function () {
+      await generate(fixture.path, {
+        ruleListSplit: (rules) => {
+          const list1 = {
+            rules: rules.filter(([, rule]) => rule.meta.type === 'suggestion'),
+          };
+          const list2 = {
+            title: 'Not Deprecated',
+            rules: rules.filter(([, rule]) => !rule.meta.deprecated),
+            description: 'These rules are not deprecated.',
+          };
+          const list3 = {
+            title: 'Deprecated',
+            rules: rules.filter(([, rule]) => rule.meta.deprecated),
+            description: 'These rules are deprecated.',
+          };
+          const list4 = {
+            title: 'Name = "no-baz"',
+            rules: rules.filter(([name]) => name === 'no-baz'),
+            description: 'This is the "no-baz" rule.',
+          };
+          return [list1, list2, list3, list4];
+        },
+      });
+      expect(await fixture.readFile('README.md')).toMatchSnapshot();
+    });
+  });
+
   describe('as a function but invalid return value', function () {
     let fixture: FixtureContext;
 
