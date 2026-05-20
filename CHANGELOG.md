@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.5.0...v3.6.0) (2026-05-20)
+
+
+### Features
+
+* add `description` option to `ruleListSplit` ([#953](https://github.com/eslint-community/eslint-doc-generator/issues/953)) ([0d3c398](https://github.com/eslint-community/eslint-doc-generator/commit/0d3c398a591c560f5fdf9679d703e88d128a7c4e))
+
 ## [3.5.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.4.0...v3.5.0) (2026-05-18)
 
 
