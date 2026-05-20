@@ -161,7 +161,7 @@ export type OPTION_TYPE = (typeof OPTION_TYPE)[keyof typeof OPTION_TYPE];
 export type RuleListSplitFunction = (rules: RuleNamesAndRules) => readonly {
   title?: string;
   rules: RuleNamesAndRules;
-  /** Optional description for the section, which will be displayed below the header. */
+  /** Optional description for the section, which will be displayed below the title. */
   description?: string;
 }[];
 

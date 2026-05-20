@@ -338,7 +338,7 @@ const config = {
   ruleListSplit(rules) {
     return [
       {
-        // No header for this list.
+        // No title nor description for this list.
         rules: rules.filter(([name, rule]) => !rule.meta.someProp),
       },
       {

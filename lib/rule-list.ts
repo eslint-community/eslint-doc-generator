@@ -396,7 +396,7 @@ export function updateRulesList(
             minItems: 1,
             uniqueItems: true,
           },
-          description: { type: 'string' },
+          description: { type: 'string', minLength: 1 },
         },
         required: ['rules'],
         additionalProperties: false,
