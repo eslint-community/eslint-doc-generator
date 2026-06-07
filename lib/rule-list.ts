@@ -226,14 +226,14 @@ function getRulesAndHeadersForSplit(
         unusedRules.map(([name]) =>
           getPropertyFromRule(context, name, ruleListSplitItem),
         ),
-      ).values(),
+      ),
     ];
     const valuesForThisPropertyFromAllRules = [
       ...new Set(
         ruleNamesAndRules.map(([name]) =>
           getPropertyFromRule(context, name, ruleListSplitItem),
         ),
-      ).values(),
+      ),
     ];
 
     // Throw an exception if there are no possible rules with this split property.
