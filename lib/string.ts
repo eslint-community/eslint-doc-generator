@@ -24,9 +24,7 @@ export function capitalizeOnlyFirstLetter(str: string) {
 function sanitizeMarkdownTableCell(context: Context, text: string): string {
   const { endOfLine } = context;
 
-  return text
-    .replaceAll('|', String.raw`\|`)
-    .replaceAll(new RegExp(endOfLine, 'gu'), '<br/>');
+  return text.replaceAll('|', String.raw`\|`).replaceAll(endOfLine, '<br/>');
 }
 
 export function sanitizeMarkdownTable(
