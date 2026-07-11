@@ -1,5 +1,5 @@
 import { mockPlugin } from './mock-plugin.js';
-import { getEndOfLine } from './eol.js';
+import { detectEndOfLine, getEndOfLine } from './eol.js';
 import { getResolvedOptions } from './options.js';
 import type { ResolvedGenerateOptions } from './options.js';
 import { getPluginName, loadPlugin } from './package-json.js';
@@ -41,5 +41,23 @@ export async function getContext(
     path,
     plugin,
     pluginPrefix,
+  };
+}
+
+/**
+ * Create a copy of the context that uses the end of line already predominant
+ * in the given file contents, if any. This way, updating an existing file
+ * preserves the file's current line endings even when they differ from the
+ * configured end of line (such as when another tool like Prettier rewrote the
+ * file with different line endings). The configured end of line still applies
+ * to files without any line breaks.
+ */
+export function getContextForFileContents(
+  context: Context,
+  contents: string,
+): Context {
+  return {
+    ...context,
+    endOfLine: detectEndOfLine(contents) ?? context.endOfLine,
   };
 }

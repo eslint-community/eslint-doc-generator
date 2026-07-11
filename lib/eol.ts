@@ -60,6 +60,31 @@ async function getEndOfLineFromPrettierConfig(): Promise<
   return '\n';
 }
 
+/**
+ * Detect the predominant end of line in the given file contents.
+ * Returns undefined if the contents have no line breaks.
+ */
+export function detectEndOfLine(contents: string): '\n' | '\r\n' | undefined {
+  const crlfCount = contents.match(/\r\n/gu)?.length ?? 0;
+  const lfCount = contents.match(/(?<!\r)\n/gu)?.length ?? 0;
+
+  if (crlfCount === 0 && lfCount === 0) {
+    return undefined;
+  }
+
+  return crlfCount > lfCount ? '\r\n' : '\n';
+}
+
+/**
+ * Convert all line endings in the given contents to the given end of line.
+ */
+export function normalizeEndOfLine(
+  contents: string,
+  endOfLine: string,
+): string {
+  return contents.replaceAll(/\r\n|\n/gu, endOfLine);
+}
+
 /* istanbul ignore next */
 /** `EOL` is typed as `string`, so we perform run-time validation to be safe. */
 function getNodeEOL(): '\n' | '\r\n' {

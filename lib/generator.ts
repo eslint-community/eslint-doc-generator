@@ -25,7 +25,8 @@ import type { GenerateOptions, RuleModule } from './types.js';
 import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { getContext } from './context.js';
+import { getContext, getContextForFileContents } from './context.js';
+import { normalizeEndOfLine } from './eol.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
 
@@ -166,17 +167,31 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const isRuleDocMdx = isMdx(pathToDoc);
     const contentsOldBuffer = await readFile(pathToDoc);
     const contentsOld = contentsOldBuffer.toString();
-    const frontmatterOld = extractFrontmatter(context, contentsOld);
+
+    // Preserve the line endings already used in the doc, which may differ from
+    // the configured end of line (such as when another tool like Prettier
+    // rewrote the doc with different line endings). Unify any mixed line
+    // endings so that line-based processing of the doc works reliably.
+    const contextForDoc = getContextForFileContents(context, contentsOld);
+    const contentsOldNormalized = normalizeEndOfLine(
+      contentsOld,
+      contextForDoc.endOfLine,
+    );
+
+    const frontmatterOld = extractFrontmatter(
+      contextForDoc,
+      contentsOldNormalized,
+    );
 
     // Regenerate the header (title/notices) and frontmatter of each rule doc.
     const newHeaderLines = generateRuleHeaderLines(
-      context,
+      contextForDoc,
       description,
       name,
       isRuleDocMdx,
     );
     const newFrontmatterLines = generateFrontmatterLines(
-      context,
+      contextForDoc,
       name,
       description,
       frontmatterOld,
@@ -184,18 +199,18 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
 
     // Generate the new content for the rule doc by replacing the header and frontmatter, and updating the rule options list if necessary.
     let contentsNew = replaceOrCreateFrontmatter(
-      context,
-      contentsOld,
+      contextForDoc,
+      contentsOldNormalized,
       newFrontmatterLines,
     );
     contentsNew = replaceOrCreateHeader(
-      context,
+      contextForDoc,
       contentsNew,
       newHeaderLines,
       isRuleDocMdx,
     );
     contentsNew = updateRuleOptionsList(
-      context,
+      contextForDoc,
       contentsNew,
       rule,
       isRuleDocMdx,
@@ -223,7 +238,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     // Check for required sections.
     for (const section of ruleDocSectionInclude) {
       expectSectionHeaderOrFail(
-        context,
+        contextForDoc,
         `\`${name}\` rule doc`,
         contentsNew,
         [section],
@@ -234,7 +249,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     // Check for disallowed sections.
     for (const section of ruleDocSectionExclude) {
       expectSectionHeaderOrFail(
-        context,
+        contextForDoc,
         `\`${name}\` rule doc`,
         contentsNew,
         [section],
@@ -245,7 +260,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     if (ruleDocSectionOptions) {
       // Options section.
       expectSectionHeaderOrFail(
-        context,
+        contextForDoc,
         `\`${name}\` rule doc`,
         contentsNew,
         ['Options', 'Config'],
@@ -287,14 +302,25 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
 
     // Update the rules list in this file.
     const fileContents = await readFile(pathToFile, 'utf8');
-    const rulesList = updateRulesList(
-      context,
-      ruleNamesAndRules,
+
+    // Preserve the line endings already used in the file, which may differ
+    // from the configured end of line (such as when the file was written with
+    // different line endings by another tool). Unify any mixed line endings so
+    // that line-based processing of the file works reliably.
+    const contextForFile = getContextForFileContents(context, fileContents);
+    const fileContentsNormalized = normalizeEndOfLine(
       fileContents,
+      contextForFile.endOfLine,
+    );
+
+    const rulesList = updateRulesList(
+      contextForFile,
+      ruleNamesAndRules,
+      fileContentsNormalized,
       pathToFile,
     );
     const fileContentsNew = await postprocess(
-      updateConfigsList(context, rulesList, isRuleListMdx),
+      updateConfigsList(contextForFile, rulesList, isRuleListMdx),
       resolve(pathToFile),
     );
 

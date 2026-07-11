@@ -19,6 +19,7 @@ import { relative } from 'node:path';
 import { COLUMN_TYPE, SEVERITY_TYPE } from './types.js';
 import type { RuleModule, RuleNamesAndRules } from './types.js';
 import { markdownTable } from 'markdown-table';
+import { normalizeEndOfLine } from './eol.js';
 import { EMOJIS_TYPE } from './rule-type.js';
 import { hasOptions } from './rule-options.js';
 import { getLinkToRule } from './rule-link.js';
@@ -161,14 +162,18 @@ function generateRulesListMarkdown(
     ];
   });
 
-  return markdownTable(
-    sanitizeMarkdownTable(context, [
-      listHeaderRow,
-      ...ruleNamesAndRules.map(([name, rule]) =>
-        buildRuleRow(context, name, rule, columns, pathToFile),
-      ),
-    ]),
-    { align: 'l' }, // Left-align headers.
+  // `markdownTable` uses LF line endings, so convert to the desired end of line.
+  return normalizeEndOfLine(
+    markdownTable(
+      sanitizeMarkdownTable(context, [
+        listHeaderRow,
+        ...ruleNamesAndRules.map(([name, rule]) =>
+          buildRuleRow(context, name, rule, columns, pathToFile),
+        ),
+      ]),
+      { align: 'l' }, // Left-align headers.
+    ),
+    context.endOfLine,
   );
 }
 

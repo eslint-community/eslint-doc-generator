@@ -4,6 +4,7 @@ import {
   formatComment,
 } from './comment-markers.js';
 import { markdownTable } from 'markdown-table';
+import { normalizeEndOfLine } from './eol.js';
 import type { RuleModule } from './types.js';
 import { getAllNamedOptions } from './rule-options.js';
 import type { RuleOption } from './rule-options.js';
@@ -144,9 +145,13 @@ function generateRuleOptionsListMarkdown(
         .map((type) => ruleOptionColumnValues[type as COLUMN_TYPE] || '');
     });
 
-  return markdownTable(
-    sanitizeMarkdownTable(context, [listHeaderRow, ...rows]),
-    { align: 'l' }, // Left-align headers.
+  // `markdownTable` uses LF line endings, so convert to the desired end of line.
+  return normalizeEndOfLine(
+    markdownTable(
+      sanitizeMarkdownTable(context, [listHeaderRow, ...rows]),
+      { align: 'l' }, // Left-align headers.
+    ),
+    context.endOfLine,
   );
 }
 

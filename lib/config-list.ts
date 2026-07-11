@@ -4,6 +4,7 @@ import {
   formatComment,
 } from './comment-markers.js';
 import { markdownTable } from 'markdown-table';
+import { normalizeEndOfLine } from './eol.js';
 import type { Config } from './types.js';
 import { configNameToDisplay } from './config-format.js';
 import { sanitizeMarkdownTable } from './string.js';
@@ -59,9 +60,13 @@ function generateConfigListMarkdown(context: Context): string {
       }),
   ];
 
-  return markdownTable(
-    sanitizeMarkdownTable(context, rows),
-    { align: 'l' }, // Left-align headers.
+  // `markdownTable` uses LF line endings, so convert to the desired end of line.
+  return normalizeEndOfLine(
+    markdownTable(
+      sanitizeMarkdownTable(context, rows),
+      { align: 'l' }, // Left-align headers.
+    ),
+    context.endOfLine,
   );
 }
 
