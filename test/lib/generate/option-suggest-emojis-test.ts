@@ -1,4 +1,3 @@
-import * as sinon from 'sinon';
 import { generate } from '../../../lib/generator.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 
@@ -80,12 +79,8 @@ function createTextFetchResponse(
   };
 }
 
-interface FetchStubTarget {
-  fetch: (...args: unknown[]) => Promise<MockFetchResponse>;
-}
-
 function stubFetch() {
-  return sinon.stub(globalThis as unknown as FetchStubTarget, 'fetch');
+  return vi.spyOn(globalThis, 'fetch');
 }
 
 async function withTempFixture(
@@ -155,7 +150,7 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   afterEach(function () {
-    sinon.restore();
+    vi.restoreAllMocks();
     restoreProviderApiKeys();
   });
 
@@ -165,7 +160,9 @@ describe('generate (--suggest-emojis)', function () {
 
   it('prints a table of suggestions and does not write files in builtin mode', async function () {
     const readmeBefore = await fixture.readFile('README.md');
-    const consoleLogStub = sinon.stub(console, 'log');
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
     const fetchStub = stubFetch();
 
     restoreEnvVar('OPENAI_API_KEY', undefined);
@@ -175,9 +172,9 @@ describe('generate (--suggest-emojis)', function () {
     const readmeAfter = await fixture.readFile('README.md');
     expect(readmeAfter).toBe(readmeBefore);
 
-    expect(fetchStub.callCount).toBe(0);
-    expect(consoleLogStub.callCount).toBe(1);
-    const output = String(consoleLogStub.firstCall.args[0]);
+    expect(fetchStub.mock.calls.length).toBe(0);
+    expect(consoleLogStub.mock.calls.length).toBe(1);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     expect(output).toContain('Config');
     expect(output).toContain('Emoji');
     const suggestions = parseSuggestionTable(output);
@@ -188,22 +185,26 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('regenerates suggestions even when configEmoji already includes a config', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
     await generate(fixture.path, {
       suggestEmojis: true,
       configEmoji: [['recommended', '🧪']],
     });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('recommended')).toBe('✅');
     expect(suggestions.get('recommended')).not.toBe('🧪');
   });
 
   it('uses OpenAI in ai mode with provider defaults and applies suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -226,11 +227,11 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://api.openai.com/v1/chat/completions',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -251,14 +252,16 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🧠');
   });
 
   it('uses Groq in ai mode with provider defaults and applies suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -280,11 +283,11 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'groq',
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://api.groq.com/openai/v1/chat/completions',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -305,14 +308,16 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('llama-3.3-70b-versatile');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🛰️');
   });
 
   it('uses Vercel AI Gateway in ai mode with provider defaults and applies suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -334,11 +339,11 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'vercelaigateway',
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://ai-gateway.vercel.sh/v1/chat/completions',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -359,14 +364,16 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('openai/gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json' });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🌐');
   });
 
   it('uses OpenRouter in ai mode with provider defaults and applies suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -388,11 +395,11 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openrouter',
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://openrouter.ai/api/v1/chat/completions',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -413,14 +420,16 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('openai/gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🪐');
   });
 
   it('uses Together in ai mode with provider defaults and applies suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -442,11 +451,11 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'together',
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://api.together.xyz/v1/chat/completions',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -467,14 +476,16 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('openai/gpt-oss-20b');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🧩');
   });
 
   it('uses xAI in ai mode with provider defaults and applies suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -496,11 +507,11 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'xai',
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://api.x.ai/v1/chat/completions',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -521,14 +532,16 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('grok-4-1-fast-reasoning');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🛰️');
   });
 
   it('uses Anthropic automatically when exactly one provider API key is set', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
-    const fetchStub = stubFetch().resolves(
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+    const fetchStub = stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         content: [
           {
@@ -549,11 +562,11 @@ describe('generate (--suggest-emojis)', function () {
       ai: true,
     });
 
-    expect(fetchStub.callCount).toBe(1);
-    expect(fetchStub.firstCall.args[0]).toBe(
+    expect(fetchStub.mock.calls.length).toBe(1);
+    expect(fetchStub.mock.calls[0][0]).toBe(
       'https://api.anthropic.com/v1/messages',
     );
-    const requestInit = fetchStub.firstCall.args[1];
+    const requestInit = fetchStub.mock.calls[0][1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -570,7 +583,7 @@ describe('generate (--suggest-emojis)', function () {
     const requestBody = JSON.parse(requestInit.body) as { model?: string };
     expect(requestBody.model).toBe('claude-sonnet-4-6');
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🦾');
   });
@@ -587,7 +600,7 @@ describe('generate (--suggest-emojis)', function () {
       }),
     ).rejects.toThrow('Multiple AI provider API keys found');
 
-    expect(fetchStub.callCount).toBe(0);
+    expect(fetchStub.mock.calls.length).toBe(0);
   });
 
   it('throws when no provider API key is set for ai mode', async function () {
@@ -621,7 +634,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when ai request fails', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().rejects(new Error('request failed while connecting'));
+    stubFetch().mockRejectedValue(new Error('request failed while connecting'));
 
     await expect(
       generate(fixture.path, {
@@ -635,13 +648,13 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when ai request times out', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    sinon.stub(globalThis, 'setTimeout').callsFake((handler) => {
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation((handler) => {
       if (typeof handler === 'function') {
         handler();
       }
       return 1 as unknown as ReturnType<typeof setTimeout>;
     });
-    stubFetch().callsFake((_input, init) => {
+    stubFetch().mockImplementation((_input, init) => {
       const signal = (
         init as {
           signal?: {
@@ -673,7 +686,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when ai response content is malformed JSON', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -697,7 +710,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws when OpenAI returns a non-OK HTTP status', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse(
         {},
         {
@@ -719,7 +732,7 @@ describe('generate (--suggest-emojis)', function () {
   it('throws generic HTTP status when non-OK OpenAI error payload is not JSON', async function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createTextFetchResponse('invalid-json', {
         status: 502,
         statusText: 'Bad Gateway',
@@ -739,7 +752,7 @@ describe('generate (--suggest-emojis)', function () {
     process.env['VERCEL_AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse(
         {
           error: {
@@ -779,7 +792,7 @@ describe('generate (--suggest-emojis)', function () {
     process.env['VERCEL_AI_GATEWAY_API_KEY'] = 'test-ai-gateway-key';
     restoreEnvVar('OPENAI_API_KEY', undefined);
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse(
         {
           error: {
@@ -818,27 +831,27 @@ describe('generate (--suggest-emojis)', function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
     const fetchStub = stubFetch();
-    fetchStub.onCall(0).resolves(createJsonFetchResponse([]));
-    fetchStub.onCall(1).resolves(createJsonFetchResponse({ choices: [] }));
-    fetchStub
-      .onCall(2)
-      .resolves(createJsonFetchResponse({ choices: [undefined] }));
-    fetchStub.onCall(3).resolves(
+    fetchStub.mockResolvedValueOnce(createJsonFetchResponse([]));
+    fetchStub.mockResolvedValueOnce(createJsonFetchResponse({ choices: [] }));
+    fetchStub.mockResolvedValueOnce(
+      createJsonFetchResponse({ choices: [undefined] }),
+    );
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         choices: [{ message: undefined }],
       }),
     );
-    fetchStub.onCall(4).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         choices: [{ message: { content: {} } }],
       }),
     );
-    fetchStub.onCall(5).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         choices: [{ message: { content: [undefined] } }],
       }),
     );
-    fetchStub.onCall(6).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         choices: [{ message: { content: [{}] } }],
       }),
@@ -861,12 +874,12 @@ describe('generate (--suggest-emojis)', function () {
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
     const fetchStub = stubFetch();
-    fetchStub.onCall(0).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         choices: [{ message: { content: '' } }],
       }),
     );
-    fetchStub.onCall(1).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         choices: [{ message: { content: '[]' } }],
       }),
@@ -892,8 +905,8 @@ describe('generate (--suggest-emojis)', function () {
     restoreEnvVar('OPENAI_API_KEY', undefined);
     process.env['ANTHROPIC_API_KEY'] = 'test-anthropic-key';
     const fetchStub = stubFetch();
-    fetchStub.onCall(0).rejects(new Error('anthropic-network-failure'));
-    fetchStub.onCall(1).resolves(
+    fetchStub.mockRejectedValueOnce(new Error('anthropic-network-failure'));
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse(
         {},
         {
@@ -902,23 +915,23 @@ describe('generate (--suggest-emojis)', function () {
         },
       ),
     );
-    fetchStub.onCall(2).resolves(createJsonFetchResponse([]));
-    fetchStub.onCall(3).resolves(
+    fetchStub.mockResolvedValueOnce(createJsonFetchResponse([]));
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         content: {},
       }),
     );
-    fetchStub.onCall(4).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         content: [undefined],
       }),
     );
-    fetchStub.onCall(5).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         content: [{ type: 'image' }],
       }),
     );
-    fetchStub.onCall(6).resolves(
+    fetchStub.mockResolvedValueOnce(
       createJsonFetchResponse({
         content: [{ type: 'text' }],
       }),
@@ -954,7 +967,7 @@ describe('generate (--suggest-emojis)', function () {
   it('includes parsed Anthropic non-OK payload details', async function () {
     restoreEnvVar('OPENAI_API_KEY', undefined);
     process.env['ANTHROPIC_API_KEY'] = 'test-anthropic-key';
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse(
         {
           error: {
@@ -989,10 +1002,12 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('rejects reserved emojis and keeps uniqueness when ai suggestions duplicate', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -1014,7 +1029,7 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).not.toBe('💼');
     expect(suggestions.get('zzzz-one')).toBeTruthy();
@@ -1023,10 +1038,12 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('parses array-based OpenAI message content and normalizes alias suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -1048,7 +1065,7 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🚀');
     expect(suggestions.get('zzzz-one')).toBeTruthy();
@@ -1070,8 +1087,10 @@ describe('generate (--suggest-emojis)', function () {
       };
       `,
       async (tempFixture) => {
-        const consoleLogStub = sinon.stub(console, 'log');
-        const fetchStub = stubFetch().resolves(
+        const consoleLogStub = vi
+          .spyOn(console, 'log')
+          .mockImplementation(() => {});
+        const fetchStub = stubFetch().mockResolvedValue(
           createJsonFetchResponse({
             choices: [
               {
@@ -1093,9 +1112,9 @@ describe('generate (--suggest-emojis)', function () {
           aiProvider: 'openai',
         });
 
-        expect(fetchStub.callCount).toBe(1);
-        expect(consoleLogStub.callCount).toBe(1);
-        const output = String(consoleLogStub.firstCall.args[0]);
+        expect(fetchStub.mock.calls.length).toBe(1);
+        expect(consoleLogStub.mock.calls.length).toBe(1);
+        const output = String(consoleLogStub.mock.calls[0][0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('recommended')).toBe('🧠');
       },
@@ -1138,13 +1157,15 @@ describe('generate (--suggest-emojis)', function () {
       };
       `,
       async (tempFixture) => {
-        const consoleLogStub = sinon.stub(console, 'log');
+        const consoleLogStub = vi
+          .spyOn(console, 'log')
+          .mockImplementation(() => {});
         await generate(tempFixture.path, {
           suggestEmojis: true,
           configEmoji: [['recommended']],
         });
 
-        const output = String(consoleLogStub.firstCall.args[0]);
+        const output = String(consoleLogStub.mock.calls[0][0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('recommended')).toBe('✅');
         expect(suggestions.has('react-native')).toBe(true);
@@ -1156,10 +1177,12 @@ describe('generate (--suggest-emojis)', function () {
   });
 
   it('ignores non-string and non-emoji ai suggestions', async function () {
-    const consoleLogStub = sinon.stub(console, 'log');
+    const consoleLogStub = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
     process.env['OPENAI_API_KEY'] = 'test-openai-key';
     restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-    stubFetch().resolves(
+    stubFetch().mockResolvedValue(
       createJsonFetchResponse({
         choices: [
           {
@@ -1181,7 +1204,7 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    const output = String(consoleLogStub.firstCall.args[0]);
+    const output = String(consoleLogStub.mock.calls[0][0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).not.toBe('123');
     expect(suggestions.get('zzzz-one')).not.toBe('abc123');
@@ -1200,10 +1223,12 @@ describe('generate (--suggest-emojis)', function () {
       };
       `,
       async (tempFixture) => {
-        const consoleLogStub = sinon.stub(console, 'log');
+        const consoleLogStub = vi
+          .spyOn(console, 'log')
+          .mockImplementation(() => {});
         process.env['OPENAI_API_KEY'] = 'test-openai-key';
         restoreEnvVar('ANTHROPIC_API_KEY', undefined);
-        stubFetch().resolves(
+        stubFetch().mockResolvedValue(
           createJsonFetchResponse({
             choices: [
               {
@@ -1224,7 +1249,7 @@ describe('generate (--suggest-emojis)', function () {
           configEmoji: [['typescript']],
         });
 
-        const output = String(consoleLogStub.firstCall.args[0]);
+        const output = String(consoleLogStub.mock.calls[0][0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('typescript')).toBe('⌨️');
       },
@@ -1249,10 +1274,12 @@ describe('generate (--suggest-emojis)', function () {
       };
       `,
       async (tempFixture) => {
-        const consoleLogStub = sinon.stub(console, 'log');
+        const consoleLogStub = vi
+          .spyOn(console, 'log')
+          .mockImplementation(() => {});
         await generate(tempFixture.path, { suggestEmojis: true });
 
-        const output = String(consoleLogStub.firstCall.args[0]);
+        const output = String(consoleLogStub.mock.calls[0][0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.has('qzxqzx-1')).toBe(true);
         expect(suggestions.has('qzxqzx-22')).toBe(true);

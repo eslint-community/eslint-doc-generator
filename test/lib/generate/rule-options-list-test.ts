@@ -1,6 +1,5 @@
 import { generate } from '../../../lib/generator.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
-import * as sinon from 'sinon';
 
 describe('generate (rule options list)', function () {
   describe('for md files', () => {
@@ -90,10 +89,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.md'),
         ).toMatchSnapshot();
@@ -140,10 +141,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.md'),
         ).toMatchSnapshot();
@@ -182,10 +185,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.md'),
         ).toMatchSnapshot();
@@ -234,10 +239,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation with defaults from meta.defaultOptions', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(await fixture.readFile('docs/rules/no-foo.md')).toContain(
           '`true`',
         );
@@ -276,10 +283,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.md'),
         ).toMatchSnapshot();
@@ -318,10 +327,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.md'),
         ).toMatchSnapshot();
@@ -416,10 +427,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.mdx'),
         ).toMatchSnapshot();
@@ -466,10 +479,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.mdx'),
         ).toMatchSnapshot();
@@ -508,10 +523,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.mdx'),
         ).toMatchSnapshot();
@@ -560,10 +577,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation with defaults from meta.defaultOptions', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(await fixture.readFile('docs/rules/no-foo.mdx')).toContain(
           '`true`',
         );
@@ -602,10 +621,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.mdx'),
         ).toMatchSnapshot();
@@ -644,10 +665,12 @@ describe('generate (rule options list)', function () {
       });
 
       it('generates the documentation', async function () {
-        const consoleErrorStub = sinon.stub(console, 'error');
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
         await generate(fixture.path);
-        expect(consoleErrorStub.callCount).toBe(0);
-        consoleErrorStub.restore();
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
         expect(
           await fixture.readFile('docs/rules/no-foo.mdx'),
         ).toMatchSnapshot();

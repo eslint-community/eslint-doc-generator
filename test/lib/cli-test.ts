@@ -1,4 +1,3 @@
-import * as sinon from 'sinon';
 import { run } from '../../lib/cli.js';
 import { OPTION_TYPE } from '../../lib/types.js';
 import { type FixtureContext, setupFixture } from '../helpers/fixture.js';
@@ -122,7 +121,7 @@ const cliOptionsAll: { [key in OPTION_TYPE]: readonly string[] } = {
 describe('cli', () => {
   describe('no options', () => {
     it('is called correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -130,14 +129,14 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
   describe('all CLI options, no config file options', () => {
     it('is called correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -147,8 +146,8 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
@@ -179,7 +178,7 @@ describe('cli', () => {
     });
 
     it('is called correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -187,8 +186,8 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
@@ -219,7 +218,7 @@ describe('cli', () => {
     });
 
     it('merges correctly, with CLI options taking precedence', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -229,8 +228,8 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
@@ -263,7 +262,7 @@ describe('cli', () => {
     });
 
     it('merges correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -276,14 +275,14 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
   describe('boolean option - false (explicit)', () => {
     it('is called correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -294,14 +293,14 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
   describe('boolean option - true (explicit)', () => {
     it('is called correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -312,14 +311,14 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
   describe('boolean option - true (implicit)', () => {
     it('is called correctly', async () => {
-      const stub = sinon.stub().resolves();
+      const stub = vi.fn().mockResolvedValue(undefined);
       await run(
         [
           'node', // Path to node.
@@ -329,8 +328,8 @@ describe('cli', () => {
         ],
         stub,
       );
-      expect(stub.callCount).toBe(1);
-      expect(stub.firstCall.args).toMatchSnapshot();
+      expect(stub.mock.calls.length).toBe(1);
+      expect(stub.mock.calls[0]).toMatchSnapshot();
     });
   });
 
@@ -369,7 +368,7 @@ describe('cli', () => {
       });
 
       it('throws an error', async () => {
-        const stub = sinon.stub().resolves();
+        const stub = vi.fn().mockResolvedValue(undefined);
         await expect(
           run(
             [
@@ -412,7 +411,7 @@ describe('cli', () => {
       });
 
       it('requires that postprocess be a function', async () => {
-        const stub = sinon.stub().resolves();
+        const stub = vi.fn().mockResolvedValue(undefined);
         await expect(
           run(
             [
@@ -455,7 +454,7 @@ describe('cli', () => {
       });
 
       it('throws an error', async () => {
-        const stub = sinon.stub().resolves();
+        const stub = vi.fn().mockResolvedValue(undefined);
         await expect(
           run(
             [
@@ -500,7 +499,7 @@ describe('cli', () => {
       });
 
       it('throws an error', async () => {
-        const stub = sinon.stub().resolves();
+        const stub = vi.fn().mockResolvedValue(undefined);
         await expect(
           run(
             [
@@ -545,7 +544,7 @@ describe('cli', () => {
       });
 
       it('throws an error', async () => {
-        const stub = sinon.stub().resolves();
+        const stub = vi.fn().mockResolvedValue(undefined);
         await expect(
           run(
             [
