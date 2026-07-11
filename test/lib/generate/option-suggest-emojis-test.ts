@@ -95,6 +95,17 @@ function stubFetch(): FetchStub {
   return vi.spyOn(globalThis, 'fetch') as unknown as FetchStub;
 }
 
+function getCallArgs(
+  stub: { mock: { calls: unknown[][] } },
+  callIndex = 0,
+): unknown[] {
+  const args = stub.mock.calls[callIndex];
+  if (!args) {
+    throw new Error(`Expected mock call at index ${String(callIndex)}`);
+  }
+  return args;
+}
+
 async function withTempFixture(
   indexContent: string,
   run: (fixture: FixtureContext) => Promise<void>,
@@ -186,7 +197,7 @@ describe('generate (--suggest-emojis)', function () {
 
     expect(fetchStub.mock.calls.length).toBe(0);
     expect(consoleLogStub.mock.calls.length).toBe(1);
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     expect(output).toContain('Config');
     expect(output).toContain('Emoji');
     const suggestions = parseSuggestionTable(output);
@@ -206,7 +217,7 @@ describe('generate (--suggest-emojis)', function () {
       configEmoji: [['recommended', '🧪']],
     });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('recommended')).toBe('✅');
     expect(suggestions.get('recommended')).not.toBe('🧪');
@@ -240,10 +251,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://api.openai.com/v1/chat/completions',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -264,7 +275,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🧠');
   });
@@ -296,10 +307,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://api.groq.com/openai/v1/chat/completions',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -320,7 +331,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('llama-3.3-70b-versatile');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🛰️');
   });
@@ -352,10 +363,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://ai-gateway.vercel.sh/v1/chat/completions',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -376,7 +387,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('openai/gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json' });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🌐');
   });
@@ -408,10 +419,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://openrouter.ai/api/v1/chat/completions',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -432,7 +443,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('openai/gpt-5.2');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🪐');
   });
@@ -464,10 +475,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://api.together.xyz/v1/chat/completions',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -488,7 +499,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('openai/gpt-oss-20b');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🧩');
   });
@@ -520,10 +531,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://api.x.ai/v1/chat/completions',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -544,7 +555,7 @@ describe('generate (--suggest-emojis)', function () {
     expect(requestBody.model).toBe('grok-4-1-fast-reasoning');
     expect(requestBody.response_format).toStrictEqual({ type: 'json_object' });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🛰️');
   });
@@ -575,10 +586,10 @@ describe('generate (--suggest-emojis)', function () {
     });
 
     expect(fetchStub.mock.calls.length).toBe(1);
-    expect(fetchStub.mock.calls[0]![0]).toBe(
+    expect(getCallArgs(fetchStub)[0]).toBe(
       'https://api.anthropic.com/v1/messages',
     );
-    const requestInit = fetchStub.mock.calls[0]![1];
+    const requestInit = getCallArgs(fetchStub)[1];
     expect(requestInit).toBeTruthy();
     expect(requestInit).toBeTypeOf('object');
     if (
@@ -595,7 +606,7 @@ describe('generate (--suggest-emojis)', function () {
     const requestBody = JSON.parse(requestInit.body) as { model?: string };
     expect(requestBody.model).toBe('claude-sonnet-4-6');
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🦾');
   });
@@ -1041,7 +1052,7 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).not.toBe('💼');
     expect(suggestions.get('zzzz-one')).toBeTruthy();
@@ -1077,7 +1088,7 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).toBe('🚀');
     expect(suggestions.get('zzzz-one')).toBeTruthy();
@@ -1126,7 +1137,7 @@ describe('generate (--suggest-emojis)', function () {
 
         expect(fetchStub.mock.calls.length).toBe(1);
         expect(consoleLogStub.mock.calls.length).toBe(1);
-        const output = String(consoleLogStub.mock.calls[0]![0]);
+        const output = String(getCallArgs(consoleLogStub)[0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('recommended')).toBe('🧠');
       },
@@ -1177,7 +1188,7 @@ describe('generate (--suggest-emojis)', function () {
           configEmoji: [['recommended']],
         });
 
-        const output = String(consoleLogStub.mock.calls[0]![0]);
+        const output = String(getCallArgs(consoleLogStub)[0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('recommended')).toBe('✅');
         expect(suggestions.has('react-native')).toBe(true);
@@ -1216,7 +1227,7 @@ describe('generate (--suggest-emojis)', function () {
       aiProvider: 'openai',
     });
 
-    const output = String(consoleLogStub.mock.calls[0]![0]);
+    const output = String(getCallArgs(consoleLogStub)[0]);
     const suggestions = parseSuggestionTable(output);
     expect(suggestions.get('xyzabc')).not.toBe('123');
     expect(suggestions.get('zzzz-one')).not.toBe('abc123');
@@ -1261,7 +1272,7 @@ describe('generate (--suggest-emojis)', function () {
           configEmoji: [['typescript']],
         });
 
-        const output = String(consoleLogStub.mock.calls[0]![0]);
+        const output = String(getCallArgs(consoleLogStub)[0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.get('typescript')).toBe('⌨️');
       },
@@ -1291,7 +1302,7 @@ describe('generate (--suggest-emojis)', function () {
           .mockImplementation(() => {});
         await generate(tempFixture.path, { suggestEmojis: true });
 
-        const output = String(consoleLogStub.mock.calls[0]![0]);
+        const output = String(getCallArgs(consoleLogStub)[0]);
         const suggestions = parseSuggestionTable(output);
         expect(suggestions.has('qzxqzx-1')).toBe(true);
         expect(suggestions.has('qzxqzx-22')).toBe(true);
