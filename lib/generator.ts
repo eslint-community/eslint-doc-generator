@@ -223,7 +223,6 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     // Check for required sections.
     for (const section of ruleDocSectionInclude) {
       expectSectionHeaderOrFail(
-        context,
         `\`${name}\` rule doc`,
         contentsNew,
         [section],
@@ -234,7 +233,6 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     // Check for disallowed sections.
     for (const section of ruleDocSectionExclude) {
       expectSectionHeaderOrFail(
-        context,
         `\`${name}\` rule doc`,
         contentsNew,
         [section],
@@ -245,7 +243,6 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     if (ruleDocSectionOptions) {
       // Options section.
       expectSectionHeaderOrFail(
-        context,
         `\`${name}\` rule doc`,
         contentsNew,
         ['Options', 'Config'],

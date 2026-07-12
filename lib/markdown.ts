@@ -3,9 +3,21 @@
 import { END_RULE_HEADER_MARKER, formatComment } from './comment-markers.js';
 import type { Context } from './context.js';
 
+// Matches any end-of-line style. Existing docs are parsed with this instead of
+// the configured EOL so that a doc whose EOL differs from the configured one
+// (e.g. an LF file on Windows after Prettier converts it) is still split into
+// lines correctly rather than having its content misdetected and deleted.
+// The configured EOL is only used when generating output.
+const LINE_BREAK = /\r\n|[\r\n]/u;
+
+/** Split doc content into lines regardless of which EOL style it uses. */
+function splitLines(markdown: string): readonly string[] {
+  return markdown.split(LINE_BREAK);
+}
+
 export function extractFrontmatter(context: Context, markdown: string) {
   const { endOfLine } = context;
-  const lines = markdown.split(endOfLine);
+  const lines = splitLines(markdown);
   const frontMatterStart = lines.indexOf('---');
 
   // Frontmatter must start at the beginning of the file to be considered valid, so if we don't find '---' at the beginning, we want to ignore it.
@@ -37,7 +49,7 @@ export function replaceOrCreateFrontmatter(
 
   const { endOfLine } = context;
 
-  const lines = markdown.split(endOfLine);
+  const lines = splitLines(markdown);
 
   const frontmatterStartIndex = lines.indexOf('---');
 
@@ -67,7 +79,7 @@ export function replaceOrCreateHeader(
 ) {
   const { endOfLine } = context;
 
-  const lines = markdown.split(endOfLine);
+  const lines = splitLines(markdown);
 
   const titleLineIndex = lines.findIndex((line) => line.startsWith('# '));
   const markerLineIndex = lines.indexOf(
@@ -97,14 +109,11 @@ export function replaceOrCreateHeader(
  * Find the section most likely to be the top-level section for a given string.
  */
 export function findSectionHeader(
-  context: Context,
   markdown: string,
   str: string,
 ): string | undefined {
-  const { endOfLine } = context;
-
   // Get all the matching strings.
-  const regexp = new RegExp(`## .*${str}.*${endOfLine}`, 'giu');
+  const regexp = new RegExp(`## .*${str}.*(?:${LINE_BREAK.source})`, 'giu');
   const sectionPotentialMatches = [...markdown.matchAll(regexp)].map(
     (match) => match[0],
   );
@@ -130,11 +139,10 @@ export function findFinalHeaderLevel(
   str: string,
 ): number | undefined {
   const {
-    endOfLine,
     options: { framework },
   } = context;
 
-  const lines = str.split(endOfLine);
+  const lines = splitLines(str);
   const finalHeader = lines
     .toReversed()
     .find((line) => line.match('^(#+) .+$'));
@@ -184,14 +192,13 @@ export function expectContentOrFail(
 }
 
 export function expectSectionHeaderOrFail(
-  context: Context,
   contentName: string,
   contents: string,
   possibleHeaders: readonly string[],
   expected: boolean,
 ) {
   const found = possibleHeaders.some((header) =>
-    findSectionHeader(context, contents, header),
+    findSectionHeader(contents, header),
   );
   if (found !== expected) {
     if (possibleHeaders.length > 1) {

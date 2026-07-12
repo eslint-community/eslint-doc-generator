@@ -326,7 +326,7 @@ export function updateRulesList(
   let listEndIndex = markdown.indexOf(formattedRuleListMarkerEnd);
 
   // Find the best possible section to insert the rules list into if the markers are missing.
-  const rulesSectionHeader = findSectionHeader(context, markdown, 'rules');
+  const rulesSectionHeader = findSectionHeader(markdown, 'rules');
   const rulesSectionIndex = rulesSectionHeader
     ? markdown.indexOf(rulesSectionHeader)
     : -1;

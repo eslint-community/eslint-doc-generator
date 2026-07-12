@@ -75,6 +75,16 @@ describe('markdown', function () {
       expect(context).toBeDefined();
       expect(extractFrontmatter(context, markdown)).toBeUndefined();
     });
+
+    it('should extract frontmatter from a doc whose EOL differs from the configured one', function () {
+      const contextCrlf = { ...context, endOfLine: '\r\n' };
+      const markdown =
+        '---\ntitle: Test Rule\n---\n# Test Rule\nThis is the content of the rule doc.';
+
+      expect(extractFrontmatter(contextCrlf, markdown)).toBe(
+        '---\r\ntitle: Test Rule\r\n---',
+      );
+    });
   });
 
   describe('findFinalHeaderLevel', function () {
@@ -237,28 +247,27 @@ describe('markdown', function () {
   describe('findSectionHeader', function () {
     it('handles standard section title', function () {
       const title = '## Rules\n';
-      expect(findSectionHeader(context, title, 'rules')).toBe(title);
+      expect(findSectionHeader(title, 'rules')).toBe(title);
     });
 
     it('handles section title with leading emoji', function () {
       const title = '## 🍟 Rules\n';
-      expect(findSectionHeader(context, title, 'rules')).toBe(title);
+      expect(findSectionHeader(title, 'rules')).toBe(title);
     });
 
     it('handles section title with html', function () {
       const title = "## <a name='Rules'></a>Rules\n";
-      expect(findSectionHeader(context, title, 'rules')).toBe(title);
+      expect(findSectionHeader(title, 'rules')).toBe(title);
     });
 
     it('handles sentential section title', function () {
       const title = '## List of supported rules\n';
-      expect(findSectionHeader(context, title, 'rules')).toBe(title);
+      expect(findSectionHeader(title, 'rules')).toBe(title);
     });
 
     it('handles doc with multiple sections', function () {
       expect(
         findSectionHeader(
-          context,
           outdent`
             # eslint-plugin-test
             Description.
@@ -275,7 +284,6 @@ describe('markdown', function () {
     it('handles doc with multiple rules-related sections', function () {
       expect(
         findSectionHeader(
-          context,
           outdent`
             # eslint-plugin-test
             Description.
@@ -439,6 +447,30 @@ describe('markdown', function () {
         expect(replaceOrCreateHeader(context, markdown, newHeader, false)).toBe(
           `${newHeader}${context.endOfLine}Rule description.`,
         );
+      });
+
+      it('should keep content after the marker in an LF doc when the configured EOL is CRLF', function () {
+        // https://github.com/eslint-community/eslint-doc-generator/issues/725
+        const contextCrlf = { ...context, endOfLine: '\r\n' };
+        const markdown =
+          '# Old Rule\nIntro sentence.\n<!-- end auto-generated rule header -->\n## Further Reading\n\nSome docs.';
+        const newHeader =
+          '# New Rule\r\n<!-- end auto-generated rule header -->';
+
+        expect(
+          replaceOrCreateHeader(contextCrlf, markdown, newHeader, false),
+        ).toBe(`${newHeader}\r\n## Further Reading\r\n\r\nSome docs.`);
+      });
+
+      it('should keep content after the marker in a CRLF doc when the configured EOL is LF', function () {
+        const contextLf = { ...context, endOfLine: '\n' };
+        const markdown =
+          '# Old Rule\r\nIntro sentence.\r\n<!-- end auto-generated rule header -->\r\n## Further Reading\r\n\r\nSome docs.';
+        const newHeader = '# New Rule\n<!-- end auto-generated rule header -->';
+
+        expect(
+          replaceOrCreateHeader(contextLf, markdown, newHeader, false),
+        ).toBe(`${newHeader}\n## Further Reading\n\nSome docs.`);
       });
 
       it('should preserve frontmatter and doc body when replacing header', function () {
