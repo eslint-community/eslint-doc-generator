@@ -1,6 +1,5 @@
 import { generate } from '../../../lib/generator.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
-import * as sinon from 'sinon';
 import { COLUMN_TYPE, NOTICE_TYPE } from '../../../lib/types.js';
 
 describe('generate (rule options)', function () {
@@ -39,13 +38,15 @@ describe('generate (rule options)', function () {
     });
 
     it('prints an error', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path);
-      expect(consoleErrorStub.callCount).toBe(1);
-      expect(consoleErrorStub.firstCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls.length).toBe(1);
+      expect(consoleErrorStub.mock.calls[0]).toStrictEqual([
         '`no-foo` rule doc should not have included any of these headers: Options, Config',
       ]);
-      consoleErrorStub.restore();
+      consoleErrorStub.mockRestore();
     });
   });
 
@@ -80,13 +81,15 @@ describe('generate (rule options)', function () {
     });
 
     it('prints an error', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path);
-      expect(consoleErrorStub.callCount).toBe(1);
-      expect(consoleErrorStub.firstCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls.length).toBe(1);
+      expect(consoleErrorStub.mock.calls[0]).toStrictEqual([
         '`no-foo` rule doc should have included one of these headers: Options, Config',
       ]);
-      consoleErrorStub.restore();
+      consoleErrorStub.mockRestore();
     });
   });
 
@@ -121,13 +124,15 @@ describe('generate (rule options)', function () {
     });
 
     it('prints an error', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path, { ruleDocSectionOptions: true });
-      expect(consoleErrorStub.callCount).toBe(1);
-      expect(consoleErrorStub.firstCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls.length).toBe(1);
+      expect(consoleErrorStub.mock.calls[0]).toStrictEqual([
         '`no-foo` rule doc should have included one of these headers: Options, Config',
       ]);
-      consoleErrorStub.restore();
+      consoleErrorStub.mockRestore();
     });
   });
 
@@ -162,10 +167,12 @@ describe('generate (rule options)', function () {
     });
 
     it('has no error', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path, { ruleDocSectionOptions: false });
-      expect(consoleErrorStub.callCount).toBe(0);
-      consoleErrorStub.restore();
+      expect(consoleErrorStub.mock.calls.length).toBe(0);
+      consoleErrorStub.mockRestore();
     });
   });
 
@@ -216,10 +223,12 @@ describe('generate (rule options)', function () {
     });
 
     it('successfully finds the options mentioned in the rule doc despite quote escaping', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path);
-      expect(consoleErrorStub.callCount).toBe(0);
-      consoleErrorStub.restore();
+      expect(consoleErrorStub.mock.calls.length).toBe(0);
+      consoleErrorStub.mockRestore();
     });
   });
 
@@ -272,13 +281,15 @@ describe('generate (rule options)', function () {
     });
 
     it('prints an error', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path);
-      expect(consoleErrorStub.callCount).toBe(1);
-      expect(consoleErrorStub.firstCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls.length).toBe(1);
+      expect(consoleErrorStub.mock.calls[0]).toStrictEqual([
         '`no-foo` rule doc should have included rule option: optionToDoSomething',
       ]);
-      consoleErrorStub.restore();
+      consoleErrorStub.mockRestore();
     });
   });
 
