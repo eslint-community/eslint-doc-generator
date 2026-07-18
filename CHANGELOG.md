@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.6.0...v3.7.0) (2026-07-18)
+
+
+### Features
+
+* determine line endings per file via EditorConfig, existing content, then os.EOL ([#987](https://github.com/eslint-community/eslint-doc-generator/issues/987)) ([c7e50b4](https://github.com/eslint-community/eslint-doc-generator/commit/c7e50b4acfd5040b85341e2b49f01cb62eb8a6d5))
+
 ## [3.6.0](https://github.com/eslint-community/eslint-doc-generator/compare/v3.5.0...v3.6.0) (2026-05-20)
 
 
