@@ -1,7 +1,6 @@
 import { generate } from '../../../lib/generator.js';
 import { join } from 'node:path';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
-import * as sinon from 'sinon';
 
 describe('generate (--check)', function () {
   describe('basic', function () {
@@ -28,23 +27,25 @@ describe('generate (--check)', function () {
     });
 
     it('prints the issues, exits with failure, and does not write changes', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path, { check: true });
-      expect(consoleErrorStub.callCount).toBe(4);
+      expect(consoleErrorStub.mock.calls.length).toBe(4);
       // Use join to handle both Windows and Unix paths.
-      expect(consoleErrorStub.firstCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls[0]).toStrictEqual([
         `Please run eslint-doc-generator. A rule doc is out-of-date: ${join(
           'docs',
           'rules',
           'no-foo.md',
         )}`,
       ]);
-      expect(consoleErrorStub.secondCall.args).toMatchSnapshot(); // Diff
-      expect(consoleErrorStub.thirdCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls[1]).toMatchSnapshot(); // Diff
+      expect(consoleErrorStub.mock.calls[2]).toStrictEqual([
         'Please run eslint-doc-generator. The rules table in README.md is out-of-date.',
       ]);
-      expect(consoleErrorStub.getCall(3).args).toMatchSnapshot(); // Diff
-      consoleErrorStub.restore();
+      expect(consoleErrorStub.mock.calls[3]).toMatchSnapshot(); // Diff
+      consoleErrorStub.mockRestore();
 
       expect(await fixture.readFile('README.md')).toMatchSnapshot();
       expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();

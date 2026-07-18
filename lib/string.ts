@@ -1,7 +1,11 @@
+/** Uppercase the first character of a string, leaving the rest unchanged. */
+function upperFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function toSentenceCase(str: string) {
-  return str.replace(/^\w/u, function (txt) {
-    return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
-  });
+  // Only uppercase a leading word character, leaving the rest of the string as-is.
+  return str.replace(/^\w/u, (char) => char.toUpperCase());
 }
 
 export function addTrailingPeriod(str: string) {
@@ -16,7 +20,7 @@ export function removeTrailingPeriod(str: string) {
  * Example: FOO => Foo, foo => Foo
  */
 export function capitalizeOnlyFirstLetter(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  return upperFirst(str.toLowerCase());
 }
 
 function sanitizeMarkdownTableCell(text: string): string {

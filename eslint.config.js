@@ -4,14 +4,14 @@ import js from '@eslint/js';
 import eslintPluginN from 'eslint-plugin-n';
 import eslintPluginVitest from '@vitest/eslint-plugin';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'; // eslint-disable-line import/extensions -- false positive
-import * as eslintPluginImport from 'eslint-plugin-import';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import { importX } from 'eslint-plugin-import-x';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   // Configs:
   js.configs.recommended,
-  eslintPluginImport.flatConfigs.typescript,
+  importX.flatConfigs.typescript,
   eslintPluginVitest.configs.recommended,
   eslintPluginN.configs['flat/recommended'],
   eslintPluginPrettierRecommended,
@@ -111,28 +111,34 @@ export default tseslint.config(
       yoda: 'error',
 
       // import rules:
-      'import/default': 'off',
-      'import/export': 'error',
-      'import/extensions': ['error', 'always'],
-      'import/first': 'error',
-      'import/named': 'error',
-      'import/namespace': 'off',
-      'import/newline-after-import': 'error',
-      'import/no-absolute-path': 'error',
-      'import/no-cycle': 'off',
-      'import/no-deprecated': 'off',
-      'import/no-duplicates': 'error',
-      'import/no-dynamic-require': 'error',
-      'import/no-mutable-exports': 'error',
-      'import/no-named-as-default': 'off',
-      'import/no-named-as-default-member': 'off',
-      'import/no-named-default': 'error',
-      'import/no-self-import': 'error',
-      'import/no-unassigned-import': 'error',
-      'import/no-unresolved': 'off',
-      'import/no-unused-modules': 'error',
-      'import/no-useless-path-segments': 'error',
-      'import/no-webpack-loader-syntax': 'error',
+      'import-x/default': 'off',
+      'import-x/export': 'error',
+      // Require an extension; allow .js imports that resolve to .ts (TS ESM).
+      'import-x/extensions': [
+        'error',
+        'ignorePackages',
+        { js: 'always', ts: 'never', cts: 'never', mts: 'never' },
+      ],
+      'import-x/first': 'error',
+      'import-x/named': 'error',
+      'import-x/namespace': 'off',
+      'import-x/newline-after-import': 'error',
+      'import-x/no-absolute-path': 'error',
+      'import-x/no-cycle': 'off',
+      'import-x/no-deprecated': 'off',
+      'import-x/no-duplicates': 'error',
+      'import-x/no-dynamic-require': 'error',
+      'import-x/no-mutable-exports': 'error',
+      'import-x/no-named-as-default': 'off',
+      'import-x/no-named-as-default-member': 'off',
+      'import-x/no-named-default': 'error',
+      'import-x/no-self-import': 'error',
+      'import-x/no-unassigned-import': 'error',
+      'import-x/no-unresolved': 'off',
+      // no-op on ESLint 10+ (FileEnumerator removed); re-enable when import-x supports it.
+      'import-x/no-unused-modules': 'off',
+      'import-x/no-useless-path-segments': 'error',
+      'import-x/no-webpack-loader-syntax': 'error',
     },
 
     // typescript-eslint parser options:

@@ -1,6 +1,5 @@
 import { generate } from '../../../lib/generator.js';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
-import * as sinon from 'sinon';
 
 describe('generate (rule doc sections)', function () {
   describe('with `--rule-doc-section-include` and `--rule-doc-section-exclude` and no problems', function () {
@@ -60,19 +59,21 @@ describe('generate (rule doc sections)', function () {
     });
 
     it('prints errors', async function () {
-      const consoleErrorStub = sinon.stub(console, 'error');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       await generate(fixture.path, {
         ruleDocSectionInclude: ['Examples'],
         ruleDocSectionExclude: ['Unwanted Section'],
       });
-      expect(consoleErrorStub.callCount).toBe(2);
-      expect(consoleErrorStub.firstCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls.length).toBe(2);
+      expect(consoleErrorStub.mock.calls[0]).toStrictEqual([
         '`no-foo` rule doc should have included the header: Examples',
       ]);
-      expect(consoleErrorStub.secondCall.args).toStrictEqual([
+      expect(consoleErrorStub.mock.calls[1]).toStrictEqual([
         '`no-foo` rule doc should not have included the header: Unwanted Section',
       ]);
-      consoleErrorStub.restore();
+      consoleErrorStub.mockRestore();
     });
   });
 });
