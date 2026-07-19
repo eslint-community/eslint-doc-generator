@@ -34,6 +34,10 @@ function isMdx(path: string): boolean {
   return extname(path).toLowerCase() === '.mdx';
 }
 
+function identity(s: string): string {
+  return s;
+}
+
 function resolveDocPath(configuredPath: string): string | undefined {
   if (existsSync(configuredPath)) {
     return configuredPath;
@@ -82,6 +86,25 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     ruleDocSectionInclude,
     ruleDocSectionOptions,
   } = options;
+
+  // Diffs go to console.error; color only when stderr is a TTY (or FORCE_COLOR).
+  const useColor =
+    process.env['FORCE_COLOR'] !== undefined &&
+    process.env['FORCE_COLOR'] !== '0'
+      ? true
+      : process.env['NO_COLOR'] === undefined && process.stderr.isTTY;
+  const diffOptions = {
+    expand: false,
+    ...(useColor
+      ? {}
+      : {
+          aColor: identity,
+          bColor: identity,
+          changeColor: identity,
+          commonColor: identity,
+          patchColor: identity,
+        }),
+  };
 
   if (suggestEmojis) {
     await generateSuggestedEmojis(context);
@@ -224,7 +247,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
             pathToDoc,
           )}`,
         );
-        console.error(diff(contentsNew, contentsOld, { expand: false }));
+        console.error(diff(contentsNew, contentsOld, diffOptions));
         process.exitCode = 1;
       }
     } else {
@@ -325,7 +348,7 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
             pathToFile,
           )} is out-of-date.`,
         );
-        console.error(diff(fileContentsNew, fileContents, { expand: false }));
+        console.error(diff(fileContentsNew, fileContents, diffOptions));
         process.exitCode = 1;
       }
     } else {
