@@ -86,32 +86,55 @@ export function replaceOrCreateHeader(
 }
 
 /**
+ * CommonMark ATX heading: 0–3 leading spaces, 1–6 `#`, whitespace, text, optional closing hashes.
+ * Operates on LF-normalized lines.
+ */
+const ATX_HEADING_REGEX = /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/u;
+
+function parseAtxHeading(
+  line: string,
+): { level: number; text: string } | undefined {
+  const match = ATX_HEADING_REGEX.exec(line);
+  const hashes = match?.[1];
+  const text = match?.[2];
+  if (!hashes || text === undefined) {
+    return undefined;
+  }
+  return { level: hashes.length, text };
+}
+
+/**
  * Find the section most likely to be the top-level section for a given string.
+ * Prefers level-2 ATX headings, then falls back to other levels; among ties, picks the shortest.
  */
 export function findSectionHeader(
   markdown: string,
   str: string,
 ): string | undefined {
-  // Get all the matching strings.
-  const regexp = new RegExp(`## .*${escapeRegExp(str)}.*\n`, 'giu');
-  const sectionPotentialMatches = [...markdown.matchAll(regexp)].map(
-    (match) => match[0],
-  );
+  const lines = markdown.split('\n');
+  const needle = new RegExp(escapeRegExp(str), 'iu');
+  const matches: { header: string; level: number }[] = [];
 
-  if (sectionPotentialMatches.length === 0) {
-    // No section found.
+  for (const [i, line] of lines.entries()) {
+    const heading = parseAtxHeading(line);
+    if (!heading || !needle.test(heading.text)) {
+      continue;
+    }
+    // Preserve whether this line had a trailing newline in the source.
+    const header = i < lines.length - 1 ? `${line}\n` : line;
+    matches.push({ header, level: heading.level });
+  }
+
+  if (matches.length === 0) {
     return undefined;
   }
 
-  if (sectionPotentialMatches.length === 1) {
-    // If there's only one match, we can assume it's the section.
-    return sectionPotentialMatches[0];
-  }
+  const level2Matches = matches.filter(({ level }) => level === 2);
+  const candidates = level2Matches.length > 0 ? level2Matches : matches;
 
   // Otherwise assume the shortest match is the correct one.
-  return sectionPotentialMatches.toSorted(
-    (a: string, b: string) => a.length - b.length,
-  )[0];
+  return candidates.toSorted((a, b) => a.header.length - b.header.length)[0]
+    ?.header;
 }
 
 export function findFinalHeaderLevel(
@@ -123,15 +146,15 @@ export function findFinalHeaderLevel(
   } = context;
 
   const lines = str.split('\n');
-  const finalHeader = lines
-    .toReversed()
-    .find((line) => line.match('^(#+) .+$'));
-
-  if (finalHeader) {
-    return finalHeader.indexOf(' ');
+  for (const line of lines.toReversed()) {
+    const heading = parseAtxHeading(line);
+    if (heading) {
+      return heading.level;
+    }
   }
+
   // If the framework is `starlight` and there's frontmatter at the top, treat that as an H1
-  else if (framework === 'starlight' && extractFrontmatter(str)) {
+  if (framework === 'starlight' && extractFrontmatter(str)) {
     return 1;
   }
 
