@@ -130,6 +130,45 @@ describe('generate (file paths)', function () {
     });
   });
 
+  describe('missing rule doc, initRuleDocs is true, and ruleDocSectionInclude title contains a newline', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+          export default {
+            rules: {
+              // Use a rule name without a pre-existing doc in the esm-base fixture.
+              'no-bar': {
+                meta: { },
+                create(context) {}
+              },
+            },
+          };`,
+          'README.md':
+            '<!-- begin auto-generated rules list --><!-- end auto-generated rules list -->',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('creates the rule doc with a single intact heading line', async function () {
+      await generate(fixture.path, {
+        initRuleDocs: true,
+        ruleDocSectionInclude: ['Exam\nples'],
+      });
+      const doc = await fixture.readFile('docs/rules/no-bar.md');
+      expect(doc).toContain('## Examples');
+      expect(doc).not.toMatch(/^## Exam$/mu);
+      expect(doc).toMatchSnapshot();
+    });
+  });
+
   describe('no missing rule doc but --init-rule-docs enabled', function () {
     let fixture: FixtureContext;
 

@@ -112,7 +112,10 @@ function ruleOptionsToColumnsToDisplay(ruleOptions: readonly RuleOption[]): {
   return columnsToDisplay;
 }
 
-function generateRuleOptionsListMarkdown(rule: RuleModule): string {
+function generateRuleOptionsListMarkdown(
+  rule: RuleModule,
+  isMdx: boolean,
+): string {
   const ruleOptions = getAllNamedOptions(
     rule.meta?.schema,
     rule.meta?.defaultOptions,
@@ -141,7 +144,7 @@ function generateRuleOptionsListMarkdown(rule: RuleModule): string {
     });
 
   return markdownTable(
-    sanitizeMarkdownTable([listHeaderRow, ...rows]),
+    sanitizeMarkdownTable([listHeaderRow, ...rows], isMdx),
     { align: 'l' }, // Left-align headers.
   );
 }
@@ -175,7 +178,7 @@ export function updateRuleOptionsList(
   const postList = markdown.slice(Math.max(0, listEndIndex));
 
   // New rule options list.
-  const list = generateRuleOptionsListMarkdown(rule);
+  const list = generateRuleOptionsListMarkdown(rule, isMdx);
 
   return `${preList}${formattedRuleOptionsListMarkerBegin}\n\n${list}\n\n${formattedRuleOptionsListMarkerEnd}${postList}`;
 }
