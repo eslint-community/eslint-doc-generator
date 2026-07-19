@@ -1,4 +1,4 @@
-import { run } from '../../lib/cli.js';
+import { printCliError, run } from '../../lib/cli.js';
 import { OPTION_TYPE } from '../../lib/types.js';
 import { type FixtureContext, setupFixture } from '../helpers/fixture.js';
 
@@ -557,6 +557,26 @@ describe('cli', () => {
           'config file/ruleListSplit must be string, config file/ruleListSplit must NOT have fewer than 1 items, config file/ruleListSplit must match a schema in anyOf',
         );
       });
+    });
+  });
+
+  describe('printCliError', function () {
+    it('prints Error.message for Error instances', function () {
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      printCliError(new Error('boom'));
+      expect(consoleErrorStub.mock.calls).toStrictEqual([['boom']]);
+      consoleErrorStub.mockRestore();
+    });
+
+    it('prints String(error) for non-Error throwables', function () {
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      printCliError('boom');
+      expect(consoleErrorStub.mock.calls).toStrictEqual([['boom']]);
+      consoleErrorStub.mockRestore();
     });
   });
 });
