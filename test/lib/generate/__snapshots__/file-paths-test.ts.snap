@@ -83,6 +83,15 @@ exports[`generate (file paths) > missing rule doc with initRuleDocs > when initR
 "
 `;
 
+exports[`generate (file paths) > missing rule doc, initRuleDocs is true, and ruleDocSectionInclude title contains a newline > creates the rule doc with a single intact heading line 1`] = `
+"# test/no-bar
+
+<!-- end auto-generated rule header -->
+
+## Examples
+"
+`;
+
 exports[`generate (file paths) > missing rule doc, initRuleDocs is true, and with ruleDocSectionInclude > creates the rule doc including the mandatory section 1`] = `
 "# test/no-foo
 
