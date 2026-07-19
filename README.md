@@ -468,6 +468,8 @@ Only `lf` and `crlf` are honored from EditorConfig; other values such as `cr` ar
 
 When EditorConfig sets `end_of_line`, files that use a different end of line are converted on the next run (a one-time diff), and `--check` fails until they match. Without an EditorConfig `end_of_line`, existing file endings are preserved and `--check` compares against those.
 
+EditorConfig [`insert_final_newline`](https://editorconfig.org/) is honored the same way when explicitly set for a file path: `true` ensures the file ends with one trailing end of line (existing trailing blank lines are left alone), and `false` strips trailing ends of line. When unset, the final-newline state is left unchanged (byte-identical to previous behavior). `--check` compares post-policy bytes, so a mismatch fails until the next non-check run fixes the file.
+
 ### File Types
 
 This tool supports both regular Markdown (`md`) and Extended Markdown (`mdx`) file types.
