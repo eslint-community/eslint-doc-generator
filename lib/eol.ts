@@ -111,6 +111,30 @@ async function parseEditorConfigLineEndingProps(
   return { endOfLine, insertFinalNewline };
 }
 
+const UTF8_BOM = '\uFEFF';
+
+/**
+ * Detect and strip a leading UTF-8 BOM for processing.
+ * Markdown is processed BOM-free; restore with {@link restoreBom} at write time.
+ */
+export function stripBom(contents: string): {
+  hasBom: boolean;
+  contents: string;
+} {
+  if (contents.startsWith(UTF8_BOM)) {
+    return { hasBom: true, contents: contents.slice(UTF8_BOM.length) };
+  }
+  return { hasBom: false, contents };
+}
+
+/**
+ * Re-prepend a UTF-8 BOM when the original file had one.
+ * Call after EOL normalization and `insert_final_newline` policy.
+ */
+export function restoreBom(contents: string, hasBom: boolean): string {
+  return hasBom ? `${UTF8_BOM}${contents}` : contents;
+}
+
 /**
  * Apply EditorConfig `insert_final_newline` at write time.
  * When unset (`undefined`), returns contents unchanged.
