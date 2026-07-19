@@ -114,6 +114,19 @@ describe('markdown', function () {
         expect(findFinalHeaderLevel(context, 'Description')).toBeUndefined();
       });
 
+      it('should detect closed ATX heading level', function () {
+        const markdown = outdent`
+          # Header
+          Some description
+          ## Rules ##
+        `;
+        expect(findFinalHeaderLevel(context, markdown)).toBe(2);
+      });
+
+      it('should detect closed ATX heading with tabs after opening hashes', function () {
+        expect(findFinalHeaderLevel(context, '##\tRules\t##')).toBe(2);
+      });
+
       it('should ignore frontmatter', function () {
         expect(
           findFinalHeaderLevel(
@@ -291,6 +304,40 @@ describe('markdown', function () {
         This one.
       `;
       expect(findSectionHeader(markdown, 'Options .')).toBe('## Options .\n');
+    });
+
+    it('handles closed ATX headings', function () {
+      const title = '## Options ##\n';
+      expect(findSectionHeader(title, 'Options')).toBe(title);
+    });
+
+    it('finds level-3 headings when no level-2 match exists', function () {
+      const markdown = outdent`
+        # Rule
+        ### Examples
+        Examples here.
+      `;
+      expect(findSectionHeader(markdown, 'Examples')).toBe('### Examples\n');
+    });
+
+    it('prefers level-2 over other heading levels', function () {
+      const markdown = outdent`
+        # Examples overview
+        ### Examples details
+        ## Examples
+        Body.
+      `;
+      expect(findSectionHeader(markdown, 'Examples')).toBe('## Examples\n');
+    });
+
+    it('handles heading as the last line without a trailing newline', function () {
+      expect(findSectionHeader('## Options', 'Options')).toBe('## Options');
+    });
+
+    it('handles closed ATX heading as the last line without a trailing newline', function () {
+      expect(findSectionHeader('## Options ##', 'Options')).toBe(
+        '## Options ##',
+      );
     });
   });
 

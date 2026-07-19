@@ -35,6 +35,38 @@ describe('generate (rule doc sections)', function () {
     });
   });
 
+  describe('with `--rule-doc-section-include` matching a level-3 heading', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+              export default {
+                rules: {
+                  'no-foo': { meta: { docs: { description: 'Description for no-foo.'} }, create(context) {} },
+                },
+              };`,
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '### Examples\n',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('has no issues', async function () {
+      await expect(
+        generate(fixture.path, {
+          ruleDocSectionInclude: ['Examples'],
+        }),
+      ).resolves.toBeUndefined();
+    });
+  });
+
   describe('with `--rule-doc-section-include` and `--rule-doc-section-exclude` and problems', function () {
     let fixture: FixtureContext;
 
