@@ -470,6 +470,8 @@ When EditorConfig sets `end_of_line`, files that use a different end of line are
 
 EditorConfig [`insert_final_newline`](https://editorconfig.org/) is honored the same way when explicitly set for a file path: `true` ensures the file ends with one trailing end of line (existing trailing blank lines are left alone), and `false` strips trailing ends of line. When unset, the final-newline state is left unchanged (byte-identical to previous behavior). `--check` compares post-policy bytes, so a mismatch fails until the next non-check run fixes the file.
 
+A leading UTF-8 BOM (`U+FEFF`) is stripped for markdown processing and re-prepended on write when the original file had one, so title/frontmatter parsing and `--check` stay BOM-faithful. EditorConfig `charset = utf-8-bom` is not used to *add* a BOM to files that lack one.
+
 ### File Types
 
 This tool supports both regular Markdown (`md`) and Extended Markdown (`mdx`) file types.

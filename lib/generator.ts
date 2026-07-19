@@ -30,6 +30,8 @@ import {
   applyInsertFinalNewline,
   createEndOfLineResolver,
   normalizeEndOfLine,
+  restoreBom,
+  stripBom,
 } from './eol.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
@@ -184,7 +186,10 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     }
 
     const isRuleDocMdx = isMdx(pathToDoc);
-    const contentsOld = await readFile(pathToDoc, 'utf8');
+    const contentsOldRaw = await readFile(pathToDoc, 'utf8');
+    // Strip BOM for processing; restore before write/check so title/frontmatter
+    // parsing sees line 0 correctly and existing BOMs are preserved.
+    const { hasBom, contents: contentsOld } = stripBom(contentsOldRaw);
 
     // Normalize to LF for processing; restore this file's end of line before write.
     const endOfLine = await endOfLineResolver.resolve(pathToDoc, contentsOld);
@@ -226,20 +231,24 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       endOfLine,
       await endOfLineResolver.getInsertFinalNewline(pathToDoc),
     );
+    contentsNew = restoreBom(contentsNew, hasBom);
 
-    // LF-normalized copy of the final contents for the content checks below.
-    const contentsNewNormalized = normalizeEndOfLine(contentsNew, '\n');
+    // LF-normalized, BOM-free copy of the final contents for the content checks below.
+    const contentsNewNormalized = normalizeEndOfLine(
+      stripBom(contentsNew).contents,
+      '\n',
+    );
 
     if (check) {
       /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
-      if (contentsNew !== contentsOld) {
+      if (contentsNew !== contentsOldRaw) {
         console.error(
           `Please run eslint-doc-generator. A rule doc is out-of-date: ${relative(
             getPluginRoot(path),
             pathToDoc,
           )}`,
         );
-        console.error(diff(contentsNew, contentsOld, { expand: false }));
+        console.error(diff(contentsNew, contentsOldRaw, { expand: false }));
         process.exitCode = 1;
       }
     } else {
@@ -311,7 +320,8 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     const isRuleListMdx = isMdx(pathToFile);
 
     // Update the rules list in this file.
-    const fileContents = await readFile(pathToFile, 'utf8');
+    const fileContentsRaw = await readFile(pathToFile, 'utf8');
+    const { hasBom, contents: fileContents } = stripBom(fileContentsRaw);
 
     // Normalize to LF for processing; restore this file's end of line before write.
     const endOfLine = await endOfLineResolver.resolve(pathToFile, fileContents);
@@ -323,28 +333,33 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       fileContentsNormalized,
       pathToFile,
     );
-    const fileContentsNew = applyInsertFinalNewline(
-      await postprocess(
-        normalizeEndOfLine(
-          updateConfigsList(context, rulesList, isRuleListMdx),
-          endOfLine,
+    const fileContentsNew = restoreBom(
+      applyInsertFinalNewline(
+        await postprocess(
+          normalizeEndOfLine(
+            updateConfigsList(context, rulesList, isRuleListMdx),
+            endOfLine,
+          ),
+          resolve(pathToFile),
         ),
-        resolve(pathToFile),
+        endOfLine,
+        await endOfLineResolver.getInsertFinalNewline(pathToFile),
       ),
-      endOfLine,
-      await endOfLineResolver.getInsertFinalNewline(pathToFile),
+      hasBom,
     );
 
     if (check) {
       /* istanbul ignore next -- V8 branch coverage doesn't detect this branch is tested */
-      if (fileContentsNew !== fileContents) {
+      if (fileContentsNew !== fileContentsRaw) {
         console.error(
           `Please run eslint-doc-generator. The rules table in ${relative(
             getPluginRoot(path),
             pathToFile,
           )} is out-of-date.`,
         );
-        console.error(diff(fileContentsNew, fileContents, { expand: false }));
+        console.error(
+          diff(fileContentsNew, fileContentsRaw, { expand: false }),
+        );
         process.exitCode = 1;
       }
     } else {
