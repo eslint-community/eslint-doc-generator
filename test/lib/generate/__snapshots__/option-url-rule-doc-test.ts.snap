@@ -134,3 +134,39 @@ exports[`generate (--url-rule-doc) > function returns undefined > should fallbac
 <!-- end auto-generated rule header -->
 "
 `;
+
+exports[`generate (--url-rule-doc) > rule names with URL-unsafe characters > URL-encodes relative function return values 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+| Name                                               | Description                   |
+| :------------------------------------------------- | :---------------------------- |
+| [no foo (bar)](docs/rules/no%20foo%20%28bar%29.md) | Description for no foo (bar). |
+
+<!-- end auto-generated rules list -->
+"
+`;
+
+exports[`generate (--url-rule-doc) > rule names with URL-unsafe characters > URL-encodes the substituted rule name in string templates 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+| Name                                                                | Description                   |
+| :------------------------------------------------------------------ | :---------------------------- |
+| [no foo (bar)](https://example.com/rule-docs/no%20foo%20%28bar%29/) | Description for no foo (bar). |
+
+<!-- end auto-generated rules list -->
+"
+`;
+
+exports[`generate (--url-rule-doc) > rule names with URL-unsafe characters > leaves absolute function return values unencoded 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+| Name                                                                | Description                   |
+| :------------------------------------------------------------------ | :---------------------------- |
+| [no foo (bar)](https://example.com/rules/no%20foo%20%28bar%29.html) | Description for no foo (bar). |
+
+<!-- end auto-generated rules list -->
+"
+`;

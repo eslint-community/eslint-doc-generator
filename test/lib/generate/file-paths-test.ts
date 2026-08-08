@@ -276,6 +276,42 @@ describe('generate (file paths)', function () {
     });
   });
 
+  describe('rule names with URL-unsafe characters', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+              export default {
+                rules: {
+                  'no foo (bar)': {
+                    meta: { docs: { description: 'Description for no foo (bar).' } },
+                    create(context) {}
+                  },
+                },
+              };`,
+          'README.md': '## Rules\n',
+          'docs/rules/no foo (bar).md': '',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('URL-encodes spaces and parentheses in relative rule doc links', async function () {
+      await generate(fixture.path);
+      const readme = await fixture.readFile('README.md');
+      expect(readme).toContain(
+        '[no foo (bar)](docs/rules/no%20foo%20%28bar%29.md)',
+      );
+      expect(readme).toMatchSnapshot();
+    });
+  });
+
   describe('custom path to rule docs using function', function () {
     let fixture: FixtureContext;
 
