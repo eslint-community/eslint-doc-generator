@@ -179,6 +179,97 @@ describe('frontmatter', function () {
           ),
         ).toBe(expected);
       });
+
+      it('should replace a block scalar title', function () {
+        const oldFrontmatter = outdent`
+          ---
+          title: |
+            old
+            multiline
+          foo: bar
+          ---
+        `;
+
+        const expected = outdent`
+          ---
+          title: "eslint-doc-generator/no-foo"
+          description: "Description for no-foo."
+          foo: bar
+          ---
+        `;
+        expect(
+          generateFrontmatterLines(context, name, description, oldFrontmatter),
+        ).toBe(expected);
+      });
+
+      it('should escape quotes and newlines in description', function () {
+        const descriptionSpecial = 'Say "hi"\nand bye.';
+
+        const oldFrontmatter = outdent`
+          ---
+          title: "eslint-doc-generator/no-bar"
+          ---
+        `;
+
+        const expected = outdent`
+          ---
+          title: "eslint-doc-generator/no-foo"
+          description: "Say \\"hi\\"\\nand bye."
+          ---
+        `;
+        expect(
+          generateFrontmatterLines(
+            context,
+            name,
+            descriptionSpecial,
+            oldFrontmatter,
+          ),
+        ).toBe(expected);
+      });
+
+      it('should preserve comments and unrelated keys when updating', function () {
+        const oldFrontmatter = outdent`
+          ---
+          # keep this comment
+          foo: bar
+          # title comment stays above title
+          title: "eslint-doc-generator/no-bar"
+          ---
+        `;
+
+        const expected = outdent`
+          ---
+          # keep this comment
+          foo: bar
+          # title comment stays above title
+          title: "eslint-doc-generator/no-foo"
+          description: "Description for no-foo."
+          ---
+        `;
+        expect(
+          generateFrontmatterLines(context, name, description, oldFrontmatter),
+        ).toBe(expected);
+      });
+
+      it('should accept opening fence with trailing space and ... terminator', function () {
+        const oldFrontmatter = [
+          '--- ',
+          'foo: bar',
+          'title: "eslint-doc-generator/no-bar"',
+          '...',
+        ].join('\n');
+
+        const expected = [
+          '--- ',
+          'foo: bar',
+          'title: "eslint-doc-generator/no-foo"',
+          'description: "Description for no-foo."',
+          '...',
+        ].join('\n');
+        expect(
+          generateFrontmatterLines(context, name, description, oldFrontmatter),
+        ).toBe(expected);
+      });
     });
   });
 });
