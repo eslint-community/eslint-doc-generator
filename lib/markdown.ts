@@ -4,6 +4,7 @@
 
 import { END_RULE_HEADER_MARKER, formatComment } from './comment-markers.js';
 import type { Context } from './context.js';
+import { escapeRegExp } from './string.js';
 
 export function extractFrontmatter(markdown: string) {
   const lines = markdown.split('\n');
@@ -92,7 +93,7 @@ export function findSectionHeader(
   str: string,
 ): string | undefined {
   // Get all the matching strings.
-  const regexp = new RegExp(`## .*${str}.*\n`, 'giu');
+  const regexp = new RegExp(`## .*${escapeRegExp(str)}.*\n`, 'giu');
   const sectionPotentialMatches = [...markdown.matchAll(regexp)].map(
     (match) => match[0],
   );
