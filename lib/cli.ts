@@ -187,6 +187,18 @@ async function loadConfigFileOptions(): Promise<GenerateOptions> {
 }
 
 /**
+ * Print a CLI failure to stderr.
+ * Handles non-Error throwables that would otherwise exit with empty stderr.
+ */
+export function printCliError(error: unknown): void {
+  if (error instanceof Error) {
+    console.error(error.message);
+  } else {
+    console.error(String(error));
+  }
+}
+
+/**
  * Run the CLI and gather options.
  * When this is done, load any config file and merge with the CLI options.
  * Finally, invoke a callback with the merged options.

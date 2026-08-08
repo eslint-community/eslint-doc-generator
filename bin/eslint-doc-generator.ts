@@ -4,14 +4,12 @@
 // rule was renamed in https://github.com/eslint-community/eslint-plugin-n/releases/tag/v17.0.0
 // from n/shebang to n/hashbang
 
-import { run } from '../lib/cli.js';
+import { printCliError, run } from '../lib/cli.js';
 import { generate } from '../lib/generator.js';
 
 try {
   await run(process.argv, (path, options) => generate(path, options));
 } catch (error: unknown) {
-  if (error instanceof Error) {
-    console.error(error.message);
-  }
+  printCliError(error);
   process.exitCode = 1;
 }
