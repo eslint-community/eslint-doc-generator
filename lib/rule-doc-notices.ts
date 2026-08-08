@@ -366,8 +366,7 @@ function getNoticesForRule(
 
     [NOTICE_TYPE.OPTIONS]: hasOptions(rule.meta?.schema),
     [NOTICE_TYPE.REQUIRES_TYPE_CHECKING]:
-      // @ts-expect-error -- TODO: requiresTypeChecking type not present
-      (rule.meta?.docs?.requiresTypeChecking as boolean | undefined) || false,
+      rule.meta?.docs?.requiresTypeChecking ?? false,
     [NOTICE_TYPE.TYPE]: Boolean(rule.meta?.type),
   };
 
