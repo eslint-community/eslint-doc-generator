@@ -99,6 +99,29 @@ exports[`generate (rule descriptions) > rule with long-enough description to req
 "
 `;
 
+exports[`generate (rule descriptions) > with rule description containing MDX container characters > for md files > leaves angle brackets and braces unescaped 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+| Name                           | Description               |
+| :----------------------------- | :------------------------ |
+| [no-foo](docs/rules/no-foo.md) | Disallow <Foo> and {bar}. |
+
+<!-- end auto-generated rules list -->
+"
+`;
+
+exports[`generate (rule descriptions) > with rule description containing MDX container characters > for mdx files > neutralizes angle brackets and braces for MDX 1`] = `
+"## Rules
+{/* begin auto-generated rules list */}
+
+| Name                           | Description                       |
+| :----------------------------- | :-------------------------------- |
+| [no-foo](docs/rules/no-foo.md) | Disallow {'<'}Foo> and {'{'}bar}. |
+
+{/* end auto-generated rules list */}"
+`;
+
 exports[`generate (rule descriptions) > with rule description that needs to be escaped in table > generates the documentation 1`] = `
 "## Rules
 <!-- begin auto-generated rules list -->

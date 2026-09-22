@@ -691,6 +691,52 @@ describe('generate (--rule-list-split)', function () {
     });
   });
 
+  describe('as a function with title containing a newline', function () {
+    let fixture: FixtureContext;
+
+    beforeAll(async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'index.js': `
+          export default {
+            rules: {
+              'no-foo': { meta: { deprecated: true, }, create(context) {} },
+              'no-bar': { meta: { deprecated: false, }, create(context) {} },
+            },
+          };`,
+          'README.md': '## Rules\n',
+          'docs/rules/no-foo.md': '',
+          'docs/rules/no-bar.md': '',
+        },
+      });
+    });
+
+    afterAll(async function () {
+      await fixture.cleanup();
+    });
+
+    it('keeps the heading on a single line', async function () {
+      await generate(fixture.path, {
+        ruleListSplit: (rules) => [
+          {
+            title: 'Deprecated\nrules',
+            rules: rules.filter(([, rule]) => rule.meta.deprecated),
+          },
+          {
+            title: 'Other\r\nrules',
+            rules: rules.filter(([, rule]) => !rule.meta.deprecated),
+          },
+        ],
+      });
+      const readme = await fixture.readFile('README.md');
+      expect(readme).toContain('### Deprecatedrules');
+      expect(readme).toContain('### Otherrules');
+      expect(readme).not.toMatch(/^### Deprecated$/mu);
+      expect(readme).toMatchSnapshot();
+    });
+  });
+
   describe('as a function but invalid return value', function () {
     let fixture: FixtureContext;
 
