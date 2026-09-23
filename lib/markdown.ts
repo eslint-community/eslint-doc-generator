@@ -5,19 +5,40 @@
 import { END_RULE_HEADER_MARKER, formatComment } from './comment-markers.js';
 import type { Context } from './context.js';
 
-export function extractFrontmatter(markdown: string) {
-  const lines = markdown.split('\n');
-  const frontMatterStart = lines.indexOf('---');
+/** Opening YAML frontmatter fence (`---` with optional trailing whitespace). */
+const FRONTMATTER_OPENING_FENCE = /^---\s*$/u;
 
-  // Frontmatter must start at the beginning of the file to be considered valid, so if we don't find '---' at the beginning, we want to ignore it.
-  if (frontMatterStart !== 0) {
+/** Closing YAML frontmatter fence (`---` or `...` with optional trailing whitespace). */
+const FRONTMATTER_CLOSING_FENCE = /^(---|\.\.\.)\s*$/u;
+
+/**
+ * Find a YAML frontmatter block at the start of the file.
+ * Only YAML `---` fences are supported (not TOML `+++` or JSON frontmatter).
+ * @returns inclusive start/end line indexes, or undefined if not found
+ */
+function findFrontmatterRange(
+  lines: readonly string[],
+): { start: number; end: number } | undefined {
+  const firstLine = lines[0];
+  if (firstLine === undefined || !FRONTMATTER_OPENING_FENCE.test(firstLine)) {
     return undefined;
   }
-  const frontMatterEnd = lines.indexOf('---', frontMatterStart + 1);
-  if (frontMatterEnd !== -1) {
-    return lines.slice(frontMatterStart, frontMatterEnd + 1).join('\n');
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line !== undefined && FRONTMATTER_CLOSING_FENCE.test(line)) {
+      return { start: 0, end: i };
+    }
   }
   return undefined;
+}
+
+export function extractFrontmatter(markdown: string) {
+  const lines = markdown.split('\n');
+  const range = findFrontmatterRange(lines);
+  if (!range) {
+    return undefined;
+  }
+  return lines.slice(range.start, range.end + 1).join('\n');
 }
 
 /**
@@ -35,16 +56,14 @@ export function replaceOrCreateFrontmatter(
   }
 
   const lines = markdown.split('\n');
+  const range = findFrontmatterRange(lines);
 
-  const frontmatterStartIndex = lines.indexOf('---');
-
-  // If there's no existing frontmatter, just add it to the top.
-  if (frontmatterStartIndex !== 0) {
+  // If there's no valid existing frontmatter, just add it to the top.
+  if (!range) {
     return [newFrontmatter, markdown].join('\n');
   }
 
-  const frontmatterEndIndex = lines.indexOf('---', frontmatterStartIndex + 1);
-  const postFrontmatter = lines.slice(frontmatterEndIndex + 1).join('\n');
+  const postFrontmatter = lines.slice(range.end + 1).join('\n');
   return [newFrontmatter, postFrontmatter].join('\n');
 }
 
