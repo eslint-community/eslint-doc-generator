@@ -81,7 +81,7 @@
     "sort-package-json": "^3.0.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.63.0",
-    "vitest": "^4.0.16"
+    "vitest": "^5.0.1"
   },
   "peerDependencies": {
     "eslint": ">= 8.57.1"
