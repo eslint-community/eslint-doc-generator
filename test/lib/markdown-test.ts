@@ -71,6 +71,31 @@ describe('markdown', function () {
       expect(context).toBeDefined();
       expect(extractFrontmatter(markdown)).toBeUndefined();
     });
+
+    it('should extract frontmatter when the opening fence has trailing whitespace', function () {
+      const markdown = ['--- ', 'title: Test Rule', '---', '# Test Rule'].join(
+        '\n',
+      );
+
+      expect(extractFrontmatter(markdown)).toBe(
+        ['--- ', 'title: Test Rule', '---'].join('\n'),
+      );
+    });
+
+    it('should extract frontmatter terminated with ...', function () {
+      const markdown = outdent`
+        ---
+        title: Test Rule
+        ...
+        # Test Rule
+      `;
+
+      expect(extractFrontmatter(markdown)).toBe(outdent`
+        ---
+        title: Test Rule
+        ...
+      `);
+    });
   });
 
   describe('findFinalHeaderLevel', function () {
@@ -309,6 +334,24 @@ describe('markdown', function () {
         ---
         title: Old Rule
         ---
+        Rule description.
+      `;
+      const newFrontmatter = outdent`
+        ---
+        title: New Rule
+        ---
+      `;
+
+      expect(replaceOrCreateFrontmatter(markdown, newFrontmatter)).toBe(
+        `${newFrontmatter}\nRule description.`,
+      );
+    });
+
+    it('should replace frontmatter terminated with ...', function () {
+      const markdown = outdent`
+        ---
+        title: Old Rule
+        ...
         Rule description.
       `;
       const newFrontmatter = outdent`
