@@ -1,5 +1,6 @@
 import { generate } from '../../../lib/generator.js';
 import {
+  applyInsertFinalNewline,
   createEndOfLineResolver,
   detectEndOfLine,
   getFallbackEndOfLine,
@@ -7,6 +8,7 @@ import {
 } from '../../../lib/eol.js';
 import { EOL } from 'node:os';
 import { join } from 'node:path';
+import { writeFile } from 'node:fs/promises';
 import { setupFixture, type FixtureContext } from '../../helpers/fixture.js';
 
 function assertUniformEndOfLine(contents: string, endOfLine: '\n' | '\r\n') {
@@ -17,6 +19,18 @@ function assertUniformEndOfLine(contents: string, endOfLine: '\n' | '\r\n') {
   } else {
     expect(contents.includes('\r')).toBe(false);
   }
+}
+
+function endsWithEndOfLine(contents: string, endOfLine: '\n' | '\r\n') {
+  return contents.endsWith(endOfLine);
+}
+
+function stripTrailingEndOfLines(contents: string, endOfLine: '\n' | '\r\n') {
+  let result = contents;
+  while (result.endsWith(endOfLine)) {
+    result = result.slice(0, -endOfLine.length);
+  }
+  return result;
 }
 
 describe('detectEndOfLine', function () {
@@ -58,6 +72,43 @@ describe('normalizeEndOfLine', function () {
     expect(normalizeEndOfLine('a\rb\nc\r\n', '\r\n')).toStrictEqual(
       'a\r\nb\r\nc\r\n',
     );
+  });
+});
+
+describe('applyInsertFinalNewline', function () {
+  it('returns contents unchanged when insert_final_newline is unset', function () {
+    expect(applyInsertFinalNewline('a\n', '\n', undefined)).toStrictEqual(
+      'a\n',
+    );
+    expect(applyInsertFinalNewline('a', '\n', undefined)).toStrictEqual('a');
+  });
+
+  it('appends one trailing EOL when true and absent', function () {
+    expect(applyInsertFinalNewline('a', '\n', true)).toStrictEqual('a\n');
+    expect(applyInsertFinalNewline('a', '\r\n', true)).toStrictEqual('a\r\n');
+  });
+
+  it('leaves a single trailing EOL alone when true', function () {
+    expect(applyInsertFinalNewline('a\n', '\n', true)).toStrictEqual('a\n');
+    expect(applyInsertFinalNewline('a\r\n', '\r\n', true)).toStrictEqual(
+      'a\r\n',
+    );
+  });
+
+  it('never trims existing trailing blank lines when true', function () {
+    expect(applyInsertFinalNewline('a\n\n', '\n', true)).toStrictEqual('a\n\n');
+    expect(applyInsertFinalNewline('a\r\n\r\n', '\r\n', true)).toStrictEqual(
+      'a\r\n\r\n',
+    );
+  });
+
+  it('strips all trailing EOLs when false', function () {
+    expect(applyInsertFinalNewline('a\n', '\n', false)).toStrictEqual('a');
+    expect(applyInsertFinalNewline('a\n\n', '\n', false)).toStrictEqual('a');
+    expect(applyInsertFinalNewline('a\r\n\r\n', '\r\n', false)).toStrictEqual(
+      'a',
+    );
+    expect(applyInsertFinalNewline('a', '\n', false)).toStrictEqual('a');
   });
 });
 
@@ -214,6 +265,79 @@ describe('createEndOfLineResolver', function () {
       expect(
         await eol.getExplicitEndOfLine(join(fixture.path, 'README.md')),
       ).toBeUndefined();
+    });
+
+    it('returns true when ".editorconfig" sets insert_final_newline = true', async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          '.editorconfig': `
+                  root = true
+
+                  [*]
+                  insert_final_newline = true`,
+        },
+      });
+
+      const eol = createEndOfLineResolver();
+      expect(
+        await eol.getInsertFinalNewline(join(fixture.path, 'README.md')),
+      ).toBe(true);
+    });
+
+    it('returns false when ".editorconfig" sets insert_final_newline = false', async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          '.editorconfig': `
+                  root = true
+
+                  [*]
+                  insert_final_newline = false`,
+        },
+      });
+
+      const eol = createEndOfLineResolver();
+      expect(
+        await eol.getInsertFinalNewline(join(fixture.path, 'README.md')),
+      ).toBe(false);
+    });
+
+    it('returns undefined when insert_final_newline is unset', async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          '.editorconfig': `
+                  root = true
+
+                  [*]
+                  end_of_line = lf`,
+        },
+      });
+
+      const eol = createEndOfLineResolver();
+      expect(
+        await eol.getInsertFinalNewline(join(fixture.path, 'README.md')),
+      ).toBeUndefined();
+    });
+
+    it('parses end_of_line and insert_final_newline from one EditorConfig read', async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          '.editorconfig': `
+                  root = true
+
+                  [*]
+                  end_of_line = crlf
+                  insert_final_newline = true`,
+        },
+      });
+
+      const eol = createEndOfLineResolver();
+      const readmePath = join(fixture.path, 'README.md');
+      expect(await eol.getExplicitEndOfLine(readmePath)).toStrictEqual('\r\n');
+      expect(await eol.getInsertFinalNewline(readmePath)).toBe(true);
     });
   });
 
@@ -783,6 +907,179 @@ describe('generate with end of line', function () {
         await fixture.readFile('docs/rules/no-foo.md'),
         '\r\n',
       );
+    });
+  });
+
+  describe('insert_final_newline', function () {
+    let fixture: FixtureContext;
+
+    afterEach(async function () {
+      await fixture.cleanup();
+    });
+
+    const endOfLineCases = [
+      { label: 'lf', endOfLine: '\n' as const, editorConfigValue: 'lf' },
+      { label: 'crlf', endOfLine: '\r\n' as const, editorConfigValue: 'crlf' },
+    ];
+    const insertFinalNewlineCases: Array<{
+      label: string;
+      value: boolean | undefined;
+      editorConfigLine: string;
+    }> = [
+      {
+        label: 'true',
+        value: true,
+        editorConfigLine: 'insert_final_newline = true',
+      },
+      {
+        label: 'false',
+        value: false,
+        editorConfigLine: 'insert_final_newline = false',
+      },
+      {
+        label: 'unset',
+        value: undefined,
+        editorConfigLine: '',
+      },
+    ];
+    const trailingNewlineCases = [true, false];
+
+    for (const {
+      label: eolLabel,
+      endOfLine,
+      editorConfigValue,
+    } of endOfLineCases) {
+      for (const {
+        label: insertLabel,
+        value: insertFinalNewline,
+        editorConfigLine,
+      } of insertFinalNewlineCases) {
+        for (const hasTrailingNewline of trailingNewlineCases) {
+          it(`honors insert_final_newline=${insertLabel} with ${eolLabel} when file ${hasTrailingNewline ? 'has' : 'lacks'} a trailing newline`, async function () {
+            // Body content controls the natural trailing-newline state for rule
+            // docs (empty body always ends with a header newline).
+            const ruleDocBody = hasTrailingNewline
+              ? 'Some description.\n'
+              : 'Some description.';
+            const ruleDoc = normalizeEndOfLine(
+              `# test/no-foo\n\n<!-- end auto-generated rule header -->\n\n${ruleDocBody}`,
+              endOfLine,
+            );
+            const editorConfigWithoutInsert = [
+              'root = true',
+              '',
+              '[*]',
+              `end_of_line = ${editorConfigValue}`,
+            ].join('\n');
+            const editorConfig = [
+              editorConfigWithoutInsert,
+              ...(editorConfigLine === '' ? [] : [editorConfigLine]),
+            ].join('\n');
+
+            fixture = await setupFixture({
+              fixture: 'esm-base',
+              overrides: {
+                'docs/rules/no-foo.md': ruleDoc,
+                'README.md': normalizeEndOfLine(
+                  '## Rules\n\n<!-- begin auto-generated rules list -->\n<!-- end auto-generated rules list -->\n',
+                  endOfLine,
+                ),
+                '.editorconfig': editorConfigWithoutInsert,
+              },
+            });
+
+            // Baseline without insert_final_newline for the snapshot guard.
+            await generate(fixture.path);
+            const baselineWithoutTrailing = stripTrailingEndOfLines(
+              await fixture.readFile('docs/rules/no-foo.md'),
+              endOfLine,
+            );
+
+            // Restore the body's trailing-newline state, then apply policy.
+            await writeFile(
+              join(fixture.path, 'docs/rules/no-foo.md'),
+              hasTrailingNewline
+                ? baselineWithoutTrailing + endOfLine
+                : baselineWithoutTrailing,
+            );
+            await writeFile(join(fixture.path, '.editorconfig'), editorConfig);
+            await generate(fixture.path);
+
+            const ruleDocAfter = await fixture.readFile('docs/rules/no-foo.md');
+            assertUniformEndOfLine(ruleDocAfter, endOfLine);
+
+            const expectedTrailingNewline =
+              insertFinalNewline === undefined
+                ? hasTrailingNewline
+                : insertFinalNewline;
+            expect(endsWithEndOfLine(ruleDocAfter, endOfLine)).toBe(
+              expectedTrailingNewline,
+            );
+
+            // Snapshot guard: policy must not change non-trailing content.
+            expect(ruleDocAfter).toContain('Some description.');
+            expect(
+              stripTrailingEndOfLines(ruleDocAfter, endOfLine),
+            ).toStrictEqual(baselineWithoutTrailing);
+          });
+        }
+      }
+    }
+
+    it('fails --check when insert_final_newline = true and the file lacks a trailing newline', async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'docs/rules/no-foo.md': '',
+          'README.md':
+            '## Rules\n\n<!-- begin auto-generated rules list -->\n<!-- end auto-generated rules list -->\n',
+          '.editorconfig': `
+                root = true
+
+                [*]
+                end_of_line = lf
+                insert_final_newline = true`,
+        },
+      });
+
+      await generate(fixture.path);
+      const readme = await fixture.readFile('README.md');
+      expect(endsWithEndOfLine(readme, '\n')).toBe(true);
+
+      // Remove the trailing newline so --check should fail.
+      await writeFile(
+        join(fixture.path, 'README.md'),
+        stripTrailingEndOfLines(readme, '\n'),
+      );
+
+      process.exitCode = undefined;
+      await generate(fixture.path, { check: true });
+      expect(process.exitCode).toBe(1);
+      process.exitCode = undefined;
+    });
+
+    it('does not trim existing trailing blank lines when insert_final_newline = true', async function () {
+      fixture = await setupFixture({
+        fixture: 'esm-base',
+        overrides: {
+          'docs/rules/no-foo.md':
+            '# Description of no-foo (`test/no-foo`)\n\n<!-- end auto-generated rule header -->\n\nSome description.\n\n',
+          'README.md':
+            '## Rules\n\n<!-- begin auto-generated rules list -->\n<!-- end auto-generated rules list -->\n',
+          '.editorconfig': `
+                root = true
+
+                [*]
+                end_of_line = lf
+                insert_final_newline = true`,
+        },
+      });
+
+      await generate(fixture.path);
+
+      const ruleDoc = await fixture.readFile('docs/rules/no-foo.md');
+      expect(ruleDoc.endsWith('\n\n')).toBe(true);
+      expect(ruleDoc).toContain('Some description.');
     });
   });
 });
