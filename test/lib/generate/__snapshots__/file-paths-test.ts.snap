@@ -138,3 +138,15 @@ exports[`generate (file paths) > multiple rules lists > generates the documentat
 
 <!-- end auto-generated rules list -->"
 `;
+
+exports[`generate (file paths) > rule names with URL-unsafe characters > URL-encodes spaces and parentheses in relative rule doc links 1`] = `
+"## Rules
+<!-- begin auto-generated rules list -->
+
+| Name                                               | Description                   |
+| :------------------------------------------------- | :---------------------------- |
+| [no foo (bar)](docs/rules/no%20foo%20%28bar%29.md) | Description for no foo (bar). |
+
+<!-- end auto-generated rules list -->
+"
+`;
