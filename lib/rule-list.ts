@@ -119,7 +119,6 @@ function buildRuleRow(
       return getLinkToRule(context, ruleName, pathToFile, false, false);
     },
     [COLUMN_TYPE.OPTIONS]: hasOptions(rule.meta?.schema) ? EMOJI_OPTIONS : '',
-    // @ts-expect-error -- TODO: requiresTypeChecking type not present
     [COLUMN_TYPE.REQUIRES_TYPE_CHECKING]: rule.meta?.docs?.requiresTypeChecking
       ? EMOJI_REQUIRES_TYPE_CHECKING
       : '',
