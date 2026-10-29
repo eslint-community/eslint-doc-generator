@@ -50,5 +50,22 @@ describe('generate (--check)', function () {
       expect(await fixture.readFile('README.md')).toMatchSnapshot();
       expect(await fixture.readFile('docs/rules/no-foo.md')).toMatchSnapshot();
     });
+
+    it('omits ANSI colors from diffs when NO_COLOR is set', async function () {
+      vi.stubEnv('NO_COLOR', '1');
+      const consoleErrorStub = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      await generate(fixture.path, { check: true });
+
+      const stderr = consoleErrorStub.mock.calls
+        .map((call) => String(call[0]))
+        .join('\n');
+      expect(stderr).not.toContain('\u001B[');
+
+      consoleErrorStub.mockRestore();
+      vi.unstubAllEnvs();
+    });
   });
 });
