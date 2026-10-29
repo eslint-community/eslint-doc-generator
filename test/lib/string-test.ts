@@ -1,10 +1,26 @@
 import {
   addTrailingPeriod,
+  escapeRegExp,
   removeTrailingPeriod,
   toSentenceCase,
 } from '../../lib/string.js';
 
 describe('strings', function () {
+  describe('#escapeRegExp', function () {
+    it('escapes regex metacharacters', function () {
+      expect(escapeRegExp('Options [x')).toBe(String.raw`Options \[x`);
+      expect(escapeRegExp('Options (advanced)')).toBe(
+        String.raw`Options \(advanced\)`,
+      );
+      expect(escapeRegExp('C++')).toBe(String.raw`C\+\+`);
+      expect(escapeRegExp('Options .')).toBe(String.raw`Options \.`);
+    });
+
+    it('leaves ordinary characters unchanged', function () {
+      expect(escapeRegExp('rules')).toBe('rules');
+    });
+  });
+
   describe('#addTrailingPeriod', function () {
     it('handles when already has period', function () {
       expect(addTrailingPeriod('foo.')).toStrictEqual('foo.');

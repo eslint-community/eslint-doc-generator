@@ -260,6 +260,38 @@ describe('markdown', function () {
         ),
       ).toBe('## Rules\n');
     });
+
+    it('treats character class metacharacters as literal', function () {
+      const title = '## Options [x\n';
+      expect(findSectionHeader(title, 'Options [x')).toBe(title);
+    });
+
+    it('treats parentheses as literal', function () {
+      const markdown = outdent`
+        ## Options advanced
+        Not this one.
+        ## Options (advanced)
+        This one.
+      `;
+      expect(findSectionHeader(markdown, 'Options (advanced)')).toBe(
+        '## Options (advanced)\n',
+      );
+    });
+
+    it('treats plus signs as literal', function () {
+      const title = '## C++\n';
+      expect(findSectionHeader(title, 'C++')).toBe(title);
+    });
+
+    it('treats dots as literal', function () {
+      const markdown = outdent`
+        ## Options X
+        Not this one.
+        ## Options .
+        This one.
+      `;
+      expect(findSectionHeader(markdown, 'Options .')).toBe('## Options .\n');
+    });
   });
 
   describe('replaceOrCreateFrontmatter', function () {

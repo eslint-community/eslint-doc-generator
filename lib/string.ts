@@ -1,3 +1,8 @@
+/** Escape special characters so `str` can be used as a literal in a RegExp. */
+export function escapeRegExp(str: string): string {
+  return str.replaceAll(/[$()*+.?[\\\]^{|}]/gu, String.raw`\$&`);
+}
+
 /** Uppercase the first character of a string, leaving the rest unchanged. */
 function upperFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
