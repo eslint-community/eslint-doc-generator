@@ -40,7 +40,7 @@
     "lint:package-json-sorting": "sort-package-json --check",
     "lint:package-json-sorting:fix": "sort-package-json package.json",
     "lint:types": "tsgo",
-    "prepublishOnly": "npm run build",
+    "prepack": "npm run build",
     "test": "vitest run --coverage"
   },
   "dependencies": {
