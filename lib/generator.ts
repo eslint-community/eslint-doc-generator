@@ -26,7 +26,11 @@ import { replaceRulePlaceholder } from './rule-link.js';
 import { updateRuleOptionsList } from './rule-options-list.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { getContext } from './context.js';
-import { createEndOfLineResolver, normalizeEndOfLine } from './eol.js';
+import {
+  applyInsertFinalNewline,
+  createEndOfLineResolver,
+  normalizeEndOfLine,
+} from './eol.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
 
@@ -166,9 +170,15 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
         pathToDoc,
         undefined,
       );
+      const newDocInsertFinalNewline =
+        await endOfLineResolver.getInsertFinalNewline(pathToDoc);
       await writeFile(
         pathToDoc,
-        normalizeEndOfLine(newRuleDocContents, newDocEndOfLine),
+        applyInsertFinalNewline(
+          normalizeEndOfLine(newRuleDocContents, newDocEndOfLine),
+          newDocEndOfLine,
+          newDocInsertFinalNewline,
+        ),
       );
       initializedRuleDoc = true;
     }
@@ -211,6 +221,11 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     // Convert to the doc's end of line before postprocessing and writing.
     contentsNew = normalizeEndOfLine(contentsNew, endOfLine);
     contentsNew = await postprocess(contentsNew, resolve(pathToDoc));
+    contentsNew = applyInsertFinalNewline(
+      contentsNew,
+      endOfLine,
+      await endOfLineResolver.getInsertFinalNewline(pathToDoc),
+    );
 
     // LF-normalized copy of the final contents for the content checks below.
     const contentsNewNormalized = normalizeEndOfLine(contentsNew, '\n');
@@ -308,12 +323,16 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
       fileContentsNormalized,
       pathToFile,
     );
-    const fileContentsNew = await postprocess(
-      normalizeEndOfLine(
-        updateConfigsList(context, rulesList, isRuleListMdx),
-        endOfLine,
+    const fileContentsNew = applyInsertFinalNewline(
+      await postprocess(
+        normalizeEndOfLine(
+          updateConfigsList(context, rulesList, isRuleListMdx),
+          endOfLine,
+        ),
+        resolve(pathToFile),
       ),
-      resolve(pathToFile),
+      endOfLine,
+      await endOfLineResolver.getInsertFinalNewline(pathToFile),
     );
 
     if (check) {
