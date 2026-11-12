@@ -14,10 +14,44 @@ export function replaceRulePlaceholder(
 }
 
 /**
+ * Encode a URL path segment for markdown link destinations.
+ * `encodeURIComponent` leaves `()`, `!` unencoded; CommonMark treats
+ * parentheses as link destination terminators, so encode those too.
+ */
+function encodeUrlPathSegment(segment: string): string {
+  return encodeURIComponent(segment)
+    .replaceAll('(', '%28')
+    .replaceAll(')', '%29')
+    .replaceAll('!', '%21');
+}
+
+/**
+ * Encode each `/`-separated segment of a URL path.
+ */
+function encodeUrlPath(urlPath: string): string {
+  return urlPath
+    .split('/')
+    .map((segment) => encodeUrlPathSegment(segment))
+    .join('/');
+}
+
+/**
  * Account for how Windows paths use backslashes instead of the forward slashes that URLs require.
+ * Also URL-encodes each path segment so spaces, parentheses, etc. are safe in markdown links.
  */
 function pathToUrl(path: string): string {
-  return path.split(sep).join('/');
+  return path
+    .split(sep)
+    .map((segment) => encodeUrlPathSegment(segment))
+    .join('/');
+}
+
+/**
+ * Encode a relative URL path. Absolute URLs (with a scheme) are left as-is so
+ * user-provided `urlRuleDoc` function return values are not corrupted.
+ */
+function encodeUrlIfRelative(url: string): string {
+  return url.includes('://') ? url : encodeUrlPath(url);
 }
 
 /**
@@ -64,15 +98,21 @@ export function getUrlToRule(
     replaceRulePlaceholder(pathRuleDoc, ruleNameWithoutPluginPrefix),
   );
 
-  return (
-    // If the function returned a URL, use it.
-    urlRuleDocFunctionEvaluated ??
-    (typeof urlRuleDoc === 'string'
-      ? // Otherwise, use the URL if it's a string.
-        replaceRulePlaceholder(urlRuleDoc, ruleNameWithoutPluginPrefix)
-      : // Finally, fallback to the relative path.
-        pathToUrl(relative(dirname(pathToFile), pathRuleDocEvaluated)))
-  );
+  // If the function returned a URL, use it (encode relative returns only).
+  if (urlRuleDocFunctionEvaluated !== undefined) {
+    return encodeUrlIfRelative(urlRuleDocFunctionEvaluated);
+  }
+
+  // Otherwise, use the URL if it's a string (encode only the substituted name).
+  if (typeof urlRuleDoc === 'string') {
+    return replaceRulePlaceholder(
+      urlRuleDoc,
+      encodeUrlPath(ruleNameWithoutPluginPrefix),
+    );
+  }
+
+  // Finally, fallback to the relative path.
+  return pathToUrl(relative(dirname(pathToFile), pathRuleDocEvaluated));
 }
 
 export function getMarkdownLink(
