@@ -30,7 +30,7 @@ function configToDescription(config: Config): string | undefined {
   );
 }
 
-function generateConfigListMarkdown(context: Context): string {
+function generateConfigListMarkdown(context: Context, isMdx: boolean): string {
   const { configsToRules, options, plugin } = context;
   const { configEmojis, ignoreConfig } = options;
 
@@ -60,7 +60,7 @@ function generateConfigListMarkdown(context: Context): string {
   ];
 
   return markdownTable(
-    sanitizeMarkdownTable(rows),
+    sanitizeMarkdownTable(rows, isMdx),
     { align: 'l' }, // Left-align headers.
   );
 }
@@ -106,7 +106,7 @@ export function updateConfigsList(
   const postList = markdown.slice(Math.max(0, listEndIndex));
 
   // New config list.
-  const list = generateConfigListMarkdown(context);
+  const list = generateConfigListMarkdown(context, isMdx);
 
   return `${preList}${formattedConfigListMarkerBegin}\n\n${list}\n\n${formattedConfigListMarkerEnd}${postList}`;
 }

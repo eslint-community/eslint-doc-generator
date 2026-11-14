@@ -29,6 +29,7 @@ import { getContext } from './context.js';
 import { createEndOfLineResolver, normalizeEndOfLine } from './eol.js';
 import { generateSuggestedEmojis } from './suggest-emojis.js';
 import { generateFrontmatterLines } from './frontmatter.js';
+import { sanitizeMarkdownHeading } from './string.js';
 
 function isMdx(path: string): boolean {
   return extname(path).toLowerCase() === '.mdx';
@@ -79,9 +80,14 @@ export async function generate(path: string, userOptions?: GenerateOptions) {
     pathRuleList,
     postprocess,
     ruleDocSectionExclude,
-    ruleDocSectionInclude,
+    ruleDocSectionInclude: ruleDocSectionIncludeRaw,
     ruleDocSectionOptions,
   } = options;
+
+  // Strip embedded newlines so init headings and section checks stay aligned.
+  const ruleDocSectionInclude = ruleDocSectionIncludeRaw.map((title) =>
+    sanitizeMarkdownHeading(title),
+  );
 
   if (suggestEmojis) {
     await generateSuggestedEmojis(context);

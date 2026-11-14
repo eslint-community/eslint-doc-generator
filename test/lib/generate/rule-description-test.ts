@@ -199,4 +199,80 @@ describe('generate (rule descriptions)', () => {
       expect(await fixture.readFile('README.md')).toMatchSnapshot();
     });
   });
+
+  describe('with rule description containing MDX container characters', () => {
+    describe('for md files', () => {
+      let fixture: FixtureContext;
+
+      beforeAll(async () => {
+        fixture = await setupFixture({
+          fixture: 'esm-base',
+          overrides: {
+            'index.js': `
+            export default {
+              rules: {
+                'no-foo': {
+                  meta: { docs: { description: 'Disallow <Foo> and {bar}.'} },
+                  create(context) {},
+                },
+              },
+            };`,
+            'README.md': '## Rules\n',
+            'docs/rules/no-foo.md': '',
+          },
+        });
+      });
+
+      afterAll(async () => {
+        await fixture.cleanup();
+      });
+
+      it('leaves angle brackets and braces unescaped', async () => {
+        await generate(fixture.path);
+        const readme = await fixture.readFile('README.md');
+        expect(readme).toContain('Disallow <Foo> and {bar}.');
+        expect(readme).not.toContain("{'<'}");
+        expect(readme).not.toContain("{'{'}");
+        expect(readme).toMatchSnapshot();
+      });
+    });
+
+    describe('for mdx files', () => {
+      let fixture: FixtureContext;
+
+      beforeAll(async () => {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+            export default {
+              rules: {
+                'no-foo': {
+                  meta: { docs: { description: 'Disallow <Foo> and {bar}.'} },
+                  create(context) {},
+                },
+              },
+            };`,
+            'README.mdx': `## Rules
+{/* begin auto-generated rules list */}
+{/* end auto-generated rules list */}`,
+            'docs/rules/no-foo.mdx': '',
+          },
+        });
+      });
+
+      afterAll(async () => {
+        await fixture.cleanup();
+      });
+
+      it('neutralizes angle brackets and braces for MDX', async () => {
+        await generate(fixture.path, { pathRuleList: 'README.mdx' });
+        const readme = await fixture.readFile('README.mdx');
+        expect(readme).toContain("Disallow {'<'}Foo> and {'{'}bar}.");
+        expect(readme).not.toContain('<Foo>');
+        expect(readme).not.toContain('{bar}');
+        expect(readme).toMatchSnapshot();
+      });
+    });
+  });
 });

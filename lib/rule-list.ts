@@ -22,7 +22,11 @@ import { markdownTable } from 'markdown-table';
 import { EMOJIS_TYPE } from './rule-type.js';
 import { hasOptions } from './rule-options.js';
 import { getLinkToRule } from './rule-link.js';
-import { capitalizeOnlyFirstLetter, sanitizeMarkdownTable } from './string.js';
+import {
+  capitalizeOnlyFirstLetter,
+  sanitizeMarkdownHeading,
+  sanitizeMarkdownTable,
+} from './string.js';
 import { noCase } from 'change-case';
 import { getProperty } from 'dot-prop';
 import { boolean, isBooleanable } from './boolean.js';
@@ -146,6 +150,7 @@ function generateRulesListMarkdown(
   ruleNamesAndRules: RuleNamesAndRules,
   columns: Record<COLUMN_TYPE, boolean>,
   pathToFile: string,
+  isMdx: boolean,
 ): string {
   const listHeaderRow = (
     Object.entries(columns) as readonly [COLUMN_TYPE, boolean][]
@@ -162,12 +167,15 @@ function generateRulesListMarkdown(
   });
 
   return markdownTable(
-    sanitizeMarkdownTable([
-      listHeaderRow,
-      ...ruleNamesAndRules.map(([name, rule]) =>
-        buildRuleRow(context, name, rule, columns, pathToFile),
-      ),
-    ]),
+    sanitizeMarkdownTable(
+      [
+        listHeaderRow,
+        ...ruleNamesAndRules.map(([name, rule]) =>
+          buildRuleRow(context, name, rule, columns, pathToFile),
+        ),
+      ],
+      isMdx,
+    ),
     { align: 'l' }, // Left-align headers.
   );
 }
@@ -185,17 +193,22 @@ function generateRuleListMarkdownForRulesAndHeaders(
   headerLevel: number,
   columns: Record<COLUMN_TYPE, boolean>,
   pathToFile: string,
+  isMdx: boolean,
 ): string {
   const parts: string[] = [];
 
   for (const { title, rules, description } of rulesAndHeaders) {
     if (title) {
-      parts.push(`${'#'.repeat(headerLevel)} ${title}`);
+      parts.push(
+        `${'#'.repeat(headerLevel)} ${sanitizeMarkdownHeading(title)}`,
+      );
     }
     if (description) {
       parts.push(description);
     }
-    parts.push(generateRulesListMarkdown(context, rules, columns, pathToFile));
+    parts.push(
+      generateRulesListMarkdown(context, rules, columns, pathToFile, isMdx),
+    );
   }
 
   return parts.join('\n\n');
@@ -435,6 +448,7 @@ export function updateRulesList(
     ruleListSplitHeaderLevel,
     columns,
     pathToFile,
+    isMdx,
   );
 
   const newContent = `${legend ? `${legend}\n\n` : ''}${list}`;
