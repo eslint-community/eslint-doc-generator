@@ -4,7 +4,13 @@ import type { ConfigFormat } from './config-format.js';
 
 // Standard ESLint types.
 
-export type RuleModule = TSESLint.RuleModule<string, readonly unknown[]>;
+export type RuleModule = TSESLint.RuleModule<
+  string,
+  readonly unknown[],
+  // `requiresTypeChecking` is a common convention in the ESLint ecosystem but
+  // isn't part of the standard `RuleMetaDataDocs` type, so we augment it here.
+  { requiresTypeChecking?: boolean }
+>;
 
 export type Rules = TSESLint.Linter.RulesRecord;
 
