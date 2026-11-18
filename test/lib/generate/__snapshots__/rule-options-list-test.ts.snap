@@ -110,6 +110,20 @@ exports[`generate (rule options list) > for mdx files > displays default column 
 {/* end auto-generated rule options list */}"
 `;
 
+exports[`generate (rule options list) > for mdx files > with description containing MDX container characters > neutralizes angle brackets and braces for MDX 1`] = `
+"# test/no-foo
+
+{/* end auto-generated rule header */}
+## Options
+{/* begin auto-generated rule options list */}
+
+| Name  | Description                       | Type    |
+| :---- | :-------------------------------- | :------ |
+| \`foo\` | Disallow {'<'}Foo> and {'{'}bar}. | Boolean |
+
+{/* end auto-generated rule options list */}"
+`;
+
 exports[`generate (rule options list) > for mdx files > with no marker comments > generates the documentation 1`] = `
 "# test/no-foo
 

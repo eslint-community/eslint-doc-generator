@@ -676,5 +676,50 @@ describe('generate (rule options list)', function () {
         ).toMatchSnapshot();
       });
     });
+
+    describe('with description containing MDX container characters', function () {
+      let fixture: FixtureContext;
+
+      beforeAll(async function () {
+        fixture = await setupFixture({
+          fixture: 'esm-base-mdx',
+          overrides: {
+            'index.js': `
+          export default {
+            rules: {
+              'no-foo': {
+                meta: {
+                  schema: [{ type: "object", properties: { foo: { description: 'Disallow <Foo> and {bar}.', type: 'boolean' } } }]
+                },
+                create(context) {}
+              },
+            },
+          };`,
+            'README.md': '## Rules\n',
+            'docs/rules/no-foo.mdx': `## Options
+{/* begin auto-generated rule options list */}
+{/* end auto-generated rule options list */}`,
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await fixture.cleanup();
+      });
+
+      it('neutralizes angle brackets and braces for MDX', async function () {
+        const consoleErrorStub = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+        await generate(fixture.path);
+        expect(consoleErrorStub.mock.calls.length).toBe(0);
+        consoleErrorStub.mockRestore();
+        const doc = await fixture.readFile('docs/rules/no-foo.mdx');
+        expect(doc).toContain("Disallow {'<'}Foo> and {'{'}bar}.");
+        expect(doc).not.toContain('<Foo>');
+        expect(doc).not.toContain('{bar}');
+        expect(doc).toMatchSnapshot();
+      });
+    });
   });
 });
